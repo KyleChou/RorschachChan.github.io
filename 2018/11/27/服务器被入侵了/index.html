@@ -100,7 +100,7 @@
 <meta property="og:image" content="http://yoursite.com/images/pastebin1.png">
 <meta property="og:image" content="http://yoursite.com/images/pastebin3.png">
 <meta property="og:image" content="http://yoursite.com/images/pastebin4.png">
-<meta property="og:updated_time" content="2018-11-27T06:25:18.388Z">
+<meta property="og:updated_time" content="2018-11-27T06:56:39.223Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="服务器被入侵了">
 <meta name="twitter:description" content="其实最简单的方法还是彻底格式化重装完事">
@@ -418,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  394
+                  392
                 </span>
               
 
@@ -459,8 +459,7 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="情况描述">情况描述</span></h2><p>今天上班，甲方爸爸在微信里叫“设备直播无法播放”，如图：</p>
-<p>登录到zabbix一看发现，有一台服务器的zabbix-agent已经脱落，而且这个服务器可以ping通但是不能ssh通。</p>
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="情况描述">情况描述</span></h2><p>今天上班，甲方爸爸在微信里叫“设备直播无法播放”，登录到zabbix发现，播放模块的服务器的<code>zabbix-agent</code>已经脱落，而且这个服务器可以ping通但是不能ssh通。</p>
 <p>让机房的人去重启了一下服务器，登录之后发现里面有一个很奇怪的进程<code>watchbog</code>：<br><img src="/images/pastebin2.png" alt="办公室"></p>
 <p>这个进程不应该出现的，同时查看<code>crontab -l</code>的内容也已经变了：<br><img src="/images/pastebin1.png" alt="办公室"></p>
 <p>我登录了一下<code>https://pastebin.com</code>，发现这个是一个提供类似便签记事的网站，黑客应该就是现在这个网站里输入了远程的脚本，然后让这台肉鸡去curl这个网站的网页达到下载脚本然后启动了watchbog进程的目的。</p>
