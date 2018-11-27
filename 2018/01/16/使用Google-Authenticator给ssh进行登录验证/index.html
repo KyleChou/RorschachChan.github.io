@@ -100,7 +100,7 @@
 <meta property="og:image" content="http://yoursite.com/images/google2.png">
 <meta property="og:image" content="http://yoursite.com/images/google3.png">
 <meta property="og:image" content="http://yoursite.com/images/google4.png">
-<meta property="og:updated_time" content="2018-01-22T02:32:42.229Z">
+<meta property="og:updated_time" content="2018-11-27T02:49:40.229Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Google Authenticator给ssh进行登录验证">
 <meta name="twitter:description" content="给Linux服务器再加一把锁">
@@ -418,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,645
+                  1,710
                 </span>
               
 
@@ -492,6 +492,7 @@
 <p>然后更改/etc/pam.d/sshd内的路径配置:<code>auth required pam_google_authenticator.so user=root secret=/PATH_FOLDER/${USER}</code>。</p>
 <p>上面那句话里“user=root” 用于强制PAM使用root用户权限来搜索文件。</p>
 <p>另外请注意，由于我们当时切换成了root用户，所以密钥文件的所有者是root，生成文件的用户只能读取文件(chmod: 400)：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">chown root.root /PATH_FILE/SECRET_KEY_FILES</span><br><span class="line">chmod <span class="number">400</span> /PATH_FILE/SECRET_KEY_FILES</span><br></pre></td></tr></table></figure></p>
+<h2><span id="使用chrome浏览器查看mfa">使用chrome浏览器查看mfa</span></h2><p>如果你没有带手机，如何查看mfa呢？请使用chrome的插件<a href="http://gauth.apps.gbraad.nl/" target="_blank" rel="noopener">http://gauth.apps.gbraad.nl/</a> 。 然后手动添加即可，但是要注意，这台电脑不能断网太久哦，不然就会自动删除。</p>
 
       
     </div>
@@ -890,7 +891,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;&#x524D;&#x51C6;&#x5907;">&#x5B89;&#x88C5;&#x524D;&#x51C6;&#x5907;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;&#x8C37;&#x6B4C;&#x8EAB;&#x4EFD;&#x9A8C;&#x8BC1;&#x5668;">&#x5B89;&#x88C5;&#x8C37;&#x6B4C;&#x8EAB;&#x4EFD;&#x9A8C;&#x8BC1;&#x5668;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x8C03;&#x6574;&#x767B;&#x9646;&#x65B9;&#x5F0F;">&#x8C03;&#x6574;&#x767B;&#x9646;&#x65B9;&#x5F0F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x751F;&#x6210;&#x767B;&#x9646;&#x9A8C;&#x8BC1;&#x7801;">&#x751F;&#x6210;&#x767B;&#x9646;&#x9A8C;&#x8BC1;&#x7801;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x642D;&#x914D;&#x624B;&#x673A;&#x7AEF;">&#x642D;&#x914D;&#x624B;&#x673A;&#x7AEF;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x66F4;&#x6539;&#x5B58;&#x50A8;&#x4F4D;&#x7F6E;">&#x66F4;&#x6539;&#x5B58;&#x50A8;&#x4F4D;&#x7F6E;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;&#x524D;&#x51C6;&#x5907;">&#x5B89;&#x88C5;&#x524D;&#x51C6;&#x5907;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;&#x8C37;&#x6B4C;&#x8EAB;&#x4EFD;&#x9A8C;&#x8BC1;&#x5668;">&#x5B89;&#x88C5;&#x8C37;&#x6B4C;&#x8EAB;&#x4EFD;&#x9A8C;&#x8BC1;&#x5668;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x8C03;&#x6574;&#x767B;&#x9646;&#x65B9;&#x5F0F;">&#x8C03;&#x6574;&#x767B;&#x9646;&#x65B9;&#x5F0F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x751F;&#x6210;&#x767B;&#x9646;&#x9A8C;&#x8BC1;&#x7801;">&#x751F;&#x6210;&#x767B;&#x9646;&#x9A8C;&#x8BC1;&#x7801;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x642D;&#x914D;&#x624B;&#x673A;&#x7AEF;">&#x642D;&#x914D;&#x624B;&#x673A;&#x7AEF;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x66F4;&#x6539;&#x5B58;&#x50A8;&#x4F4D;&#x7F6E;">&#x66F4;&#x6539;&#x5B58;&#x50A8;&#x4F4D;&#x7F6E;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">7.</span> <span class="nav-text"><span id="&#x4F7F;&#x7528;chrome&#x6D4F;&#x89C8;&#x5668;&#x67E5;&#x770B;mfa">&#x4F7F;&#x7528;chrome&#x6D4F;&#x89C8;&#x5668;&#x67E5;&#x770B;mfa</span></span></a></li></ol></div>
             
 
           </div>
