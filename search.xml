@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[服务器被入侵了...]]></title>
+    <url>%2F2018%2F11%2F27%2F%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%A2%AB%E5%85%A5%E4%BE%B5%E4%BA%86%2F</url>
+    <content type="text"><![CDATA[情况描述今天上班，甲方爸爸在微信里叫“设备直播无法播放”，如图： 登录到zabbix一看发现，有一台服务器的zabbix-agent已经脱落，而且这个服务器可以ping通但是不能ssh通。 让机房的人去重启了一下服务器，登录之后发现里面有一个很奇怪的进程watchbog： 这个进程不应该出现的，同时查看crontab -l的内容也已经变了： 我登录了一下https://pastebin.com，发现这个是一个提供类似便签记事的网站，黑客应该就是现在这个网站里输入了远程的脚本，然后让这台肉鸡去curl这个网站的网页达到下载脚本然后启动了watchbog进程的目的。 于是我就find / -name \* -type f -print | xargs grep &quot;pastebin&quot;，看一下系统里都有哪些文件里含有pastebin这个关键词。于是乎先发现/usr/bin里有几个不应该存在的命令： 然后顺藤的发现几乎所有的crontab文件都已经被污染了： 把以上所有被污染的文件全部删光内容，将watchbog进程彻底杀死。观察了一会，貌似没有复现问题。 后续解决方案 在zabbix监控上添加对watchbog进程的监控，如果出现直接通知负责人； 将ssh的22端口更改成33664端口，规定只有堡垒机可以登录； 与开发商议，确认此服务器的外网权限可以撤掉，于是撤掉外网IP；]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>centos 6.5</tag>
+        <tag>后门软件</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Django前端输入变量通过内部脚本返回前端展示之四]]></title>
     <url>%2F2018%2F11%2F24%2FDjango%E5%90%8E%E5%8F%B0%E6%89%A7%E8%A1%8C%E8%84%9A%E6%9C%AC%E5%8F%8D%E9%A6%88%E5%88%B0%E5%89%8D%E7%AB%AF%E8%BE%93%E5%87%BA%2F</url>
     <content type="text"><![CDATA[背景说明python：3.6.5Django：2.1.1Project：Kubernetes，文件夹路径就是/django/Kubernetes/App：createyaml，文件夹路径就是/django/Kubernetes/createyaml前文地址：https://rorschachchan.github.io/2018/09/26/Django%E4%BD%BF%E7%94%A8form%E8%A1%A8%E5%8D%95%E5%88%A4%E6%96%AD%E8%BE%93%E5%85%A5%E5%80%BC%E6%98%AF%E5%90%A6%E5%90%88%E6%B3%95/ 需求说明之前我们已经达到了“页面判断输入值是否合法”，“页面输入值录入数据库”这两个目的，现在就到了重头戏–网页上点击按钮，然后调用后台python脚本，并且把脚本的结果反馈到网页端。 我们本次使用一个加密的python脚本encrypt.py，它主要得作用是输入某个字段，然后进行AES256加密，然后把加密结果返回给界面，整个脚本内容如下： 1234567#!/usr/bin/env python#coding=utf-8import subprocessAESWord = input("输入字段：")result = list(subprocess.getstatusoutput("java -jar /yunwei/AES/aesEncrpt.jar "+AESWord))[1].split("=")[1]print (AESWord+ "的加密结果是："+(result)) 脚本执行效果如下： 笨方法解决前端的页面内容如下： 12345678910111213&#123;% extends &apos;base.html&apos; %&#125; #这部分是引入base.html这个模板&#123;% block title %&#125; AES加密&#123;% endblock %&#125;&#123;% block content %&#125; &lt;form action=&quot;/k8s/encrypt/&quot; method=&quot;post&quot; name=&apos;encrypt&apos;&gt; &#123;% csrf_token %&#125; 要加密的字段：&lt;input type=&quot;text&quot; name=&quot;AESWord&quot; /&gt;&lt;br /&gt; &lt;input type=&quot;reset&quot; value=&quot;清除所有&quot; /&gt; &lt;input type=&quot;submit&quot; value=&quot;查询解析&quot; /&gt; &lt;/form&gt;&#123;% endblock %&#125; 目前已知views.py里使用request.POST.get()方法是可以捕获到前端输入值，但是这个输入值怎么传递给encrypt.py呢？这一点非常的复杂。 可能这个时候很多人会想使用“外部脚本引入django系统”的方法，但是那个方法可以引用到数据库，但是无法引用views.py里的函数的变量。于是只能用一个笨招：先把前端输入值记录到本地某个文件里，然后encrypt.py去读取这个文件，这样达到获取变量的方法。 于是views.py里的相关部分就是这样： 1234567891011def encrypt(request): if request.method == 'POST': AESWord = request.POST.get('AESWord') with open('/yunwei/AES/AESWord.txt','w') as f: #把前端获取到的值记录到本地的AESWord.txt文件里 f.write(AESWord+"\n") child = subprocess.Popen('python /yunwei/AES/Encrypt.py',stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True) stdout, stderr = child.communicate() result = str(stdout,encoding='utf-8') #将脚本反馈的结果输入result return HttpResponse(result) #页面展示result else: return render(request,'encrypt.html') 而encrypt.py内容改成如下： 1234567#!/usr/bin/env python#coding=utf-8import linecache,subprocessAESWord = linecache.getline(&apos;/yunwei/AES/AESWord.txt&apos;,1).strip(&apos;\n&apos;) #在这里读取前端的变量result = list(subprocess.getstatusoutput(&quot;java -jar /yunwei/AES/aesEncrpt.jar &quot;+AESWord))[1].split(&quot;=&quot;)[1]print (AESWord+ &quot;的加密结果是：&quot;+(result)) 执行效果如下： 这样的操作达到了目的！后期就是把result使用render加工映射到某个网页，页面就好看很多了。 js+ajax方法解决上面的方法虽然可以达到我们想要的目的，但是其实是十分不推荐的：一是因为网页调用本地程序的权限正在被取消，二是因为真不如JS写直接，三是只能在自己本地调用。 所以还是用前端来解决更专业更优雅，那么就要使用js+ajax。 具体内容下次补充… 补充在外部脚本引入django系统的方法就是在外部脚本的开头加上下面的内容： 12345678#!/usr/bin/env python#coding=utf-8import os,sys,djangosys.path.append('/django/Kubernetes/') # 将项目路径添加到系统搜寻路径当中os.environ['DJANGO_SETTINGS_MODULE'] = 'Kubernetes.settings' # 设置项目的配置文件django.setup()from createyaml.models import parameter #这样就可以引入models.py文件里的parameter这个类 但是上面说过，这个方法可以引入数据库models.py文件，并不能引入views.py文件。 参考资料https://stackoverflow.com/questions/15151133/execute-a-python-script-on-button-clickhttps://blog.csdn.net/yzy_1996/article/details/80223053https://simpleisbetterthancomplex.com/tutorial/2016/08/29/how-to-work-with-ajax-request-with-django.htmlhttps://www.candypapi.com/2017/11/02/Python-external-script-calls-the-Django-project-model-table/https://segmentfault.com/q/1010000005096919]]></content>
@@ -223,8 +235,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>钉钉</tag>
         <tag>Jenkins</tag>
+        <tag>钉钉</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -386,8 +398,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -411,8 +423,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -424,8 +436,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -800,18 +812,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root启动进程以及启动docker]]></title>
-    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root用户启动tomcat进程]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
     <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
@@ -824,6 +824,18 @@
       </tags>
   </entry>
   <entry>
+    <title><![CDATA[用非root启动进程以及启动docker]]></title>
+    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>安全</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[使用docker做一个主从同步的redis集群]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8docker%E5%81%9A%E4%B8%80%E4%B8%AA%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5%E7%9A%84redis%E9%9B%86%E7%BE%A4%2F</url>
     <content type="text"><![CDATA[查看容器内部信息之前用docker run -it --name redis-master redis /bin/bash创建了一个redis的docker，现在登陆发现状态已经是exit，于是就使用docker container start 容器ID号or容器名称来重新启动。如图： 然后书里说到要用docker inspect来查看所挂载volume的情况，使用命令: 1[root@chen-docker ~]# docker inspect --format &quot;&#123;&#123; .Volumes &#125;&#125;&quot; f391531120b0 但是很不幸，系统反馈给我一个错误： 1Template parsing error: template: :1:3: executing &quot;&quot; at &lt;.Volumes&gt;: map has no entry for key &quot;Volumes&quot; 没有这个Volumes，那就干脆查看一下这个容器的所有信息：docker inspect f391531120b0，这个命令里面有Config、Mounts、HostConfig、NetworkSettings等等整个容器的所有信息，比如看一下NetworkSettings相关的内容，如图： 此时使用如下命令： 1234[root@chen-docker ~]# docker inspect --format &quot;&#123;&#123; .NetworkSettings.IPAddress &#125;&#125;&quot; f391531120b0 #注意前面的.192.168.0.2[root@chen-docker ~]# docker inspect --format &quot;&#123;&#123; .NetworkSettings.MacAddress &#125;&#125;&quot; f391531120b002:42:c0:a8:00:02 这样就可以获取到内网IP和mac地址，同理换成docker inspect f391531120b0 | grep Mounts -A 10，看一下挂载信息，如图： 原来容器里的/data其实就是宿主机的/var/lib/docker/volumes/94b3c20a6d269c7498ab59ee45c560e84fed64a636767a4baa54fa7befbcd4ff/_data这个文件夹。为了验证这一点，我先到宿主机去创建一个叫aaa文件，如下： 12root@f391531120b0:/data# cat aaa 123123 再返回到宿主机上看： 12345[root@chen-docker ~]# cd /var/lib/docker/volumes/94b3c20a6d269c7498ab59ee45c560e84fed64a636767a4baa54fa7befbcd4ff/_data[root@chen-docker _data]# lsaaa[root@chen-docker _data]# cat aaa 123123 这就搞定了！ 主从同步排错就是按书里写的开始配置和启动redis-slave，但是却发现同步没有成功，在redis-slave日志里发现这样的话： 12332677:S 08 Feb 16:14:40.952 * Connecting to MASTER 172.168.10.70:637932677:S 08 Feb 16:14:40.952 * MASTER &lt;-&gt; SLAVE sync started32677:S 08 Feb 16:14:40.953 # Error condition on socket for SYNC: Connection refused 这个的原因就是redis主服务器绑定了127.0.0.1，那么跨服务器IP的访问就会失败，从服务器用IP和端口访问主的时候，主服务器发现本机6379端口绑在了127.0.0.1上，也就是只能本机才能访问，外部请求会被过滤。所以需要修改redis-master的redis.conf，注释掉bind 127.0.0.1，如果是线上生产环境建议绑定IP地址。 重新启动redis之后，发现同步依然失败，日志变成了这样： 12345690:S 17 Apr 09:27:35.906 * Non blocking connect for SYNC fired the event.90:S 17 Apr 09:27:35.907 # Error reply to PING from master: &apos;-DENIED Redis is running in protected mode because protected mode is enabled, no bind address was specified, no authentication password is requested to clients. In this mode connections are only accepted from the loopback interface. If you want to connect&apos;90:S 17 Apr 09:27:36.908 * Connecting to MASTER 192.168.0.2:637990:S 17 Apr 09:27:36.909 * MASTER &lt;-&gt; SLAVE sync started90:S 17 Apr 09:27:36.909 * Non blocking connect for SYNC fired the event.90:S 17 Apr 09:27:36.909 # Error condition on socket for SYNC: Connection reset by peer 这个日志的意思是说redis在没有开启bind和密码的情况下，保护模式被开启。然后Redis的只接受来自环回IPv4和IPv6地址的连接。于是还是要修改redis-master的redis.conf关闭保护模式：portected-mode no，然后重启redis-master即可。 容器内安装ping先检查你的容器是使用什么系统的景象，如果是ubantu那就是apt-get，安装ping的命令如下： 12apt-get updateapt-get install inetutils-ping 如何让容器一直启动如果用了一段时间的docker就会发现，我们的容器经常用了一段时间就自动退出了，docker ps已经找不到了，在docker ps -a里面了，如图： 然后我们docker start containerId想重新开启这个容器，可能这次来的更快，没几分钟容器又自己关了，由这个问题又可能引发其它很多的问题。 docker run指定的命令如果不是那些一直挂起的命令（比如运行top，不断echo），就是会自动退出的。-d命令是设置detach为true，根据官方的文档，意思是让这个命令在后台运行，但并不是一直运行，Docker容器后台运行,就必须有一个前台进程。主线程结束，容器会退出。 我们启动容器的时候不要-d命令启动，用-dit就好了，例如： 12docker run -d hello-world(不要这么做)docker run -dit hello-world(推荐)]]></content>
@@ -831,8 +843,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>docker</tag>
+        <tag>redis</tag>
         <tag>主从同步</tag>
       </tags>
   </entry>
@@ -929,8 +941,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>python</tag>
+        <tag>redis</tag>
       </tags>
   </entry>
   <entry>
@@ -1291,8 +1303,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>运维技术</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -1351,8 +1363,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>crontab</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -1657,8 +1669,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>阿里云</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -1957,8 +1969,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>zabbix</tag>
+        <tag>redis</tag>
       </tags>
   </entry>
   <entry>
@@ -2030,8 +2042,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Nginx</tag>
         <tag>运维</tag>
+        <tag>Nginx</tag>
       </tags>
   </entry>
   <entry>
@@ -2042,8 +2054,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Nginx</tag>
         <tag>运维</tag>
+        <tag>Nginx</tag>
       </tags>
   </entry>
   <entry>
