@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/django25.gif">
 <meta property="og:image" content="http://yoursite.com/images/Doncic.gif">
-<meta property="og:updated_time" content="2018-11-30T07:40:25.413Z">
+<meta property="og:updated_time" content="2018-11-30T08:00:33.324Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Django前端输入变量通过内部脚本加工返回前端展示之五">
 <meta name="twitter:description" content="把jQuery和Ajax引入到Django里，实现不刷新就直接出结果">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,051
+                  1,069
                 </span>
               
 
@@ -468,7 +468,7 @@
 <li><code>$(document).ready(function(){}</code>:等待{}中涉及到的元素全部加载完，就按照function具体内容给它们绑定特殊事件;</li>
 <li><code>$(&quot;button&quot;).click(function(){}</code>:<code>$(&quot;AJAX_post&quot;)</code>是Jquery的选择器，表示页面的“按钮”，<code>.click(function(){}</code>为前面选中的元素，绑定一个鼠标点击的事件，具体事件是function()里面；</li>
 <li><code>$.post</code>：表示调用了post方法，里面有三个元素，用逗号隔开，分别是<code>URL</code>,<code>data（可省略）</code>和<code>callback（可省略</code>，其中URL可以就是要局部刷新后展示的那个页面；</li>
-<li>如果想把变量以字符串的形式输入，那么就是<code>var id=document.getElementById(&#39;name&#39;).value</code>;</li>
+<li>如果想把变量以字符串的形式输入，那么就是<code>var id=document.getElementById(&#39;name&#39;).value</code>，如果单独使用<code>request.GET.get</code>，得到的数据类型是<code>&#39;NoneType&#39;</code>;</li>
 </ol>
 <p>而对应的<code>views.py</code>那部分函数的内容如下：<br>    <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">from django.views.decorators.csrf import csrf_exempt</span><br><span class="line"></span><br><span class="line">@csrf_exempt	#取消CSRF保护，线上环境请不要这样</span><br><span class="line">def test(request):	</span><br><span class="line">    if request.method == 'POST':</span><br><span class="line">        someth = request.POST.get('someth')	#从前端获取name值</span><br><span class="line">        num = "666"		#已经定义好了666，然后会被ret得到</span><br><span class="line">        data = &#123;&#125;</span><br><span class="line">        data['someth'] = someth</span><br><span class="line">        data['num'] = num</span><br><span class="line">        print (data)</span><br><span class="line">        return JsonResponse(data)</span><br><span class="line">    else:</span><br><span class="line">        return render(request,'test111.html')</span><br></pre></td></tr></table></figure></p>
 <p>对应的<code>urls.py</code>内容如下：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">path(r<span class="string">'test111'</span>,views.test,name=<span class="string">'test111'</span>),</span><br></pre></td></tr></table></figure></p>
