@@ -96,14 +96,14 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="页面局部刷新得到AES加密值">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://yoursite.com/images/django24.png">
+<meta property="og:image" content="http://yoursite.com/images/django24.gif">
 <meta property="og:image" content="http://yoursite.com/images/django26.gif">
 <meta property="og:image" content="http://yoursite.com/images/django27.png">
-<meta property="og:updated_time" content="2018-12-03T05:59:28.781Z">
+<meta property="og:updated_time" content="2018-12-03T06:14:34.772Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Django前端输入变量通过内部脚本加工返回前端展示之六">
 <meta name="twitter:description" content="页面局部刷新得到AES加密值">
-<meta name="twitter:image" content="http://yoursite.com/images/django24.png">
+<meta name="twitter:image" content="http://yoursite.com/images/django24.gif">
 
 
 
@@ -459,7 +459,7 @@
 
       
         <script src="\assets\js\APlayer.min.js"> </script><h2><span id="背景说明">背景说明</span></h2><p>python：<code>3.6.5</code><br>Django：<code>2.1.1</code><br>Project：<code>Kubernetes</code>，文件夹路径就是<code>/django/Kubernetes/</code><br>App：<code>createyaml</code>，文件夹路径就是<code>/django/Kubernetes/createyaml</code><br>前文地址：<a href="https://rorschachchan.github.io/2018/11/29/Django%E4%B8%8EJquery%E3%80%81Ajax%E7%9A%84%E8%81%94%E5%90%88%E8%BF%90%E7%94%A8/" target="_blank" rel="noopener">https://rorschachchan.github.io/2018/11/29/Django%E4%B8%8EJquery%E3%80%81Ajax%E7%9A%84%E8%81%94%E5%90%88%E8%BF%90%E7%94%A8/</a></p>
-<h2><span id="需求说明以及实现思路">需求说明以及实现思路</span></h2><p>原来通过前端输入值到后台脚本执行结果再反回页面是这样的：<br><img src="/images/django24.png" alt="akb48"></p>
+<h2><span id="需求说明以及实现思路">需求说明以及实现思路</span></h2><p>原来通过前端输入值到后台脚本执行结果再反回页面是这样的：<br><img src="/images/django24.gif" alt="akb48"></p>
 <p>现在接触了<code>jQuery+ajax</code>，那么就可以使用<code>局部刷新</code>来让界面变的更加友好。</p>
 <p>我们在页面里配置了<code>ajax</code>，也要在<code>views.py</code>里配置<code>request.POST.get</code>，但是要注意，执行顺序是先执行<code>ajax</code>后执行<code>request.POST.get</code>，也就是说<code>request.POST.get</code>得到的是<code>ajax</code>加工过的值。如果是json字符串，就加一个<code>dataType:&#39;json&#39;</code>说明一下。</p>
 <p>如果是一般的form表单形式，那么ajax的data部分可以这么写：<br>    <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$.ajax(&#123;</span><br><span class="line">    url: url,</span><br><span class="line">    data: &#123;</span><br><span class="line">        limit: 10</span><br><span class="line">    &#125;,</span><br><span class="line">    type: 'post',</span><br><span class="line">    dataType: 'json'</span><br><span class="line">&#125;),</span><br></pre></td></tr></table></figure></p>
