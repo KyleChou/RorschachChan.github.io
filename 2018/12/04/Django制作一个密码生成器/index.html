@@ -97,7 +97,8 @@
 <meta property="og:description" content="制作一个更加有好的密码生成器页面">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/django28.png">
-<meta property="og:updated_time" content="2018-12-04T11:19:30.637Z">
+<meta property="og:image" content="http://yoursite.com/images/django29.gif">
+<meta property="og:updated_time" content="2018-12-04T11:44:18.015Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Django前端输入变量通过内部脚本加工返回前端展示之七">
 <meta name="twitter:description" content="制作一个更加有好的密码生成器页面">
@@ -415,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  568
+                  1,031
                 </span>
               
 
@@ -431,7 +432,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  5
                 </span>
               
             </div>
@@ -463,6 +464,12 @@
 <p>所以与<code>random</code>模块中的默认伪随机数生成器相比，我们应该优先使用<code>secrets</code>模块！</p>
 <h2><span id="后台检验输入值合法">后台检验输入值合法</span></h2><p>之前的文章，曾经写过在django的<code>views.py</code>里判断输入值是否为空的方法，地址是<a href="https://rorschachchan.github.io/2018/09/26/Django%E4%BD%BF%E7%94%A8form%E8%A1%A8%E5%8D%95%E5%88%A4%E6%96%AD%E8%BE%93%E5%85%A5%E5%80%BC%E6%98%AF%E5%90%A6%E5%90%88%E6%B3%95/" target="_blank" rel="noopener">https://rorschachchan.github.io/2018/09/26/Django%E4%BD%BF%E7%94%A8form%E8%A1%A8%E5%8D%95%E5%88%A4%E6%96%AD%E8%BE%93%E5%85%A5%E5%80%BC%E6%98%AF%E5%90%A6%E5%90%88%E6%B3%95/</a> ，但是那套方法毕竟还太粗糙。这一次我们可以通过<code>jQuery+Ajax</code>获取到值，然后进行一个具体的判断，看一下这个值是否是数字，如果不是数字就直接在页面提示“输入非法”，如果是数字，就不会提示。</p>
 <p>思路就是先获取到前端传来的值，然后在<code>views.py</code>里增加一个定义，如果值满足定义，就不会有动静，如果值不满足，那么就局部刷新一个页面。</p>
+<h2><span id="具体代码">具体代码</span></h2><p>路由文件<code>urls.py</code>部分如下：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">开头略</span><br><span class="line">   path(r<span class="string">'mkpasswd/'</span>,views.make_passwd,name=<span class="string">'mkpasswd'</span>),</span><br><span class="line">   path(r<span class="string">'get_mkpasswd/'</span>,views.get_passwd,name=<span class="string">'get_passwd'</span>),</span><br></pre></td></tr></table></figure></p>
+<p>配置文件<code>views.py</code>相关部分如下：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">开头略</span><br><span class="line"><span class="keyword">from</span> django.views.decorators.csrf <span class="keyword">import</span> csrf_exempt</span><br><span class="line"><span class="keyword">import</span> secrets,string</span><br><span class="line"></span><br><span class="line">def make_passwd(request):</span><br><span class="line">   <span class="keyword">return</span> render(request,<span class="string">'mkpasswd.html'</span>)</span><br><span class="line"></span><br><span class="line">@csrf_exempt</span><br><span class="line">def get_passwd(request):</span><br><span class="line">	characters = string.ascii_letters + string.digits + <span class="string">"!@#$%^&amp;*()~[]&#123;&#125;=+"</span></span><br><span class="line">   	<span class="keyword">if</span> request.method == <span class="string">'POST'</span>:</span><br><span class="line">       	num = request.POST.get('number',20)		#这里得到的是str格式</span><br><span class="line">       	if str.isdigit(num) is False:	#判断是否是数字</span><br><span class="line">       	    <span class="keyword">return</span>  HttpResponse(<span class="string">"输入值不合法！必须是数字！"</span>)</span><br><span class="line">       	<span class="keyword">else</span>:</span><br><span class="line">       	    result = <span class="string">''</span>.join(secrets.choice(characters) <span class="keyword">for</span> i <span class="keyword">in</span> range(int(num)))</span><br><span class="line">       	    <span class="keyword">return</span> HttpResponse(result)</span><br><span class="line">   	<span class="keyword">else</span>:</span><br><span class="line">       	pass</span><br></pre></td></tr></table></figure></p>
+<p>前端页面<code>mkpasswd.html</code>如下：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&#123;% extends <span class="string">'base.html'</span> %&#125;</span><br><span class="line">&#123;% block title %&#125;</span><br><span class="line">        创建密码</span><br><span class="line">&#123;% endblock %&#125;</span><br><span class="line"></span><br><span class="line">&#123;% block content %&#125;</span><br><span class="line">                &#123;% csrf_token %&#125;</span><br><span class="line">                &lt;h2&gt;创建密码&lt;<span class="regexp">/h2&gt;</span></span><br><span class="line"><span class="regexp">                &lt;h3&gt;默认密码是20位，并且带有特殊符号&lt;/</span>h3&gt;</span><br><span class="line">                密码长度：&lt;input type=<span class="string">"text"</span> id=<span class="string">"number"</span> /&gt;&lt;br /&gt;</span><br><span class="line">                &lt;button&gt;生成密码&lt;/button&gt;</span><br><span class="line">                &lt;div id="ask"&gt;&lt;h2&gt;&lt;/h2&gt;&lt;/div&gt;</span><br><span class="line">                &lt;script&gt;</span><br><span class="line">                        $(document).ready(function()&#123;</span><br><span class="line">                                $("button").click(function()&#123;  </span><br><span class="line">                                var word=document.getElementById('number').value //获取输入框的值</span><br><span class="line">                                        $.ajax(&#123;</span><br><span class="line">                                        type:"POST",</span><br><span class="line">                                        url:"&#123;% url "get_passwd" %&#125;",              </span><br><span class="line">                                        data:&#123;number:word&#125;,         //传递参数</span><br><span class="line">                                        success:function(result)&#123;$("#ask").html(result);&#125;</span><br><span class="line">                                        &#125;);</span><br><span class="line">                                &#125;);</span><br><span class="line">                        &#125;);</span><br><span class="line">                &lt;/script&gt;</span><br><span class="line">&#123;% endblock %&#125;</span><br></pre></td></tr></table></figure></p>
+<p>最后整个的过程执行效果如下：<br><img src="/images/django29.gif" alt="akb48"></p>
+<h2><span id="前端检验输入值合法">前端检验输入值合法</span></h2><p>俗话说得好，人生不折腾不舒服斯基。为了更好的体验，改一下方略，就是在用户输入的时候，随时都在判断输入值，有错误就直接提醒，这样就不用再提交的时候才告诉用户“输入值非法”了，但是这样的需求就需要更改判断架构了—-把判断的任务交给ajax而不是后台，ajax判断成功了，再把值提交到后台。</p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="http://www.blog.pythonlibrary.org/2017/02/16/pythons-new-secrets-module/" target="_blank" rel="noopener">http://www.blog.pythonlibrary.org/2017/02/16/pythons-new-secrets-module/</a><br><a href="https://www.cnblogs.com/yyds/p/7072492.html" target="_blank" rel="noopener">https://www.cnblogs.com/yyds/p/7072492.html</a><br><a href="http://qindongliang.iteye.com/blog/2147336" target="_blank" rel="noopener">http://qindongliang.iteye.com/blog/2147336</a></p>
 
       
     </div>
@@ -859,7 +866,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x80CC;&#x666F;&#x8BF4;&#x660E;">&#x80CC;&#x666F;&#x8BF4;&#x660E;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="secrets&#x6A21;&#x5757;">secrets&#x6A21;&#x5757;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x540E;&#x53F0;&#x68C0;&#x9A8C;&#x8F93;&#x5165;&#x503C;&#x5408;&#x6CD5;">&#x540E;&#x53F0;&#x68C0;&#x9A8C;&#x8F93;&#x5165;&#x503C;&#x5408;&#x6CD5;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x80CC;&#x666F;&#x8BF4;&#x660E;">&#x80CC;&#x666F;&#x8BF4;&#x660E;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="secrets&#x6A21;&#x5757;">secrets&#x6A21;&#x5757;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x540E;&#x53F0;&#x68C0;&#x9A8C;&#x8F93;&#x5165;&#x503C;&#x5408;&#x6CD5;">&#x540E;&#x53F0;&#x68C0;&#x9A8C;&#x8F93;&#x5165;&#x503C;&#x5408;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x5177;&#x4F53;&#x4EE3;&#x7801;">&#x5177;&#x4F53;&#x4EE3;&#x7801;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x524D;&#x7AEF;&#x68C0;&#x9A8C;&#x8F93;&#x5165;&#x503C;&#x5408;&#x6CD5;">&#x524D;&#x7AEF;&#x68C0;&#x9A8C;&#x8F93;&#x5165;&#x503C;&#x5408;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -913,7 +920,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共186.6k字</span>
+  <span class="post-count">博客全站共187.1k字</span>
 </div>
         
 
