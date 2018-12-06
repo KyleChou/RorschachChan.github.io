@@ -100,7 +100,8 @@
 <meta property="og:image" content="http://yoursite.com/images/github11.png">
 <meta property="og:image" content="http://yoursite.com/images/github12.png">
 <meta property="og:image" content="http://yoursite.com/images/github13.png">
-<meta property="og:updated_time" content="2018-12-06T08:42:15.293Z">
+<meta property="og:image" content="http://yoursite.com/images/unnatural.gif">
+<meta property="og:updated_time" content="2018-12-06T14:34:26.014Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Github如何删除掉一个commit">
 <meta name="twitter:description" content="当你把一些不应该出现在公众的东西传到了github上...">
@@ -465,7 +466,8 @@
 <p>得到上一次的版本号是<code>051ebceaedd6b64801aada354f921d6ea7ef0622</code>，然后<code>git reset --hard  051ebceaedd6b64801aada354f921d6ea7ef0622</code>。</p>
 <p>然后再<code>git push origin HEAD --force</code>即可。整个过程如下：<br><img src="/images/github12.png" alt="akb48"></p>
 <p>此时再去github上刷新commit的历史页面，发现记录已经回滚到051ebce（版本号前面7位）了，如图：<br><img src="/images/github13.png" alt="akb48"></p>
-<p>但是要注意！如果你的代码是两个地方在上传github，比如含敏感词汇的文件是通过windows客户端上传的，但是你在某个linux服务器上进行了删除commit的操作，那么如果windows继续commit的话，是会再次提交所有的commit的(含带有机密字段的commit)，所以要把源头也就是windows里的commit也要用这个方法干掉，这样才算彻底删除。</p>
+<p><font color="red">但是要注意！</font>如果你的代码是两个地方在上传github，比如含敏感词汇的文件是通过windows客户端上传的，但是你在某个linux服务器上进行了删除commit的操作，那么如果windows继续commit的话，是会再次提交所有的commit的(含带有机密字段的commit)，所以要把源头也就是windows里的commit也要用这个方法干掉，这样才算彻底删除。</p>
+<p><img src="/images/unnatural.gif" alt="akb48"></p>
 
       
     </div>
