@@ -53,7 +53,7 @@
   <entry>
     <title><![CDATA[服务器被入侵了]]></title>
     <url>%2F2018%2F11%2F27%2F%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%A2%AB%E5%85%A5%E4%BE%B5%E4%BA%86%2F</url>
-    <content type="text"><![CDATA[情况描述今天上班，甲方爸爸在微信里叫“设备直播无法播放”，登录到zabbix发现，播放模块的服务器的zabbix-agent已经脱落，而且这个服务器可以ping通但是不能ssh通。 让机房的人去重启了一下服务器，登录之后发现里面有一个很奇怪的进程watchbog： 这个进程不应该出现的，同时查看crontab -l的内容也已经变了： 我登录了一下https://pastebin.com，发现这个是一个提供类似便签记事的网站，黑客应该就是现在这个网站里输入了远程的脚本，然后让这台肉鸡去curl这个网站的网页达到下载脚本然后启动了watchbog进程的目的。 于是我就find / -name \* -type f -print | xargs grep &quot;pastebin&quot;，看一下系统里都有哪些文件里含有pastebin这个关键词。于是乎先发现/usr/bin里有几个不应该存在的命令： 然后顺藤的发现几乎所有的crontab文件都已经被污染了： 把以上所有被污染的文件全部删光内容，将watchbog进程彻底杀死。观察了一会，貌似没有复现问题。 后续解决方案 在zabbix监控上添加对watchbog进程的监控，如果出现直接通知负责人； 将ssh的22端口更改成33664端口，规定只有堡垒机可以登录； 与开发商议，确认此服务器的外网权限可以撤掉，于是撤掉外网IP；]]></content>
+    <content type="text"><![CDATA[情况描述今天上班，甲方爸爸在微信里叫“设备直播无法播放”，登录到zabbix发现，播放模块的服务器的zabbix-agent已经脱落，而且这个服务器可以ping通但是不能ssh通。 让机房的人去重启了一下服务器，登录之后发现里面有一个很奇怪的进程watchbog： 这个进程不应该出现的，同时查看crontab -l的内容也已经变了： 我登录了一下https://pastebin.com，发现这个是一个提供类似便签记事的网站，黑客应该就是现在这个网站里输入了远程的脚本，然后让这台肉鸡去curl这个网站的网页达到下载脚本然后启动了watchbog进程的目的。 于是我就find / -name \* -type f -print | xargs grep &quot;pastebin&quot;，看一下系统里都有哪些文件里含有pastebin这个关键词。于是乎先发现/usr/bin里有几个不应该存在的命令： 然后顺藤的发现几乎所有的crontab文件都已经被污染了： 把以上所有被污染的文件全部删光内容，将watchbog进程彻底杀死。观察了一会，貌似没有复现问题。 后续解决方案 在zabbix监控上添加对watchbog进程的监控，如果出现直接通知负责人； 将ssh的22端口更改成33664端口，规定只有堡垒机可以登录； 与开发商议，确认此服务器的外网权限可以撤掉，于是撤掉外网IP； PS. http://www.4usky.com/是一个很不错的壁纸网站~]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
