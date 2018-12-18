@@ -414,7 +414,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  644
+                  684
                 </span>
               
 
@@ -462,6 +462,8 @@
 <p>这个文件第一行注释的内容就是说明HOME路径就是<code>.my.cnf</code>文件所在的路径，后面的<code>mysql</code>和<code>mysqladmin</code>都要用绝对路径，同时加上<code>sudo</code>，这样zabbix才能正确的调用它。</p>
 <p>来到<code>zabbix-server</code>端使用<code>zabbix-get</code>去试试结果：<br><img src="/images/mysql-sock5.png" alt="akb48"></p>
 <p>然后就是在zabbix网页端将目标机器添加<code>Template DB MySQL</code>，至此，使用zabbix自带的mysql监控模板监控mysql结束，效果如下：<br><img src="/images/mysql-sock6.png" alt="akb48"></p>
+<p>PS.查看mysql数据库对应每个IP的详细链接情况的语句是：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select substring_index(host,<span class="string">':'</span>,<span class="number">1</span>) <span class="keyword">as</span> ip , count(*) <span class="keyword">from</span> information_schema.processlist group by ip;</span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><img src="/images/mysql-sock7.png" alt="akb48"></p>
 
           
         
@@ -2524,7 +2526,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共190.4k字</span>
+  <span class="post-count">博客全站共190.5k字</span>
 </div>
         
 
