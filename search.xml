@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[使用ZABBIX自带模板去监控Mysql]]></title>
+    <url>%2F2018%2F12%2F18%2F%E4%BD%BF%E7%94%A8ZABBIX%E8%87%AA%E5%B8%A6%E6%A8%A1%E6%9D%BF%E5%8E%BB%E7%9B%91%E6%8E%A7Mysql%2F</url>
+    <content type="text"><![CDATA[事前准备Zabbix-agent:3.0.8，安装路径是/etc/zabbix/Mysql:5.7.10，安装路径是/opt/mysql/配置/etc/sudoers让zabbix用户可以使用sudo，如下： 1234## Allow root to run any commands anywhereroot ALL=(ALL) ALLzabbix ALL=(ALL) NOPASSWD:ALLDefaults:zabbix !requiretty 配置.my.cnf众所周知，Zabbix官方是自带监控Mysql的模板，但是这个模板并不能直接使用。所以我们需要有如下的改动： 首先，先在mysql目录下的etc文件夹里先创建一个.my.cnf文件，全路径是/opt/mysql/etc/.my.cnf，这个文件是zabbix要求的用于存放连接mysql数据库的账户信息的隐藏文件，这样可以避免在命令行里输入密码。整个.my.cnf文件内容如下： 1234567891011[mysql] #mysql程序要使用的账户信息host=localhostuser=用户名password=&quot;密码&quot; #此处的密码强烈建议加上引号socket=/tmp/mysql.sock #确认mysql的sock文件路径[mysqladmin] #mysqladmin程序要使用的账户信息host=localhostuser=用户名password=&quot;密码&quot;socket=/tmp/mysql.sock 这里建议在mysql里插入一个叫zabbix的用户，密码自己设定，然后在.my.cnf里就是用这个用户即可。此时，在命令行直接输入HOME=/opt/mysql/etc/ mysql和HOME=/opt/mysql/etc/ mysqladmin ping都应该是直接出结果，而不是用输入账号和密码，如图： 注意!这个.my.cnf的权限是644，用户和用户组是root，如果权限过大，那么就会报错：Warning: World-writable config file &#39;/opt/mysql/etc/.my.cnf&#39; is ignored。 修改userparameter_mysql.conf然后在zabbix-agent配置文件的文件夹/etc/zabbix/zabbix_agentd.d/里，会发现一个叫userparameter_mysql.conf的文件，把里面的内容改成如下样子: 1234567# For all the following commands HOME should be set to the directory that has .my.cnf file with password information.# Flexible parameter to grab global variables. On the frontend side, use keys like mysql.status[Com_insert].# Key syntax is mysql.status[variable].UserParameter=mysql.status[*],echo "show global status where Variable_name='$1';" | sudo HOME=/opt/mysql/etc /opt/mysql/bin/mysql -N | awk '&#123;print $$2&#125;'UserParameter=mysql.ping,sudo HOME=/opt/mysql/etc/ /opt/mysql/bin/mysqladmin ping | grep -c aliveUserParameter=mysql.version,/opt/mysql/bin/mysql -V 这个文件第一行注释的内容就是说明HOME路径就是.my.cnf文件所在的路径，后面的mysql和mysqladmin都要用绝对路径，同时加上sudo，这样zabbix才能正确的调用它。 来到zabbix-server端使用zabbix-get去试试结果： 然后就是在zabbix网页端将目标机器添加Template DB MySQL，至此，使用zabbix自带的mysql监控模板监控mysql结束，效果如下：]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>Zabbix</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[将list重新排列后获取原来的索引]]></title>
     <url>%2F2018%2F12%2F14%2F%E5%B0%86list%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E5%90%8E%E8%8E%B7%E5%8F%96%E5%8E%9F%E6%9D%A5%E7%9A%84%E7%B4%A2%E5%BC%95%2F</url>
     <content type="text"><![CDATA[具体需求与解决方案假设我们有一个列表，现在要对列表里进行从大到小排序，然后再获取列表里原来各位元素的索引，怎么办？ 12#Python2.7new_list = sorted(enumerate(old_list),key=lambda x: x[1],reverse=True) #old_list就是原列表 举一个详细一点的例子： 可见原来aaa这个列表的元素虽然经过了大小排序，但是各元素的索引下标没有丢，而且通过zip（）方法能拆出来供我们继续使用。 enumerate() 函数这个enumerate()函数可以将一个可遍历的数据对象组合一个索引序列，同时列出数据和数据下标，默认情况下标是从0开始的，也可以手动更改，比如： 12345&gt;&gt;&gt;seasons = ['Spring', 'Summer', 'Fall', 'Winter']&gt;&gt;&gt; list(enumerate(seasons))[(0, 'Spring'), (1, 'Summer'), (2, 'Fall'), (3, 'Winter')]&gt;&gt;&gt; list(enumerate(seasons, start=1)) # 下标从 1 开始[(1, 'Spring'), (2, 'Summer'), (3, 'Fall'), (4, 'Winter')] 有了它，我们就可以轻松获取索引下标值了。 sorted(key=lambda)sorted（）是用来排列列表的函数，默认情况下是从小到大排列。如果列表里是每一个元素并不是单纯的一个数字，而是多字段，那么就要规定以哪一个字段作为标准来排列，这个这顶标准就是key。 举个例子： 123456&gt;&gt;&gt; listA = [3, 6, 1, 0, 10, 8, 9] #这个列表就是单字段，排序就是单纯按照数字大小排序&gt;&gt;&gt; print(sorted(listA))[0, 1, 3, 6, 8, 9, 10]&gt;&gt;&gt; listC=[('e', 4), ('o', 2), ('!', 5), ('v', 3), ('l', 1)] #这个列表是多字段&gt;&gt;&gt; print(sorted(listC, key=lambda x: x[1])) #指定按照多字段里第二个元素，即数字的大小进行排序[('l', 1), ('o', 2), ('v', 3), ('e', 4), ('!', 5)] x:x[]字母可以随意修改，排序方式按照中括号[]里面的维度进行排序，[0]按照第一维排序，[2]按照第三维排序 参考资料https://stackoverflow.com/questions/7851077/how-to-return-index-of-a-sorted-listhttps://stackoverflow.com/questions/16310015/what-does-this-mean-key-lambda-x-x1https://blog.csdn.net/u010758410/article/details/79737498]]></content>
@@ -473,8 +484,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -498,8 +509,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -511,8 +522,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -918,8 +929,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>docker</tag>
+        <tag>redis</tag>
         <tag>主从同步</tag>
       </tags>
   </entry>
@@ -1016,8 +1027,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>python</tag>
+        <tag>redis</tag>
       </tags>
   </entry>
   <entry>
@@ -1378,8 +1389,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>运维技术</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -1438,8 +1449,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>crontab</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -2044,8 +2055,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>zabbix</tag>
+        <tag>redis</tag>
       </tags>
   </entry>
   <entry>

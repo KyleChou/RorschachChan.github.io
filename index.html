@@ -317,6 +317,206 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/18/使用ZABBIX自带模板去监控Mysql/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Chris Chan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Chris Chan's BLOG">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/12/18/使用ZABBIX自带模板去监控Mysql/" itemprop="url">使用ZABBIX自带模板去监控Mysql</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-12-18T14:17:45+08:00">
+                2018-12-18
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
+                    <span itemprop="name">工作与技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2018/12/18/使用ZABBIX自带模板去监控Mysql/" class="leancloud_visitors" data-flag-title="使用ZABBIX自带模板去监控Mysql">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+				 <span>℃</spam>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  644
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  3
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <script src="\assets\js\APlayer.min.js"> </script><h2><span id="事前准备">事前准备</span></h2><p>Zabbix-agent:<code>3.0.8</code>，安装路径是<code>/etc/zabbix/</code><br>Mysql:<code>5.7.10</code>，安装路径是<code>/opt/mysql/</code><br>配置<code>/etc/sudoers</code>让zabbix用户可以使用sudo，如下：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">## Allow root to run any commands anywhere</span><br><span class="line">root    ALL=(ALL)       ALL</span><br><span class="line">zabbix  ALL=(ALL)       NOPASSWD:ALL</span><br><span class="line">Defaults:zabbix !requiretty</span><br></pre></td></tr></table></figure></p>
+<h2><span id="配置mycnf">配置.my.cnf</span></h2><p>众所周知，Zabbix官方是自带监控Mysql的模板，但是这个模板并不能直接使用。所以我们需要有如下的改动：</p>
+<p>首先，先在mysql目录下的etc文件夹里先创建一个<code>.my.cnf</code>文件，全路径是<code>/opt/mysql/etc/.my.cnf</code>，这个文件是zabbix要求的用于存放连接mysql数据库的账户信息的隐藏文件，这样可以避免在命令行里输入密码。整个<code>.my.cnf</code>文件内容如下：<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[mysql]                     #mysql程序要使用的账户信息</span><br><span class="line">host=localhost</span><br><span class="line">user=用户名</span><br><span class="line">password=&quot;密码&quot;   #此处的密码强烈建议加上引号</span><br><span class="line">socket=/tmp/mysql.sock  #确认mysql的sock文件路径</span><br><span class="line"></span><br><span class="line">[mysqladmin]             #mysqladmin程序要使用的账户信息</span><br><span class="line">host=localhost</span><br><span class="line">user=用户名</span><br><span class="line">password=&quot;密码&quot;</span><br><span class="line">socket=/tmp/mysql.sock</span><br></pre></td></tr></table></figure></p>
+<p>这里建议在mysql里插入一个叫zabbix的用户，密码自己设定，然后在<code>.my.cnf</code>里就是用这个用户即可。此时，在命令行直接输入<code>HOME=/opt/mysql/etc/ mysql</code>和<code>HOME=/opt/mysql/etc/ mysqladmin ping</code>都应该是直接出结果，而不是用输入账号和密码，如图：<br><img src="/images/mysql-sock4.png" alt="akb48"></p>
+<p><font color="red">注意!</font>这个.my.cnf的权限是644，用户和用户组是root，如果权限过大，那么就会报错：<code>Warning: World-writable config file &#39;/opt/mysql/etc/.my.cnf&#39; is ignored</code>。</p>
+<h2><span id="修改userparameter_mysqlconf">修改userparameter_mysql.conf</span></h2><p>然后在zabbix-agent配置文件的文件夹<code>/etc/zabbix/zabbix_agentd.d/</code>里，会发现一个叫<code>userparameter_mysql.conf</code>的文件，把里面的内容改成如下样子:<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># For all the following commands HOME should be set to the directory that has .my.cnf file with password information.</span><br><span class="line"></span><br><span class="line"># Flexible parameter to grab global variables. On the frontend side, use keys like mysql.status[Com_insert].</span><br><span class="line"># Key syntax is mysql.status[variable].</span><br><span class="line">UserParameter=mysql.status[*],echo <span class="string">"show global status where Variable_name='$1';"</span> | sudo HOME=<span class="regexp">/opt/my</span>sql/etc /opt/mysql/bin/mysql -N | awk <span class="string">'&#123;print $$2&#125;'</span></span><br><span class="line">UserParameter=mysql.ping,sudo HOME=<span class="regexp">/opt/my</span>sql/etc/ <span class="regexp">/opt/my</span>sql/bin/mysqladmin ping | grep -c alive</span><br><span class="line">UserParameter=mysql.version,/opt/mysql/bin/mysql -V</span><br></pre></td></tr></table></figure></p>
+<p>这个文件第一行注释的内容就是说明HOME路径就是<code>.my.cnf</code>文件所在的路径，后面的<code>mysql</code>和<code>mysqladmin</code>都要用绝对路径，同时加上<code>sudo</code>，这样zabbix才能正确的调用它。</p>
+<p>来到<code>zabbix-server</code>端使用<code>zabbix-get</code>去试试结果：<br><img src="/images/mysql-sock5.png" alt="akb48"></p>
+<p>然后就是在zabbix网页端将目标机器添加<code>Template DB MySQL</code>，至此，使用zabbix自带的mysql监控模板监控mysql结束，效果如下：<br><img src="/images/mysql-sock6.png" alt="akb48"></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	
+	
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+		   
+		<div>    
+			
+		</div>
+	
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/14/将list重新排列后获取原来的索引/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2068,202 +2268,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/05/通过调整Css让界面美观一点/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Chris Chan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Chris Chan's BLOG">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2018/11/05/通过调整Css让界面美观一点/" itemprop="url">通过调整Css让界面美观一点</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-11-05T14:07:43+08:00">
-                2018-11-05
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
-                    <span itemprop="name">工作与技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2018/11/05/通过调整Css让界面美观一点/" class="leancloud_visitors" data-flag-title="通过调整Css让界面美观一点">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-				 <span>℃</spam>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  711
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  3
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          从这里，开始往bootstrap发展
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2018/11/05/通过调整Css让界面美观一点/">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-	
-	
-	
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-		   
-		<div>    
-			
-		</div>
-	
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2320,7 +2324,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">186</span>
+                  <span class="site-state-item-count">187</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2342,7 +2346,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">153</span>
+                  <span class="site-state-item-count">154</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -2520,7 +2524,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共189.8k字</span>
+  <span class="post-count">博客全站共190.4k字</span>
 </div>
         
 
