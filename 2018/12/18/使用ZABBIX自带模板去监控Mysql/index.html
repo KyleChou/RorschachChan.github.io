@@ -99,8 +99,9 @@
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock4.png">
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock5.png">
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock6.png">
+<meta property="og:image" content="http://yoursite.com/images/mysql-sock8.png">
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock7.png">
-<meta property="og:updated_time" content="2018-12-18T08:13:15.108Z">
+<meta property="og:updated_time" content="2018-12-18T11:09:44.549Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用ZABBIX自带模板去监控Mysql">
 <meta name="twitter:description" content="Zabbix的自带模板带有慢查询监控和回滚监控，但是没有连接数监控...">
@@ -418,7 +419,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  719
+                  1,001
                 </span>
               
 
@@ -434,7 +435,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -468,9 +469,21 @@
 <p>这个文件第一行注释的内容就是说明HOME路径就是<code>.my.cnf</code>文件所在的路径，后面的<code>mysql</code>和<code>mysqladmin</code>都要用绝对路径，同时加上<code>sudo</code>，这样zabbix才能正确的调用它。</p>
 <p>来到<code>zabbix-server</code>端使用<code>zabbix-get</code>去试试结果：<br><img src="/images/mysql-sock5.png" alt="akb48"></p>
 <p>然后就是在zabbix网页端将目标机器添加<code>Template DB MySQL</code>，至此，使用zabbix自带的mysql监控模板监控mysql数据库就结束了，效果如下：<br><img src="/images/mysql-sock6.png" alt="akb48"></p>
-<p>PS.查看mysql数据库对应每个IP的详细链接情况的语句是：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select substring_index(host,<span class="string">':'</span>,<span class="number">1</span>) <span class="keyword">as</span> ip , count(*) <span class="keyword">from</span> information_schema.processlist group by ip;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="监控连接数">监控连接数</span></h2><p>上面那个模板是不带有监控连接数的，要是单纯的去使用netstat获取当前链接值可能会反应较慢，那么就是用mysql自带的查连接数的命令：<code>show status like &#39;%connect%&#39;;</code>，执行效果如下：<br><img src="/images/mysql-sock8.png" alt="akb48"></p>
+<p>简单说下这几个值的含义：</p>
+<ol>
+<li>Connections：试图连接到（不管是否成功）MYSQL服务器的连接总数</li>
+<li>Locked_connects：锁住的链接数</li>
+<li>Max_used_connections：服务器启动后已经同时使用过的连接最大数量（并发）</li>
+<li>Max_used_connections_time：出现Max_used_connections时的时间</li>
+<li>Aborted_connects：尝试连接到MySQL服务器失败的次数</li>
+<li>Threads_connected：当前的连接数 </li>
+</ol>
+<p>那么知道了含义，我们就可以对症下药了，这里我们监控两个数值<code>Locked_connects</code>和<code>Threads_connected</code>，那么就把下面的语句添加到<code>userparameter_mysql.conf</code>里：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UserParameter=mysql.connections,echo <span class="string">"show status like '%Threads_connected%';"</span> | sudo HOME=<span class="regexp">/opt/my</span>sql/etc /opt/mysql/bin/mysql -N | awk <span class="string">'&#123;print $2&#125;'</span></span><br><span class="line">UserParameter=mysql.lockconnections,echo <span class="string">"show status like '%Locked_connects%';"</span> | sudo HOME=<span class="regexp">/opt/my</span>sql/etc /opt/mysql/bin/mysql -N | awk <span class="string">'&#123;print $2&#125;'</span></span><br></pre></td></tr></table></figure></p>
+<p>重启<code>zabbix-agent</code>，配置对应的items和trigger即可。</p>
+<p>额外补充一下，查看mysql数据库对应每个IP的详细链接情况的语句是：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select substring_index(host,<span class="string">':'</span>,<span class="number">1</span>) <span class="keyword">as</span> ip , count(*) <span class="keyword">from</span> information_schema.processlist group by ip;</span><br></pre></td></tr></table></figure></p>
 <p>效果如下：<br><img src="/images/mysql-sock7.png" alt="akb48"></p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://github.com/erasin/notes/blob/master/linux/mysql/monitor.md" target="_blank" rel="noopener">https://github.com/erasin/notes/blob/master/linux/mysql/monitor.md</a> （其他mysql状态监控语句）</p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://github.com/erasin/notes/blob/master/linux/mysql/monitor.md" target="_blank" rel="noopener">https://github.com/erasin/notes/blob/master/linux/mysql/monitor.md</a> （其他mysql状态监控语句）<br><a href="http://www.cnblogs.com/kerrycode/p/9206787.html" target="_blank" rel="noopener">http://www.cnblogs.com/kerrycode/p/9206787.html</a></p>
 
       
     </div>
@@ -863,7 +876,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x4E8B;&#x524D;&#x51C6;&#x5907;">&#x4E8B;&#x524D;&#x51C6;&#x5907;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x914D;&#x7F6E;mycnf">&#x914D;&#x7F6E;.my.cnf</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x4FEE;&#x6539;userparameter_mysqlconf">&#x4FEE;&#x6539;userparameter_mysql.conf</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x4E8B;&#x524D;&#x51C6;&#x5907;">&#x4E8B;&#x524D;&#x51C6;&#x5907;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x914D;&#x7F6E;mycnf">&#x914D;&#x7F6E;.my.cnf</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x4FEE;&#x6539;userparameter_mysqlconf">&#x4FEE;&#x6539;userparameter_mysql.conf</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x76D1;&#x63A7;&#x8FDE;&#x63A5;&#x6570;">&#x76D1;&#x63A7;&#x8FDE;&#x63A5;&#x6570;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -917,7 +930,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共190.5k字</span>
+  <span class="post-count">博客全站共190.8k字</span>
 </div>
         
 
