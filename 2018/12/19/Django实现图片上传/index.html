@@ -91,7 +91,7 @@
 <meta name="description" content="实现单图片上传和图片批量上传">
 <meta name="keywords" content="django,python">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Django实现图片上传">
+<meta property="og:title" content="Django实现图片上传功能">
 <meta property="og:url" content="http://yoursite.com/2018/12/19/Django实现图片上传/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="实现单图片上传和图片批量上传">
@@ -99,9 +99,9 @@
 <meta property="og:image" content="http://yoursite.com/images/django34.gif">
 <meta property="og:image" content="http://yoursite.com/images/django35.png">
 <meta property="og:image" content="http://yoursite.com/images/django33.png">
-<meta property="og:updated_time" content="2018-12-19T07:19:50.644Z">
+<meta property="og:updated_time" content="2018-12-19T07:37:12.227Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Django实现图片上传">
+<meta name="twitter:title" content="Django实现图片上传功能">
 <meta name="twitter:description" content="实现单图片上传和图片批量上传">
 <meta name="twitter:image" content="http://yoursite.com/images/django34.gif">
 
@@ -139,7 +139,7 @@
 
 
 
-  <title>Django实现图片上传 | Chris Chan's BLOG</title>
+  <title>Django实现图片上传功能 | Chris Chan's BLOG</title>
   
 
 
@@ -339,7 +339,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Django实现图片上传</h1>
+          <h1 class="post-title" itemprop="name headline">Django实现图片上传功能</h1>
         
 
         <div class="post-meta">
@@ -391,7 +391,7 @@
 
           
           
-             <span id="/2018/12/19/Django实现图片上传/" class="leancloud_visitors" data-flag-title="Django实现图片上传">
+             <span id="/2018/12/19/Django实现图片上传/" class="leancloud_visitors" data-flag-title="Django实现图片上传功能">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -417,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  591
+                  707
                 </span>
               
 
@@ -459,7 +459,7 @@
 
       
         <script src="\assets\js\APlayer.min.js"> </script><h2><span id="准备工作">准备工作</span></h2><p>python：<code>3.6.5</code><br>Django：<code>2.1.1</code><br>执行<code>pip install pillow</code>，安装python图片处理库pillow</p>
-<h2><span id="单图片上传">单图片上传</span></h2><p>首先先修改一下<code>setting.py</code>，添加如下两行代码：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MEDIA_URL = <span class="string">'/media/'</span></span><br><span class="line">MEDIA_ROOT = os.path.join(BASE_DIR, <span class="string">'media'</span>).replace(<span class="string">'\\'</span>, <span class="string">'/'</span>)    <span class="comment">#media即为图片上传的根路径</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="图片单张上传">图片单张上传</span></h2><p>首先先修改一下<code>setting.py</code>，添加如下两行代码：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">MEDIA_URL = <span class="string">'/media/'</span></span><br><span class="line">MEDIA_ROOT = os.path.join(BASE_DIR, <span class="string">'media'</span>).replace(<span class="string">'\\'</span>, <span class="string">'/'</span>)    <span class="comment">#media即为图片上传的根路径</span></span><br></pre></td></tr></table></figure></p>
 <p>保存之后，在项目根目录即<code>manage.py</code>同级目录里创建<code>media</code>这个文件夹。然后编辑<code>models.py</code>，内容如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> django.db <span class="keyword">import</span> models</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Img</span><span class="params">(models.Model)</span>:</span></span><br><span class="line">    img_url = models.ImageField(upload_to=<span class="string">'photos/'</span>,blank=<span class="keyword">True</span>,null=<span class="keyword">True</span>) <span class="comment">#指定图片上传路径，即media/photos/</span></span><br></pre></td></tr></table></figure></p>
 <p>保存之后执行一下<code>python manage.py makemigrations</code>和<code>python manage.py migrate</code>，建立项目与数据库之间的关系。</p>
 <p>增加<code>urls.py</code>的内容如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> django.urls <span class="keyword">import</span> path</span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> views</span><br><span class="line"></span><br><span class="line">urlpatterns = [</span><br><span class="line">	path(<span class="string">r'uploadImg/'</span>,views.uploadImg,name=<span class="string">'uploadImg'</span>),</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
@@ -467,9 +467,11 @@
 <p>最后就是写一个前端页面<code>imgUpload.html</code>:<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">	&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=&quot;en&quot;&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;UTF-8&quot;&gt;</span><br><span class="line">    &lt;title&gt;图片上传&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;form action=&quot;&quot; method=&quot;post&quot; enctype=&quot;multipart/form-data&quot;&gt;</span><br><span class="line">        &#123;% csrf_token %&#125;</span><br><span class="line">        &lt;input type=&quot;file&quot; name=&quot;img&quot;&gt;</span><br><span class="line">        &lt;input type=&quot;submit&quot; value=&quot;上传&quot;&gt;</span><br><span class="line">    &lt;/form&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></p>
 <p>启动django，打开<code>imgUpload.html</code>就可以看到界面，并且上传图片了，效果如图（我这个前端是加工过的，不是上面的代码）：<br><img src="/images/django34.gif" alt="akb48"></p>
 <p>然后在<code>django项目目录里的media/photos</code>路径里找到我们刚刚上传的test333.png，而且在数据库里也能看到这条记录，如下：<br><img src="/images/django35.png" alt="akb48"></p>
-<h2><span id="图片批量上传">图片批量上传</span></h2><h2><span id="使用阿里云云存储的api上传文件">使用阿里云云存储的API上传文件</span></h2><p>阿里云云存储上传文件的脚本如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment">#需要先执行pip install oss2</span></span><br><span class="line"><span class="keyword">import</span> oss2,os</span><br><span class="line">path = <span class="string">"图片所在文件夹的绝对路径"</span></span><br><span class="line">files = os.listdir(path)     <span class="comment">#得到文件夹下的所有文件名称</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#鉴权</span></span><br><span class="line">auth = oss2.Auth(<span class="string">'这里是AK'</span>, <span class="string">'这里是SK'</span>)</span><br><span class="line">bucket = oss2.Bucket(auth, <span class="string">'http://oss-cn-hangzhou.aliyuncs.com'</span>, <span class="string">'目标BUCKET名称'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> files:  </span><br><span class="line">    bucket.put_object_from_file(<span class="string">'路径/'</span>+i, path+i)</span><br><span class="line">	<span class="keyword">print</span> (<span class="string">"上传成功！"</span>+i+<span class="string">"的url地址是：https://lechangebbs.oss-cn-hangzhou.aliyuncs.com/jjfjj/"</span>+i)</span><br><span class="line">   	<span class="keyword">print</span> (<span class="string">"\n"</span> * <span class="number">2</span>)</span><br></pre></td></tr></table></figure></p>
-<p>执行效果如下：<br><img src="/images/django33.png" alt="akb48"></p>
-<p>通过搭配这个脚本就可以把上传上来的图片转到阿里云云存储里去了！</p>
+<h2><span id="图片批量上传">图片批量上传</span></h2><h2><span id="使用阿里云云存储的api上传文件">使用阿里云云存储的API上传文件</span></h2><p>阿里云云存储上传文件的脚本如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="comment">#需要先执行pip install oss2</span></span><br><span class="line"><span class="keyword">import</span> oss2,os</span><br><span class="line">path = <span class="string">"图片所在文件夹的绝对路径"</span></span><br><span class="line">files = os.listdir(path)     <span class="comment">#得到文件夹下的所有文件名称</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#鉴权</span></span><br><span class="line">auth = oss2.Auth(<span class="string">'这里是AK'</span>, <span class="string">'这里是SK'</span>)</span><br><span class="line">bucket = oss2.Bucket(auth, <span class="string">'http://oss-cn-hangzhou.aliyuncs.com'</span>, <span class="string">'目标BUCKET名称'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> files:  </span><br><span class="line">    bucket.put_object_from_file(<span class="string">'路径/'</span>+i, path+i)</span><br><span class="line">	<span class="keyword">print</span> (<span class="string">"上传成功！"</span>+i+<span class="string">"的url地址是：https://lechangebbs.oss-cn-hangzhou.aliyuncs.com/jjfjj/"</span>+i)</span><br><span class="line">   	<span class="keyword">print</span> (<span class="string">"\n"</span> * <span class="number">2</span>)	<span class="comment">#空两行</span></span><br></pre></td></tr></table></figure></p>
+<p>执行效果如下：<br><img src="/images/django33.png" alt="akb48" title="图片是中文名称也不怕"></p>
+<p>通过搭配这个脚本写到<code>views.py</code>里就可以把上传上来的图片转到阿里云云存储里去了！</p>
+<p>PS，阿里云OSS有官方支持django的模块：<code>django-aliyun-oss2-storage</code>（果然够牛逼！），直接pip安装即可，如何使用待我研究一番先。</p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://jinfagang.gitlab.io/2017/11/27/Django%E5%90%8C%E6%97%B6%E4%B8%8A%E4%BC%A0%E5%A4%9A%E5%BC%A0%E5%9B%BE%E7%89%87%E6%88%96%E6%96%87%E4%BB%B6/" target="_blank" rel="noopener">https://jinfagang.gitlab.io/2017/11/27/Django%E5%90%8C%E6%97%B6%E4%B8%8A%E4%BC%A0%E5%A4%9A%E5%BC%A0%E5%9B%BE%E7%89%87%E6%88%96%E6%96%87%E4%BB%B6/</a><br><a href="https://blog.csdn.net/c_beautiful/article/details/79755368" target="_blank" rel="noopener">https://blog.csdn.net/c_beautiful/article/details/79755368</a><br><a href="https://www.jianshu.com/p/3c79b19849f5" target="_blank" rel="noopener">https://www.jianshu.com/p/3c79b19849f5</a><br><a href="https://blog.csdn.net/u014633966/article/details/78727034" target="_blank" rel="noopener">https://blog.csdn.net/u014633966/article/details/78727034</a></p>
 
       
     </div>
@@ -534,7 +536,7 @@
 
 				<li class="post-copyright-link">
 					<strong>本文标题：</strong>
-					<a href="http://yoursite.com/2018/12/19/Django实现图片上传/" title="Django实现图片上传">Django实现图片上传</a>
+					<a href="http://yoursite.com/2018/12/19/Django实现图片上传/" title="Django实现图片上传功能">Django实现图片上传功能</a>
 				</li>
 
 				<li class="post-copyright-date">
@@ -864,7 +866,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x51C6;&#x5907;&#x5DE5;&#x4F5C;">&#x51C6;&#x5907;&#x5DE5;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5355;&#x56FE;&#x7247;&#x4E0A;&#x4F20;">&#x5355;&#x56FE;&#x7247;&#x4E0A;&#x4F20;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x56FE;&#x7247;&#x6279;&#x91CF;&#x4E0A;&#x4F20;">&#x56FE;&#x7247;&#x6279;&#x91CF;&#x4E0A;&#x4F20;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x4F7F;&#x7528;&#x963F;&#x91CC;&#x4E91;&#x4E91;&#x5B58;&#x50A8;&#x7684;api&#x4E0A;&#x4F20;&#x6587;&#x4EF6;">&#x4F7F;&#x7528;&#x963F;&#x91CC;&#x4E91;&#x4E91;&#x5B58;&#x50A8;&#x7684;API&#x4E0A;&#x4F20;&#x6587;&#x4EF6;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x51C6;&#x5907;&#x5DE5;&#x4F5C;">&#x51C6;&#x5907;&#x5DE5;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x56FE;&#x7247;&#x5355;&#x5F20;&#x4E0A;&#x4F20;">&#x56FE;&#x7247;&#x5355;&#x5F20;&#x4E0A;&#x4F20;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x56FE;&#x7247;&#x6279;&#x91CF;&#x4E0A;&#x4F20;">&#x56FE;&#x7247;&#x6279;&#x91CF;&#x4E0A;&#x4F20;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x4F7F;&#x7528;&#x963F;&#x91CC;&#x4E91;&#x4E91;&#x5B58;&#x50A8;&#x7684;api&#x4E0A;&#x4F20;&#x6587;&#x4EF6;">&#x4F7F;&#x7528;&#x963F;&#x91CC;&#x4E91;&#x4E91;&#x5B58;&#x50A8;&#x7684;API&#x4E0A;&#x4F20;&#x6587;&#x4EF6;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -918,7 +920,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共191.4k字</span>
+  <span class="post-count">博客全站共191.5k字</span>
 </div>
         
 
