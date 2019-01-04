@@ -97,7 +97,8 @@
 <meta property="og:description" content="这样就不怕运营再要那些稀奇古怪的数据了">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/excel10.png">
-<meta property="og:updated_time" content="2019-01-04T08:30:34.318Z">
+<meta property="og:image" content="http://yoursite.com/images/akun.gif">
+<meta property="og:updated_time" content="2019-01-04T09:32:12.879Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Mysql语句导出成excel时解决科学计数法的情况">
 <meta name="twitter:description" content="这样就不怕运营再要那些稀奇古怪的数据了">
@@ -463,6 +464,7 @@
 <h2><span id="解决中文乱码的问题">解决中文乱码的问题</span></h2><p>有时候数据库里会有中文，但是导出的时候发现excel看到的中文全是乱码，解决这样问题的方法需要加上<code>--default-character-set=utf8</code>，比如：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h127<span class="number">.0</span><span class="number">.0</span><span class="number">.1</span> -u用户名 -p密码 --default-character-set=utf8 -e <span class="string">'SELECT CONCAT("",对应的列名1),CONCAT("",对应的列名2) FROM sdb_b2c_delivery WHERE t_begin &gt;= 1543593600 AND t_begin &lt;= 1546271999;'</span> database名 &gt; /tmp/result.xls	<span class="comment">#请注意单引号双引号</span></span><br></pre></td></tr></table></figure></p>
 <p>将<code>result.xls</code>直接使用notepad++打开，然后将excel列的格式设置为文本，再粘贴就能得到正确的表格了。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.jianshu.com/p/2c8bfbfcd288" target="_blank" rel="noopener">https://www.jianshu.com/p/2c8bfbfcd288</a><br><a href="https://qianrong.me/sql/2.html" target="_blank" rel="noopener">https://qianrong.me/sql/2.html</a></p>
+<p><img src="/images/akun.gif" alt="akb48"></p>
 
       
     </div>
