@@ -3,7 +3,7 @@
   <entry>
     <title><![CDATA[Python3写文件的几个例子]]></title>
     <url>%2F2019%2F01%2F04%2FPython3%E5%86%99%E6%96%87%E4%BB%B6%E7%9A%84%E5%87%A0%E4%B8%AA%E4%BE%8B%E5%AD%90%2F</url>
-    <content type="text"><![CDATA[拷贝一个文件的全部内容到另一个文件复制aaa.txt内容到另一个bbb.txt 12345fp = open('aaa.txt','r') for line in fp: fq = open('bbb.txt','a') #这里用追加模式，这里不能用w fq.write(line) fp.close() 在文件头部插入数据读出原有文件内容aaa.txt，移动索引到开始，写入新的数据data，然后再写入旧的数据。 12345with open('aaa.txt', "r+") as f: old = f.read() #将原来的内容取出 f.seek(0) #索引移动到头 f.write(data) f.write(old) 清空文件的内容当已存在一个文件对象，且这个文件对象可以对文件进行写write操作(注意不是追加append操作),则可以通过如下语句来清空一个文件的内容: 12&gt;&gt;&gt; f = open('file.txt','r+')&gt;&gt;&gt; f.truncate() #使用文件对象的成员函数truncate()来清空一个文件 如何让html文件识别换行符？如果使用替换方法把\r\n替换成&lt;br&gt;的话太蠢了，其实这种需求可以一句话解决：头尾加&lt;pre&gt;&lt;/pre&gt;]]></content>
+    <content type="text"><![CDATA[拷贝一个文件的全部内容到另一个文件复制aaa.txt内容到另一个bbb.txt 12345fp = open('aaa.txt','r') for line in fp: fq = open('bbb.txt','a') #这里用追加模式，这里不能用w fq.write(line) fp.close() 在文件头部插入数据读出原有文件内容aaa.txt，移动索引到开始，写入新的数据data，然后再写入旧的数据。 12345with open('aaa.txt', "r+") as f: old = f.read() #将原来的内容取出 f.seek(0) #索引移动到头 f.write(data) f.write(old) 清空文件的内容当已存在一个文件对象，且这个文件对象可以对文件进行写write操作(注意不是追加append操作),则可以通过如下语句来清空一个文件的内容: 12&gt;&gt;&gt; f = open('file.txt','r+')&gt;&gt;&gt; f.truncate() #使用文件对象的成员函数truncate()来清空一个文件 如何让html文件识别换行符？如果使用替换方法把\r\n替换成&lt;br&gt;的话太蠢了，其实这种需求可以一句话解决：头尾加&lt;pre&gt;&lt;/pre&gt;。]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
