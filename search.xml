@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Mysql语句导出成excel时解决科学计数法的情况]]></title>
+    <url>%2F2019%2F01%2F04%2FMysql%E8%AF%AD%E5%8F%A5%E5%AF%BC%E5%87%BA%E6%88%90excel%E6%97%B6%E8%A7%A3%E5%86%B3%E7%A7%91%E5%AD%A6%E8%AE%A1%E6%95%B0%E6%B3%95%E7%9A%84%E6%83%85%E5%86%B5%2F</url>
+    <content type="text"><![CDATA[普通情况导出excel将结果直接导出到/tmp/result.xls： 1mysql -h127.0.0.1 -u用户名 -p密码 -e "具体SQL命令" database名 &gt; /tmp/result.xls #请注意单引号双引号 解决科学计数法有时候数据库里会有比较长的数字，比如订单号或者身份证号，但是由于excel的操蛋设定，长数字在导出后在Excel中打开后却是用科学计数法显示的，过长的话，后面几位数字全都转换为0了，解决这样问题的方法就是引入CONCAT： 比如我要从sdb_b2c_delivery这个tables里查询两个时间戳之间的情况，将结果导出到/tmp/result.xls： 1mysql -h127.0.0.1 -u用户名 -p密码 -e 'SELECT CONCAT("",对应的列名1),CONCAT("",对应的列名2) FROM sdb_b2c_delivery WHERE t_begin &gt;= 1543593600 AND t_begin &lt;= 1546271999;' database名 &gt; /tmp/result.xls #请注意单引号双引号 但是这样导出来的结果还是科学计数法，不过可以修改单元格格式，改成“数值”，然后把小数位数改成0即可。 解决中文乱码的问题有时候数据库里会有中文，但是导出的时候发现excel看到的中文全是乱码，解决这样问题的方法需要加上--default-character-set=utf8，比如： 1mysql -h127.0.0.1 -u用户名 -p密码 --default-character-set=utf8 -e 'SELECT CONCAT("",对应的列名1),CONCAT("",对应的列名2) FROM sdb_b2c_delivery WHERE t_begin &gt;= 1543593600 AND t_begin &lt;= 1546271999;' database名 &gt; /tmp/result.xls #请注意单引号双引号 将result.xls直接使用notepad++打开，然后将excel列的格式设置为文本，再粘贴就能得到正确的表格了。 参考资料https://www.jianshu.com/p/2c8bfbfcd288https://qianrong.me/sql/2.html]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+        <tag>excel</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Python3写文件的几个例子]]></title>
     <url>%2F2019%2F01%2F04%2FPython3%E5%86%99%E6%96%87%E4%BB%B6%E7%9A%84%E5%87%A0%E4%B8%AA%E4%BE%8B%E5%AD%90%2F</url>
     <content type="text"><![CDATA[拷贝一个文件的全部内容到另一个文件复制aaa.txt内容到另一个bbb.txt 12345fp = open('aaa.txt','r') for line in fp: fq = open('bbb.txt','a') #这里用追加模式，这里不能用w fq.write(line) fp.close() 在文件头部插入数据读出原有文件内容aaa.txt，移动索引到开始，写入新的数据data，然后再写入旧的数据。 12345with open('aaa.txt', "r+") as f: old = f.read() #将原来的内容取出 f.seek(0) #索引移动到头 f.write(data) f.write(old) 清空文件的内容当已存在一个文件对象，且这个文件对象可以对文件进行写write操作(注意不是追加append操作),则可以通过如下语句来清空一个文件的内容: 12&gt;&gt;&gt; f = open('file.txt','r+')&gt;&gt;&gt; f.truncate() #使用文件对象的成员函数truncate()来清空一个文件 如何让html文件识别换行符？如果使用替换方法把\r\n替换成&lt;br&gt;的话太蠢了，其实这种需求可以一句话解决：头尾加&lt;pre&gt;&lt;/pre&gt;。]]></content>
@@ -357,8 +369,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Jenkins</tag>
         <tag>钉钉</tag>
+        <tag>Jenkins</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -721,8 +733,8 @@
         <category>坠乱花天</category>
       </categories>
       <tags>
-        <tag>旅游</tag>
         <tag>日本</tag>
+        <tag>旅游</tag>
       </tags>
   </entry>
   <entry>
@@ -1425,8 +1437,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>运维技术</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -1485,8 +1497,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>crontab</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -2091,8 +2103,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>zabbix</tag>
+        <tag>redis</tag>
       </tags>
   </entry>
   <entry>
@@ -2103,8 +2115,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>nginx</tag>
         <tag>运维技术</tag>
+        <tag>nginx</tag>
       </tags>
   </entry>
   <entry>
@@ -2164,8 +2176,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维</tag>
         <tag>Nginx</tag>
+        <tag>运维</tag>
       </tags>
   </entry>
   <entry>
@@ -2176,8 +2188,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维</tag>
         <tag>Nginx</tag>
+        <tag>运维</tag>
       </tags>
   </entry>
   <entry>
@@ -2200,8 +2212,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>git</tag>
         <tag>nginx</tag>
+        <tag>git</tag>
       </tags>
   </entry>
   <entry>

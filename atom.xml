@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-01-04T06:31:43.584Z</updated>
+  <updated>2019-01-04T08:30:34.318Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Mysql语句导出成excel时解决科学计数法的情况</title>
+    <link href="http://yoursite.com/2019/01/04/Mysql%E8%AF%AD%E5%8F%A5%E5%AF%BC%E5%87%BA%E6%88%90excel%E6%97%B6%E8%A7%A3%E5%86%B3%E7%A7%91%E5%AD%A6%E8%AE%A1%E6%95%B0%E6%B3%95%E7%9A%84%E6%83%85%E5%86%B5/"/>
+    <id>http://yoursite.com/2019/01/04/Mysql语句导出成excel时解决科学计数法的情况/</id>
+    <published>2019-01-04T08:02:25.000Z</published>
+    <updated>2019-01-04T08:30:34.318Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="普通情况导出excel">普通情况导出excel</span></h2><p>将结果直接导出到<code>/tmp/result.xls</code>：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h127<span class="number">.0</span><span class="number">.0</span><span class="number">.1</span> -u用户名 -p密码 -e <span class="string">"具体SQL命令"</span> database名 &gt; /tmp/result.xls<span class="comment">#请注意单引号双引号</span></span><br></pre></td></tr></table></figure></p><h2><span id="解决科学计数法">解决科学计数法</span></h2><p>有时候数据库里会有比较长的数字，比如订单号或者身份证号，但是由于excel的操蛋设定，长数字在导出后在Excel中打开后却是用科学计数法显示的，过长的话，后面几位数字全都转换为0了，解决这样问题的方法就是引入<code>CONCAT</code>：</p><p>比如我要从<code>sdb_b2c_delivery</code>这个tables里查询两个时间戳之间的情况，将结果导出到<code>/tmp/result.xls</code>：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h127<span class="number">.0</span><span class="number">.0</span><span class="number">.1</span> -u用户名 -p密码 -e <span class="string">'SELECT CONCAT("",对应的列名1),CONCAT("",对应的列名2) FROM sdb_b2c_delivery WHERE t_begin &gt;= 1543593600 AND t_begin &lt;= 1546271999;'</span> database名 &gt; /tmp/result.xls<span class="comment">#请注意单引号双引号</span></span><br></pre></td></tr></table></figure></p><p>但是这样导出来的结果还是科学计数法，不过可以修改单元格格式，改成“数值”，然后把小数位数改成0即可。<br><img src="/images/excel10.png" alt="akb48"></p><h2><span id="解决中文乱码的问题">解决中文乱码的问题</span></h2><p>有时候数据库里会有中文，但是导出的时候发现excel看到的中文全是乱码，解决这样问题的方法需要加上<code>--default-character-set=utf8</code>，比如：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql -h127<span class="number">.0</span><span class="number">.0</span><span class="number">.1</span> -u用户名 -p密码 --default-character-set=utf8 -e <span class="string">'SELECT CONCAT("",对应的列名1),CONCAT("",对应的列名2) FROM sdb_b2c_delivery WHERE t_begin &gt;= 1543593600 AND t_begin &lt;= 1546271999;'</span> database名 &gt; /tmp/result.xls<span class="comment">#请注意单引号双引号</span></span><br></pre></td></tr></table></figure></p><p>将<code>result.xls</code>直接使用notepad++打开，然后将excel列的格式设置为文本，再粘贴就能得到正确的表格了。</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.jianshu.com/p/2c8bfbfcd288" target="_blank" rel="noopener">https://www.jianshu.com/p/2c8bfbfcd288</a><br><a href="https://qianrong.me/sql/2.html" target="_blank" rel="noopener">https://qianrong.me/sql/2.html</a></p>]]></content>
+    
+    <summary type="html">
+    
+      这样就不怕运营再要那些稀奇古怪的数据了
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
+    
+      <category term="excel" scheme="http://yoursite.com/tags/excel/"/>
+    
+  </entry>
   
   <entry>
     <title>Python3写文件的几个例子</title>
@@ -471,30 +495,6 @@
       <category term="zabbix" scheme="http://yoursite.com/tags/zabbix/"/>
     
       <category term="Docker" scheme="http://yoursite.com/tags/Docker/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Mysql.sock没了怎么办？</title>
-    <link href="http://yoursite.com/2018/10/15/Mysql-sock%E6%B2%A1%E4%BA%86%E6%80%8E%E4%B9%88%E5%8A%9E%EF%BC%9F/"/>
-    <id>http://yoursite.com/2018/10/15/Mysql-sock没了怎么办？/</id>
-    <published>2018-10-15T03:33:55.000Z</published>
-    <updated>2018-10-15T09:52:36.756Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>今天在调整jumpserver堡垒机资产用户的时候，在点击“更新”的时候，爆出127.0.0.1:3306无法被访问，于是登录到服务器里一看，发现mysql进程挂了。先检查服务器存储空间，发现还很富裕，于是就启动mysql，爆出来如下错误：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@lcshop-jumpserver ~]# mysql</span><br><span class="line">ERROR <span class="number">2002</span> (HY000): Can<span class="string">'t connect to local MySQL server through socket '</span>/<span class="keyword">var</span>/lib/mysql/mysql.sock<span class="string">' (111)</span></span><br></pre></td></tr></table></figure></p><p>然后来到<code>/var/lib/mysql/</code>里，瞅着这个紫了吧唧的<code>mysql.sock</code>，脑子一抽，把它删了…</p><p>删了…</p><p>这尼玛，再次启动mysql，错误码从111变成2：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root@lcshop-jumpserver mysql]# mysql</span><br><span class="line">ERROR <span class="number">2002</span> (HY000): Can<span class="string">'t connect to local MySQL server through socket '</span>/<span class="keyword">var</span>/lib/mysql/mysql.sock<span class="string">' (2)</span></span><br></pre></td></tr></table></figure></p><p>这一下就尴尬了，<code>mysql.sock</code>没了怎么生成？有人说“重启服务器可以生成”，事实证明这就是纯粹的扯淡。真实的方法是：<code>mysqld_safe &amp;</code>。<br><img src="/images/mysql-sock.png" alt="akb48"></p><p>如果<code>mysqld_safe &amp;</code>命令失败了，就要去查看一下mysql的日志，多半是某个文件权限不对，要改成mysql用户。</p><p>补充一句其他的问题：<code>ImportError: libxslt.so.0: cannot open shared object file: No such file or directory</code>，遇到这个问题怎么办？ <code>yum install  libxslt-devel -y</code><br><img src="/images/shaq.gif" alt="akb48" title="鲨鱼哥的拉杆上篮"></p>]]></content>
-    
-    <summary type="html">
-    
-      不蒜子网站计数网站从dn-lbstatics.qbox.me/改成busuanzi.ibruce.info/
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
-    
-      <category term="jumpserver堡垒机" scheme="http://yoursite.com/tags/jumpserver%E5%A0%A1%E5%9E%92%E6%9C%BA/"/>
     
   </entry>
   
