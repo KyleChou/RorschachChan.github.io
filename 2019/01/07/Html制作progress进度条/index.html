@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/django42.gif">
 <meta property="og:image" content="http://yoursite.com/images/django41.gif">
-<meta property="og:updated_time" content="2019-01-07T07:41:06.325Z">
+<meta property="og:updated_time" content="2019-01-07T07:51:42.371Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Html制作progress进度条">
 <meta name="twitter:description" content="这个进度条主要是计时的，如果想要真实反映后台脚本的进度，那么需要ajax动态获取后台进度">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  527
+                  536
                 </span>
               
 
@@ -469,8 +469,10 @@
 <li><p>在JS语句里调用</p>
  <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">　　	function myfun()</span></span><br><span class="line"><span class="undefined">　　	&#123;</span></span><br><span class="line"><span class="undefined">　	　 alert("this window.onload");</span></span><br><span class="line"><span class="undefined">　　	&#125;</span></span><br><span class="line"><span class="undefined">　　	/*用window.onload调用myfun()*/</span></span><br><span class="line"><span class="undefined">　　	window.onload = myfun;	//不要括号</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
 </li>
+<li><p>或者在JS语句里按以下方法调用：</p>
+ <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">    window.onload=function()&#123;</span></span><br><span class="line"><span class="undefined">           func1();</span></span><br><span class="line"><span class="undefined">           func2();</span></span><br><span class="line"><span class="undefined">           func3();</span></span><br><span class="line"><span class="undefined">   &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
 </ol>
-<p>或者以下方法：<br>    <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="undefined">    window.onload=function()&#123;</span></span><br><span class="line"><span class="undefined">           func1();</span></span><br><span class="line"><span class="undefined">           func2();</span></span><br><span class="line"><span class="undefined">           func3();</span></span><br><span class="line"><span class="undefined">   &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://blog.csdn.net/qq965194745/article/details/80034993" target="_blank" rel="noopener">https://blog.csdn.net/qq965194745/article/details/80034993</a><br><a href="https://frontenddev.org/article/how-to-use-javascript-to-do-a-high-force-the-progress-bar.html" target="_blank" rel="noopener">https://frontenddev.org/article/how-to-use-javascript-to-do-a-high-force-the-progress-bar.html</a><br><a href="http://www.voidcn.com/article/p-crqmibur-a.html" target="_blank" rel="noopener">http://www.voidcn.com/article/p-crqmibur-a.html</a><br><a href="https://blog.csdn.net/Zhaky/article/details/50922613" target="_blank" rel="noopener">https://blog.csdn.net/Zhaky/article/details/50922613</a><br><a href="http://www.webfront-js.com/articaldetail/47.html" target="_blank" rel="noopener">http://www.webfront-js.com/articaldetail/47.html</a></p>
 
       
