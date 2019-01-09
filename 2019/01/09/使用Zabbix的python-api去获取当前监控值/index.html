@@ -91,7 +91,7 @@
 <meta name="description" content="用zabbix-api获取值然后可以搭配微信通知脚本，这样就可以定时的知道当前服务器的监控值了">
 <meta name="keywords" content="python,zabbix,api">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用Zabbix的python api去获取当前监控值">
+<meta property="og:title" content="使用Zabbix的Python api去获取当前监控值">
 <meta property="og:url" content="http://yoursite.com/2019/01/09/使用Zabbix的python-api去获取当前监控值/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="用zabbix-api获取值然后可以搭配微信通知脚本，这样就可以定时的知道当前服务器的监控值了">
@@ -99,9 +99,9 @@
 <meta property="og:image" content="http://yoursite.com/images/zabbix1.png">
 <meta property="og:image" content="http://yoursite.com/images/zabbix2.png">
 <meta property="og:image" content="http://yoursite.com/images/东方三侠.gif">
-<meta property="og:updated_time" content="2019-01-09T08:14:32.446Z">
+<meta property="og:updated_time" content="2019-01-09T09:25:59.032Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="使用Zabbix的python api去获取当前监控值">
+<meta name="twitter:title" content="使用Zabbix的Python api去获取当前监控值">
 <meta name="twitter:description" content="用zabbix-api获取值然后可以搭配微信通知脚本，这样就可以定时的知道当前服务器的监控值了">
 <meta name="twitter:image" content="http://yoursite.com/images/zabbix1.png">
 
@@ -139,7 +139,7 @@
 
 
 
-  <title>使用Zabbix的python api去获取当前监控值 | Chris Chan's BLOG</title>
+  <title>使用Zabbix的Python api去获取当前监控值 | Chris Chan's BLOG</title>
   
 
 
@@ -339,7 +339,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">使用Zabbix的python api去获取当前监控值</h1>
+          <h1 class="post-title" itemprop="name headline">使用Zabbix的Python api去获取当前监控值</h1>
         
 
         <div class="post-meta">
@@ -391,7 +391,7 @@
 
           
           
-             <span id="/2019/01/09/使用Zabbix的python-api去获取当前监控值/" class="leancloud_visitors" data-flag-title="使用Zabbix的python api去获取当前监控值">
+             <span id="/2019/01/09/使用Zabbix的python-api去获取当前监控值/" class="leancloud_visitors" data-flag-title="使用Zabbix的Python api去获取当前监控值">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -459,7 +459,7 @@
 
       
         <script src="\assets\js\APlayer.min.js"> </script><h2><span id="事前准备">事前准备</span></h2><p>有些时候我们需要在非zabbix的web界面里得到zabbix-server对某台服务器的实时监控值。但是有些值是zabbix-server加工过的，比如<code>eth0入网流量</code>，zabbix-server加工的方法如下：<br><img src="/images/zabbix1.png" alt="akb48"></p>
-<p>可见是每秒的变量并且还乘了8，那么如果要得到这样加工过的值，想通过shell得到linxu的指标无疑是十分麻烦的。那么对于这种需求，我们想到的第一个办法就是使用zabbix的api，通过api去获取值比爬网页要方便许多（而且zabbix-server的web页面不是那么好爬的）。</p>
+<p>可见是每秒的变量并且还乘了8，那么如果要得到这样加工过的值，想通过shell得到linux的指标无疑是十分麻烦的。那么对于这种需求，我们想到的第一个办法就是使用zabbix的api，通过api去获取值比爬网页要方便许多（而且zabbix-server的web页面不是那么好爬的）。</p>
 <p>Zabbix 3.0的API官方文档：<a href="https://www.zabbix.com/documentation/3.0/manual/api" target="_blank" rel="noopener">https://www.zabbix.com/documentation/3.0/manual/api</a><br>Zabbix 3.0的python版API官方文档：<a href="https://github.com/gescheit/scripts/tree/master/zabbix" target="_blank" rel="noopener">https://github.com/gescheit/scripts/tree/master/zabbix</a><br>这里我更推荐用python版的api，因为使用<code>zabbix-api</code>这个python第三方库让开发变得更为简洁。</p>
 <h2><span id="安装zabbix-api">安装zabbix-api</span></h2><p>安装<code>zabbix-api</code>最方便的方法就是pip安装。本文的python版本<code>2.7.15</code>，使用源码安装的，安装包并不带pip，那么安装pip的方法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mv /usr/bin/pip /usr/bin/pip-bak	<span class="comment">#备份原有的pip</span></span><br><span class="line">curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py</span><br><span class="line">python get-pip.py --force-reinstall	<span class="comment">#会自动安装到python所在的文件夹里</span></span><br></pre></td></tr></table></figure></p>
 <p>有了pip之后，就可以安装<code>zabbix-api</code>，命令是：<code>pip install zabbix-api</code> 。在python的命令行里输入<code>from zabbix_api import ZabbixAPI</code>不报错就代表安装成功。</p>
@@ -535,7 +535,7 @@
 
 				<li class="post-copyright-link">
 					<strong>本文标题：</strong>
-					<a href="http://yoursite.com/2019/01/09/使用Zabbix的python-api去获取当前监控值/" title="使用Zabbix的python api去获取当前监控值">使用Zabbix的python api去获取当前监控值</a>
+					<a href="http://yoursite.com/2019/01/09/使用Zabbix的python-api去获取当前监控值/" title="使用Zabbix的Python api去获取当前监控值">使用Zabbix的Python api去获取当前监控值</a>
 				</li>
 
 				<li class="post-copyright-date">
