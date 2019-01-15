@@ -99,7 +99,7 @@
 <meta property="og:image" content="http://yoursite.com/images/zabbix1.png">
 <meta property="og:image" content="http://yoursite.com/images/zabbix2.png">
 <meta property="og:image" content="http://yoursite.com/images/东方三侠.gif">
-<meta property="og:updated_time" content="2019-01-09T09:25:59.032Z">
+<meta property="og:updated_time" content="2019-01-15T05:50:10.830Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Zabbix的Python api去获取当前监控值">
 <meta name="twitter:description" content="用zabbix-api获取值然后可以搭配微信通知脚本，这样就可以定时的知道当前服务器的监控值了">
@@ -417,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  694
+                  738
                 </span>
               
 
@@ -461,7 +461,7 @@
         <script src="\assets\js\APlayer.min.js"> </script><h2><span id="事前准备">事前准备</span></h2><p>有些时候我们需要在非zabbix的web界面里得到zabbix-server对某台服务器的实时监控值。但是有些值是zabbix-server加工过的，比如<code>eth0入网流量</code>，zabbix-server加工的方法如下：<br><img src="/images/zabbix1.png" alt="akb48"></p>
 <p>可见是每秒的变量并且还乘了8，那么如果要得到这样加工过的值，想通过shell得到linux的指标无疑是十分麻烦的。那么对于这种需求，我们想到的第一个办法就是使用zabbix的api，通过api去获取值比爬网页要方便许多（而且zabbix-server的web页面不是那么好爬的）。</p>
 <p>Zabbix 3.0的API官方文档：<a href="https://www.zabbix.com/documentation/3.0/manual/api" target="_blank" rel="noopener">https://www.zabbix.com/documentation/3.0/manual/api</a><br>Zabbix 3.0的python版API官方文档：<a href="https://github.com/gescheit/scripts/tree/master/zabbix" target="_blank" rel="noopener">https://github.com/gescheit/scripts/tree/master/zabbix</a><br>这里我更推荐用python版的api，因为使用<code>zabbix-api</code>这个python第三方库让开发变得更为简洁。</p>
-<h2><span id="安装zabbix-api">安装zabbix-api</span></h2><p>安装<code>zabbix-api</code>最方便的方法就是pip安装。本文的python版本<code>2.7.15</code>，使用源码安装的，安装包并不带pip，那么安装pip的方法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mv /usr/bin/pip /usr/bin/pip-bak	<span class="comment">#备份原有的pip</span></span><br><span class="line">curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py</span><br><span class="line">python get-pip.py --force-reinstall	<span class="comment">#会自动安装到python所在的文件夹里</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="安装zabbix-api">安装zabbix-api</span></h2><p>安装<code>zabbix-api</code>最方便的方法就是pip安装。本文的python版本<code>2.7.15</code>，使用源码安装的，安装包并不带pip，那么安装pip的方法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">mv /usr/bin/pip /usr/bin/pip-bak	<span class="comment">#备份原有的pip</span></span><br><span class="line">wget https://files.pythonhosted.org/packages/d0/<span class="number">92</span>/<span class="number">1e8406</span>c15d9372084a5bf79d96da3a0acc4e7fcf0b80020a4820897d2a5c/pip<span class="number">-7.1</span><span class="number">.2</span>.tar.gz</span><br><span class="line"><span class="comment">#或者去https://pypi.org/project/pip/7.1.2/#files下载pip-7.1.2.tar.gz </span></span><br><span class="line">tar -zxcf pip<span class="number">-7.1</span><span class="number">.2</span>.tar.gz</span><br><span class="line">cd pip<span class="number">-7.1</span><span class="number">.2</span></span><br><span class="line">sudo python setup.py install</span><br><span class="line">ln -s /usr/local/python27/bin/pip2<span class="number">.7</span> /usr/bin/pip	<span class="comment">#做一个新的快捷方式</span></span><br></pre></td></tr></table></figure></p>
 <p>有了pip之后，就可以安装<code>zabbix-api</code>，命令是：<code>pip install zabbix-api</code> 。在python的命令行里输入<code>from zabbix_api import ZabbixAPI</code>不报错就代表安装成功。</p>
 <h2><span id="链接zabbix">链接zabbix</span></h2><p>通过zabbix-server鉴权的代码如下：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#coding:utf-8</span><br><span class="line">#这个脚本是用来获取zabbix 定时流量值</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> zabbix_api <span class="keyword">import</span> ZabbixAPI</span><br><span class="line">zapi = ZabbixAPI(server=<span class="string">"http://网页地址/zabbix/api_jsonrpc.php"</span>)	</span><br><span class="line">zapi.login("网页的用户名", "网页的密码")	#鉴权</span><br></pre></td></tr></table></figure></p>
 <p>如果没报错，就证明已经成功连接到zabbix-server了。</p>
@@ -593,8 +593,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2019/01/14/大量任务冲击下的activeMQ报错GC-overhead-limit-exceeded/" rel="prev" title="大量任务冲击下的activeMQ报错GC overhead limit exceeded">
-                大量任务冲击下的activeMQ报错GC overhead limit exceeded <i class="fa fa-chevron-right"></i>
+              <a href="/2019/01/14/大量任务冲击下的activeMQ报错GC-overhead-limit-exceeded/" rel="prev" title="大量任务冲击下的activeMQ报错"GC overhead limit exceeded"">
+                大量任务冲击下的activeMQ报错"GC overhead limit exceeded" <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
