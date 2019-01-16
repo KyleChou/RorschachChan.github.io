@@ -88,22 +88,22 @@
 
 
 
-<meta name="description" content="前言当使用Django的时候，经常遇到一种需求：跳转到某个url，结果是先在后台执行一个时间较长的脚本，然后才能打开这个url页面，这样用户体验就很不好。 比如说像这样的views.py配置：    12345678910111213141516171819202122232425#使用ansible执行远程命令@csrf_exemptdef run_command(request):    c">
+<meta name="description" content="题外话：网站路由url不加斜杠，用户自己加斜杠之后访问404，但是不会出现重定向的问题；2.路由url加斜杠，用户访问的url无论加不加斜杠均可访问正常，但是不加斜杠的访问链接会做重定向，影响访问速度。">
 <meta name="keywords" content="Django,celery,异步任务">
 <meta property="og:type" content="article">
 <meta property="og:title" content="在Django里添加Celery做异步任务处理">
 <meta property="og:url" content="http://yoursite.com/2019/01/16/在Django里添加Celery做异步任务处理/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="前言当使用Django的时候，经常遇到一种需求：跳转到某个url，结果是先在后台执行一个时间较长的脚本，然后才能打开这个url页面，这样用户体验就很不好。 比如说像这样的views.py配置：    12345678910111213141516171819202122232425#使用ansible执行远程命令@csrf_exemptdef run_command(request):    c">
+<meta property="og:description" content="题外话：网站路由url不加斜杠，用户自己加斜杠之后访问404，但是不会出现重定向的问题；2.路由url加斜杠，用户访问的url无论加不加斜杠均可访问正常，但是不加斜杠的访问链接会做重定向，影响访问速度。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/cerely1.png">
 <meta property="og:image" content="http://yoursite.com/images/cerely2.png">
 <meta property="og:image" content="http://yoursite.com/images/cerely3.png">
 <meta property="og:image" content="http://yoursite.com/images/cerely4.png">
-<meta property="og:updated_time" content="2019-01-16T09:21:17.886Z">
+<meta property="og:updated_time" content="2019-01-16T09:31:42.764Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="在Django里添加Celery做异步任务处理">
-<meta name="twitter:description" content="前言当使用Django的时候，经常遇到一种需求：跳转到某个url，结果是先在后台执行一个时间较长的脚本，然后才能打开这个url页面，这样用户体验就很不好。 比如说像这样的views.py配置：    12345678910111213141516171819202122232425#使用ansible执行远程命令@csrf_exemptdef run_command(request):    c">
+<meta name="twitter:description" content="题外话：网站路由url不加斜杠，用户自己加斜杠之后访问404，但是不会出现重定向的问题；2.路由url加斜杠，用户访问的url无论加不加斜杠均可访问正常，但是不加斜杠的访问链接会做重定向，影响访问速度。">
 <meta name="twitter:image" content="http://yoursite.com/images/cerely1.png">
 
 
@@ -418,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,394
+                  1,409
                 </span>
               
 
@@ -440,6 +440,10 @@
             </div>
           
 
+          
+              <div class="post-description">
+                  题外话：网站路由url不加斜杠，用户自己加斜杠之后访问404，但是不会出现重定向的问题；2.路由url加斜杠，用户访问的url无论加不加斜杠均可访问正常，但是不加斜杠的访问链接会做重定向，影响访问速度。
+              </div>
           
 
         </div>
@@ -477,6 +481,7 @@
 /usr/local/python3/bin/celery multi start worker -A project名称 -l info
 ```    
 </code></pre><p>效果如图：<br><img src="/images/cerely4.png" alt="akb48"></p>
+<p>停止或重启将上面的<code>start</code>换为<code>stop</code>或<code>restart</code>即可。</p>
 <h2><span id="补充">补充</span></h2><p>如果<code>tasks.py</code>内容变化了，需要重启celery才能生效。</p>
 <p>查看redis有几个库的命令：<code>config get databases</code>。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="http://yshblog.com/blog/163" target="_blank" rel="noopener">http://yshblog.com/blog/163</a> （对照代码做一遍就更有体会了）<br><a href="https://www.cnblogs.com/wdliu/p/9517535.html" target="_blank" rel="noopener">https://www.cnblogs.com/wdliu/p/9517535.html</a><br><a href="https://www.cnblogs.com/wdliu/p/9530219.html" target="_blank" rel="noopener">https://www.cnblogs.com/wdliu/p/9530219.html</a><br><a href="http://docs.celeryproject.org/en/latest/getting-started/brokers/redis.html" target="_blank" rel="noopener">http://docs.celeryproject.org/en/latest/getting-started/brokers/redis.html</a></p>
