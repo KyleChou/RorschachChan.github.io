@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[在Django里添加Celery做异步任务处理]]></title>
+    <url>%2F2019%2F01%2F16%2F%E5%9C%A8Django%E9%87%8C%E6%B7%BB%E5%8A%A0Celery%E5%81%9A%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1%E5%A4%84%E7%90%86%2F</url>
+    <content type="text"><![CDATA[前言当使用Django的时候，经常遇到一种需求：跳转到某个url，结果是先在后台执行一个时间较长的脚本，然后才能打开这个url页面，这样用户体验就很不好。 比如说像这样的views.py配置： 12345678910111213141516171819202122232425#使用ansible执行远程命令@csrf_exemptdef run_command(request): command = "ansible all -i /root/.ssh/hosts -m shell -a 'echo 'worinixianren' &gt;&gt; /tmp/xianren.txt'" #设定命令 if request.method == 'POST': id = request.POST.getlist("ecs") #通过html来获取id num = [] num.append(len(id)) #传递参数，给下一个页面用的 name = [] db = pymysql.connect("阿里云数据库","数据库账号","数据库密码","databases名") #根据上面获得的id去数据库里得到对应的内网IP cursor = db.cursor() with open('/root/.ssh/hosts','w') as f: for i in id: sql = 'select * from createyaml_ecs where name = "'+ i + '";' cursor.execute(sql) ip = cursor.fetchall()[0][3] cursor.execute(sql) name.append(cursor.fetchall()[0][1]) f.write(ip+" ansible_ssh_user=root"+"\n") #将得到的内网IP写入到一个文件里 db.close() #关闭数据库 child = subprocess.Popen(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True) #执行ansible命令 stdout, stderr = child.communicate() return render(request,'run_command.html',&#123;'data':num[0],'name':name&#125;) #将内容反馈到html页面里 else: return render(request,'homepage.html') 像上面这段代码，要看到run_command.html页面就要先把整个ansible部署的脚本全跑完，如果是几百台机器批量操作的脚本，那就要等到海枯石烂。那遇到这样的情况怎么解决呢？根据不同的请求，有不同的对策： 单纯的后台跑一个脚本，那么就可以使用Celery； 在后台跑脚本的同时，还需要不断的向后台发送请求（比如微信上的茶叶妹聊天机器人），那么就要使用Channels； 这里我主要说的就是Celery。 环境交代存储后端:阿里云redis(支持evalsha命令，如果不支持，去控制台升级小版本即可)Python:3.6.5Django:2.1.1django-celery:3.2.2，安装方法：pip install django-celerycelery-with-redis：3.0，安装方法pip install celery-with-rediscelery:3.1.26.post2 具体配置首先配置setting.py，最全文最后添加这样几句话： 1234567891011121314#celery配置信息#celery中间人 redis://:redis密码@redis服务所在的ip地址:端口/数据库号，我用的是254号#channels配置redis也是这样配置，如果没有密码，就可以把':redis密码@'省略BROKER_URL = 'redis://:redis密码@阿里云redis地址:6379/254'#celery结果返回，可用于跟踪结果CELERY_RESULT_BACKEND = 'redis://:redis密码@阿里云redis地址:6379/254'#celery内容等消息的格式设置CELERY_ACCEPT_CONTENT = ['application/json',]CELERY_TASK_SERIALIZER = 'json'CELERY_RESULT_SERIALIZER = 'json'#celery时区设置，使用settings中TIME_ZONE同样的时区CELERY_TIMEZONE = TIME_ZONE 在setting.py同级的文件夹里创建celery.py，内容如下： 12345678910111213141516171819202122#coding:utf-8from __future__ import absolute_import, unicode_literals from celery import Celeryfrom django.conf import settingsimport os #获取当前文件夹名，即为该Django的项目名project_name = os.path.split(os.path.abspath('.'))[-1]project_settings = '%s.settings' % project_name #设置环境变量os.environ.setdefault('DJANGO_SETTINGS_MODULE', project_settings) #实例化Celeryapp = Celery(project_name) #使用django的settings文件配置celeryapp.config_from_object('django.conf:settings') #Celery加载所有注册的应用app.autodiscover_tasks(lambda: settings.INSTALLED_APPS) 还是在同样的文件夹里，再编辑__init__.py： 12345#coding:utf-8from __future__ import absolute_import, unicode_literals #引入celery实例对象from .celery import app as celery_app 然后在app（具体应用的文件夹里），创建一个叫tasks.py： 12345678910#coding:utf-8from celery.decorators import taskimport pymysql,subprocess@task #在原有的方法上加上celery装饰器task#ansible批量部署命令def run_ansible(): command = "ansible all -i /root/.ssh/hosts -m shell -a 'echo 'worinixianren' &gt;&gt; /tmp/xianren.txt'" #设定命令 stdout, stderr = child.communicate() print ("success!!!") #执行成功！ 保存退出之后，修改原有的views.py，把原来涉及脚本的字段删除，改成: 12345678910111213141516171819202122@csrf_exemptdef run_command(request): if request.method == 'POST': id = request.POST.getlist("ecs") num = [] num.append(len(id)) #传递参数，给下一个页面用的 name = [] db = pymysql.connect("阿里云数据库","数据库账号","数据库密码","databases名") cursor = db.cursor() with open('/root/.ssh/hosts','w') as f: for i in id: sql = 'select * from createyaml_ecs where name = "'+ i + '";' cursor.execute(sql) ip = cursor.fetchall()[0][3] cursor.execute(sql) name.append(cursor.fetchall()[0][1]) f.write(ip+" ansible_ssh_user=root"+"\n") db.close() run_ansible.delay() #celery异步执行后台ansible程序，使用delay函数 return render(request,'run_command.html',&#123;'data':num[0],'name':name&#125;) else: return render(request,'homepage.html') 返回到manage.py所在的目录，先正常启动django，然后再/usr/local/python3/bin/celery -A project名称 worker -l info启动celery，如图： 看到tasks.py已经成功被celery使用了，然后在页面上去执行原本的命令，就会看到celery页面有刷新： 此时再去redis里查看一下存储的效果： 可见tasks执行的状态已经被保存到了redis里。但是上面我们是在前台页面启动celery，如果想把celery作为一个后台守护进程，那么命令语句如下： ```python /usr/local/python3/bin/celery multi start worker -A project名称 -l info ``` 效果如图： 补充如果tasks.py内容变化了，需要重启celery才能生效。 查看redis有几个库的命令：config get databases。 参考资料http://yshblog.com/blog/163 （对照代码做一遍就更有体会了）https://www.cnblogs.com/wdliu/p/9517535.htmlhttps://www.cnblogs.com/wdliu/p/9530219.htmlhttp://docs.celeryproject.org/en/latest/getting-started/brokers/redis.html]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>Django</tag>
+        <tag>celery</tag>
+        <tag>异步任务</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[大量任务冲击下的activeMQ报错"GC overhead limit exceeded"]]></title>
     <url>%2F2019%2F01%2F14%2F%E5%A4%A7%E9%87%8F%E4%BB%BB%E5%8A%A1%E5%86%B2%E5%87%BB%E4%B8%8B%E7%9A%84activeMQ%E6%8A%A5%E9%94%99GC-overhead-limit-exceeded%2F</url>
     <content type="text"><![CDATA[半夜阿里云的杭州可用B区出现了机房抖动，几乎所有的B区服务全部掉线。阿里云的技术人员捅咕了半个小时左右，在大约11点40左右恢复了正常。此时几百万的设备开始同时恢复上线，然而经过了1个小时左右，依旧有几十万设备无法上线，有的甚至上线后又掉线。 我们的架构是设备要先去“注册中心”注册，注册成功之后才会正常的工作。如果多次注册不成功，就会释放连接，把连接让给其他需要注册的设备。但是发现设备上线的速度很慢，扩容了几台“注册中心”模块，效果依旧不见好转。发现注册模块的CPU全部都达到了100%： 登录到服务器里一看，日志不断的刷新这样的内容： 模块与activemq的延迟特别大，此时activemq又有几百万的消息没有消费堆积在队列里。大约十分钟左右，就开始抛出java.lang.OutOfMemoryError: GC overhead limit exceeded的错误，如图： 但是同一时间段里的activemq并没有出现内存吃紧的情况： 没有办法，就先赌一下的重启了activemq，没想到问题就解决了… 奇怪，明明activemq没有内存的明显消耗，却报内存耗尽。先把结果记录下来，等下一次再有类似的情况，好好观察一下（也但愿不要再在放假的时候出现故障了…）]]></content>
@@ -19,8 +32,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>python</tag>
+        <tag>zabbix</tag>
         <tag>api</tag>
       </tags>
   </entry>
@@ -1487,8 +1500,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维技术</tag>
         <tag>linux</tag>
+        <tag>运维技术</tag>
       </tags>
   </entry>
   <entry>
@@ -1547,8 +1560,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>crontab</tag>
         <tag>linux</tag>
+        <tag>crontab</tag>
       </tags>
   </entry>
   <entry>
@@ -2153,8 +2166,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>redis</tag>
+        <tag>zabbix</tag>
       </tags>
   </entry>
   <entry>
