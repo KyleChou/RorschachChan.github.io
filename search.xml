@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[搭建Kakfa2.11为ELK服务]]></title>
+    <url>%2F2019%2F01%2F16%2F%E6%90%AD%E5%BB%BAKakfa2-11%E4%B8%BAELK%E6%9C%8D%E5%8A%A1%2F</url>
+    <content type="text"><![CDATA[准备工作试验机器：阿里云centos 7.5， 本文是单台kafka架构，如果土豪可以尝试3台。 12345yum install java-1.8.0-openjdk* -ywget http://apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgztar -zxvf kafka_2.11-2.1.0.tgz -C /optwget http://apache.website-solution.net/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gztar -zxvf zookeeper-3.4.10.tar.gz -C /usr/local 其实最新的kafka里面已经包括zookeeper了，不过我习惯了单独启动zookeeper，于是还是单独下载单独配置单独启动。 启动zookeeper启动kafkakafka简单操作语句./kafka-topics.sh --create --zookeeper 172.31.0.84:2181 --replication-factor 1 --partitions 1 --topic chenshuotest ./kafka-topics.sh --list --zookeeper 172.31.0.84:2181 ./kafka-console-producer.sh --broker-list 172.31.0.84:9092 --topic chenshuotest ./kafka-console-consumer.sh --bootstrap-server 172.31.0.84:9092 --topic chenshuotest --from-beginning 参考文档http://www.cnblogs.com/JetpropelledSnake/p/10057545.html]]></content>
+  </entry>
+  <entry>
     <title><![CDATA[在Django里添加Celery让脚本异步在后台运行]]></title>
     <url>%2F2019%2F01%2F16%2F%E5%9C%A8Django%E9%87%8C%E6%B7%BB%E5%8A%A0Celery%E5%81%9A%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1%E5%A4%84%E7%90%86%2F</url>
     <content type="text"><![CDATA[前言当使用Django执行脚本的时候，经常遇到一种情况：跳转到某个url，结果是先在后台执行一个时间较长的脚本，然后才能打开这个url页面，这样用户体验就很不好。 比如说像这样的views.py配置： 12345678910111213141516171819202122232425#使用ansible执行远程命令@csrf_exemptdef run_command(request): command = "ansible all -i /root/.ssh/hosts -m shell -a 'echo 'worinixianren' &gt;&gt; /tmp/xianren.txt'" #设定ansible远程命令 if request.method == 'POST': id = request.POST.getlist("ecs") #通过html来获取id num = [] num.append(len(id)) #传递参数，给下一个页面用的 name = [] #传递参数，给下一个页面用的 db = pymysql.connect("阿里云数据库","数据库账号","数据库密码","databases名") #根据上面获得的id去数据库里得到对应的内网IP cursor = db.cursor() with open('/root/.ssh/hosts','w') as f: for i in id: sql = 'select * from createyaml_ecs where name = "'+ i + '";' cursor.execute(sql) ip = cursor.fetchall()[0][3] cursor.execute(sql) name.append(cursor.fetchall()[0][1]) f.write(ip+" ansible_ssh_user=root"+"\n") #将得到的内网IP写入到一个文件里 db.close() #关闭数据库 child = subprocess.Popen(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True) #执行ansible命令 stdout, stderr = child.communicate() return render(request,'run_command.html',&#123;'data':num[0],'name':name&#125;) #将内容反馈到html页面里 else: return render(request,'homepage.html') 像上面这段代码，要看到run_command.html页面就要先把整个ansible部署的脚本全跑完，如果是几百台机器批量操作的脚本，那就要等到海枯石烂水倒流。那遇到这样的情况怎么解决呢？根据不同的请求，有不同的对策： 单纯的后台跑一个脚本，那么就可以使用Celery； 在后台跑脚本的同时，还需要不断的向后台发送请求（比如微信上的茶叶妹聊天机器人），那么就要使用Channels； Celery原理部分和配置定时任务就不多说了，文末的参考资料里有网站，这里主要说的是如何配置Celery。 环境交代存储后端:阿里云redis(需要支持evalsha命令，如果不支持，去控制台升级小版本即可)Python:3.6.5Django:2.1.1django-celery:3.2.2，安装方法：pip install django-celerycelery-with-redis：3.0，安装方法pip install celery-with-rediscelery:3.1.26.post2 具体配置首先配置setting.py，全文最后添加这样几句话： 1234567891011121314#celery配置信息#celery中间人 redis://:redis密码@redis服务所在的ip地址:端口/数据库号，我用的是254号#channels配置redis也是这样配置，如果没有密码，就可以把':redis密码@'省略BROKER_URL = 'redis://:redis密码@阿里云redis地址:6379/254'#celery结果返回，可用于跟踪结果CELERY_RESULT_BACKEND = 'redis://:redis密码@阿里云redis地址:6379/254'#celery内容等消息的格式设置CELERY_ACCEPT_CONTENT = ['application/json',]CELERY_TASK_SERIALIZER = 'json'CELERY_RESULT_SERIALIZER = 'json'#celery时区设置，使用settings中TIME_ZONE同样的时区CELERY_TIMEZONE = TIME_ZONE 在setting.py同级的文件夹里创建celery.py，内容如下： 12345678910111213141516171819202122#coding:utf-8from __future__ import absolute_import, unicode_literals from celery import Celeryfrom django.conf import settingsimport os #获取当前文件夹名，即为该Django的项目名project_name = os.path.split(os.path.abspath('.'))[-1]project_settings = '%s.settings' % project_name #设置环境变量os.environ.setdefault('DJANGO_SETTINGS_MODULE', project_settings) #实例化Celeryapp = Celery(project_name) #使用django的settings文件配置celeryapp.config_from_object('django.conf:settings') #Celery加载所有注册的应用app.autodiscover_tasks(lambda: settings.INSTALLED_APPS) 还是在同样的文件夹里，编辑__init__.py： 12345#coding:utf-8from __future__ import absolute_import, unicode_literals #引入celery实例对象from .celery import app as celery_app 然后在app（具体应用的文件夹里），创建一个叫tasks.py，这里面就是需要在后台执行的具体脚本： 1234567891011#coding:utf-8from celery.decorators import taskimport subprocess@task #在原有的方法上加上celery装饰器task#ansible批量部署命令def run_ansible(): command = "ansible all -i /root/.ssh/hosts -m shell -a 'echo 'worinixianren' &gt;&gt; /tmp/xianren.txt'" #设定命令 child = subprocess.Popen(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE,shell=True) stdout, stderr = child.communicate() print ("success!!!") #执行成功！ 保存退出之后，修改原有的views.py，把原来涉及脚本的字段删除，改成: 12345678910111213141516171819202122@csrf_exemptdef run_command(request): if request.method == 'POST': id = request.POST.getlist("ecs") num = [] num.append(len(id)) #传递参数，给下一个页面用的 name = [] db = pymysql.connect("阿里云数据库","数据库账号","数据库密码","databases名") cursor = db.cursor() with open('/root/.ssh/hosts','w') as f: for i in id: sql = 'select * from createyaml_ecs where name = "'+ i + '";' cursor.execute(sql) ip = cursor.fetchall()[0][3] cursor.execute(sql) name.append(cursor.fetchall()[0][1]) f.write(ip+" ansible_ssh_user=root"+"\n") db.close() run_ansible.delay() #celery异步执行后台ansible程序，使用delay函数 return render(request,'run_command.html',&#123;'data':num[0],'name':name&#125;) else: return render(request,'homepage.html') 返回到manage.py所在的目录，先正常启动django，然后再/usr/local/python3/bin/celery -A project名称 worker -l info启动celery，如图： 看到tasks.py已经成功被celery使用了，然后在页面上去执行原本的命令，就会看到celery页面有刷新： 此时再去redis里查看一下存储的效果： 可见tasks执行的状态已经被保存到了redis里。但是上面我们是在前台页面启动celery，如果想把celery作为一个后台守护进程，那么命令语句如下： 1/usr/local/python3/bin/celery multi start worker -A project名称 -l info 效果如图： 停止或重启将上面的start换为stop或restart即可。 补充如果tasks.py内容变化了，需要重启celery才能生效。 如果在启动celery的时候，日志有写UserWarning: Using settings.DEBUG leads to a memory leak, never use this setting in production environments! warnings.warn(&#39;Using settings.DEBUG leads to a memory leak, never &#39;，那么就在settings.py里把DEBUG = True改成DEBUG = False即可。 查看redis有几个库的命令：config get databases。 参考资料http://yshblog.com/blog/163 （对照代码做一遍就更有体会了）https://www.cnblogs.com/wdliu/p/9517535.html (原理以及如何配置定时任务)https://www.cnblogs.com/wdliu/p/9530219.htmlhttp://docs.celeryproject.org/en/latest/getting-started/brokers/redis.html]]></content>
@@ -32,8 +37,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>python</tag>
         <tag>zabbix</tag>
+        <tag>python</tag>
         <tag>api</tag>
       </tags>
   </entry>
@@ -432,8 +437,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Jenkins</tag>
         <tag>钉钉</tag>
+        <tag>Jenkins</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -510,8 +515,8 @@
       </categories>
       <tags>
         <tag>阿里云</tag>
-        <tag>python3.6</tag>
         <tag>爬虫</tag>
+        <tag>python3.6</tag>
       </tags>
   </entry>
   <entry>
@@ -595,8 +600,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -620,8 +625,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -633,8 +638,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
