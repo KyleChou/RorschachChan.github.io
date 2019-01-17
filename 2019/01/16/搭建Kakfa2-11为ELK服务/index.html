@@ -75,7 +75,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT" />
+  <meta name="keywords" content="kafka," />
 
 
 
@@ -88,17 +88,18 @@
 
 
 
-<meta name="description" content="准备工作试验机器：阿里云centos 7.5， 本文是单台kafka架构，如果土豪可以尝试3台。    12345yum install java-1.8.0-openjdk* -ywget http://apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgztar -zxvf kafka_2.11-2.1.0.tgz -C /o">
+<meta name="description" content="就是">
+<meta name="keywords" content="kafka">
 <meta property="og:type" content="article">
 <meta property="og:title" content="搭建Kakfa2.11为ELK服务">
 <meta property="og:url" content="http://yoursite.com/2019/01/16/搭建Kakfa2-11为ELK服务/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="准备工作试验机器：阿里云centos 7.5， 本文是单台kafka架构，如果土豪可以尝试3台。    12345yum install java-1.8.0-openjdk* -ywget http://apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgztar -zxvf kafka_2.11-2.1.0.tgz -C /o">
+<meta property="og:description" content="就是">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-01-16T13:43:12.090Z">
+<meta property="og:updated_time" content="2019-01-17T03:41:53.580Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="搭建Kakfa2.11为ELK服务">
-<meta name="twitter:description" content="准备工作试验机器：阿里云centos 7.5， 本文是单台kafka架构，如果土豪可以尝试3台。    12345yum install java-1.8.0-openjdk* -ywget http://apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgztar -zxvf kafka_2.11-2.1.0.tgz -C /o">
+<meta name="twitter:description" content="就是">
 
 
 
@@ -357,6 +358,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
+                    <span itemprop="name">工作与技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -390,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  219
+                  841
                 </span>
               
 
@@ -406,12 +429,16 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  4
                 </span>
               
             </div>
           
 
+          
+              <div class="post-description">
+                  就是
+              </div>
           
 
         </div>
@@ -427,14 +454,19 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="准备工作">准备工作</span></h2><p>试验机器：阿里云centos 7.5，</p>
-<p>本文是单台kafka架构，如果土豪可以尝试3台。<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">yum install java<span class="number">-1.8</span><span class="number">.0</span>-openjdk* -y</span><br><span class="line">wget http:<span class="comment">//apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgz</span></span><br><span class="line">tar -zxvf kafka_2<span class="number">.11</span><span class="number">-2.1</span><span class="number">.0</span>.tgz -C /opt</span><br><span class="line">wget http:<span class="comment">//apache.website-solution.net/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz</span></span><br><span class="line">tar -zxvf zookeeper<span class="number">-3.4</span><span class="number">.10</span>.tar.gz -C /usr/local</span><br></pre></td></tr></table></figure></p>
-<p>其实最新的kafka里面已经包括zookeeper了，不过我习惯了单独启动zookeeper，于是还是单独下载单独配置单独启动。</p>
-<h2><span id="启动zookeeper">启动zookeeper</span></h2><h2><span id="启动kafka">启动kafka</span></h2><h2><span id="kafka简单操作语句">kafka简单操作语句</span></h2><pre><code>./kafka-topics.sh --create --zookeeper 172.31.0.84:2181 --replication-factor 1 --partitions 1 --topic chenshuotest
-./kafka-topics.sh --list --zookeeper 172.31.0.84:2181
-./kafka-console-producer.sh --broker-list 172.31.0.84:9092 --topic chenshuotest
-./kafka-console-consumer.sh --bootstrap-server  172.31.0.84:9092 --topic chenshuotest --from-beginning
-</code></pre><h2><span id="参考文档">参考文档</span></h2><p><a href="http://www.cnblogs.com/JetpropelledSnake/p/10057545.html" target="_blank" rel="noopener">http://www.cnblogs.com/JetpropelledSnake/p/10057545.html</a></p>
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="准备工作">准备工作</span></h2><p>试验机器：阿里云<code>centos 7.5</code>，IP地址是<code>172.31.0.84</code>。</p>
+<p>本文是单台<code>kafka+zookeeper</code>架构，如果土豪可以尝试3台zookeeper+3台kafka。<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">yum install java<span class="number">-1.8</span><span class="number">.0</span>-openjdk* -y</span><br><span class="line">wget http:<span class="comment">//apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgz</span></span><br><span class="line">tar -zxvf kafka_2<span class="number">.11</span><span class="number">-2.1</span><span class="number">.0</span>.tgz -C /opt</span><br><span class="line">wget http:<span class="comment">//apache.website-solution.net/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz</span></span><br><span class="line">tar -zxvf zookeeper<span class="number">-3.4</span><span class="number">.10</span>.tar.gz -C /usr/local</span><br></pre></td></tr></table></figure></p>
+<p>其实最新的kafka里面已经包括zookeeper了，不过我习惯了单独启动zookeeper，还是单独下载单独配置单独启动。</p>
+<h2><span id="启动zookeeper">启动zookeeper</span></h2><p>首先先去zookeeper下的conf文件夹里编写配置文件：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/usr/local/zookeeper<span class="number">-3.4</span><span class="number">.10</span>/conf</span><br><span class="line">cp zoo_sample.cfg zoo.cfg</span><br></pre></td></tr></table></figure></p>
+<p>然后编辑<code>zoo.cfg</code>，把最下面几行改成这样：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">autopurge.snapRetainCount=3		#保留3个文件</span><br><span class="line"># Purge task interval in hours</span><br><span class="line"># Set to "0" to disable auto purge feature</span><br><span class="line">autopurge.purgeInterval=1		#保留一小时以内的日志</span><br><span class="line">server.1=172.31.0.84:2888:3888		#本机IP地址</span><br></pre></td></tr></table></figure></p>
+<p>2888端口：表示的是这个服务器与集群中的Leader服务器交换信息的端口；<br>3888端口：表示的是万一集群中的Leader服务器挂了，需要一个端口来重新进行选举，选出一个新的Leader，而这个端口就是用来执行选举时服务器相互通信的端口。</p>
+<p>然后回到<code>/usr/local/zookeeper-3.4.10/bin</code>里，执行<code>./zkServer.sh start</code>，执行完毕之后，再用<code>./zkServer.sh status</code>检查一下状态，由于是单台，所以状态应该是<code>standalone</code>。</p>
+<h2><span id="启动kafka">启动kafka</span></h2><p>同zookeeper一样，先去kafka的conf文件<code>/opt/kafka_2.11-2.1.0/config</code>里，在配置文件<code>zookeeper.properties</code>最下面加上如下几句话:<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">tickTime=<span class="number">2000</span></span><br><span class="line">initLimit=<span class="number">20</span></span><br><span class="line">syncLimit=<span class="number">10</span></span><br><span class="line">server.1=172.31.0.84:2888:3888	#zookeeper的地址，也就是本机地址</span><br></pre></td></tr></table></figure></p>
+<p>tickTime:这个时间是作为Zookeeper服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个tickTime时间就会发送一个心跳。</p>
+<p>修改好了<code>zookeeper.properties</code>之后，才是正式的kafka配置文件<code>server.properties</code>：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">broker.id=<span class="number">1</span></span><br><span class="line">port=9092	#broker监听的端口</span><br><span class="line">host.name=172.31.0.84	#填服务器 IP</span><br><span class="line">log.dir = / data / kafka - logs    #  该目录可以不用提前创建，在启动时自己会创建</span><br><span class="line">zookeeper.connect = 172.31.0.84:2181  # 这个就是zookeeper的ip及端口</span><br><span class="line">num.partitions = 16          	# 需要配置较大 分片影响读写速度</span><br><span class="line">log.dirs = /data/kafka-logs 	# 数据目录也要单独配置磁盘较大的地方</span><br><span class="line">log.retention.hours = 168    	# 时间按需求保留过期时间,避免磁盘满</span><br></pre></td></tr></table></figure></p>
+<p>确认zookeeper状态是启动之后，<code>./bin/kafka-server-start.sh ./config/server.properties &amp;</code>来启动Kafka服务，然后检查一下端口9092是否正常打开</p>
+<h2><span id="kafka简单操作语句">kafka简单操作语句</span></h2><p>一些常用的操作语句如下：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#创建topic</span><br><span class="line">./kafka-topics.sh --create --zookeeper 172.31.0.84:2181 --replication-factor 1 --partitions 1 --topic chenshuotest	#factor大小不能超过broker的个数</span><br><span class="line">#查看topic</span><br><span class="line">./kafka-topics.sh --list --zookeeper <span class="number">172.31</span><span class="number">.0</span><span class="number">.84</span>:<span class="number">2181</span></span><br><span class="line">#在topic里增加信息</span><br><span class="line">./kafka-<span class="built_in">console</span>-producer.sh --broker-list <span class="number">172.31</span><span class="number">.0</span><span class="number">.84</span>:<span class="number">9092</span> --topic chenshuotest</span><br><span class="line">#消费掉topic里的信息，需要在另外一个xshell窗口界面操作</span><br><span class="line">./kafka-<span class="built_in">console</span>-consumer.sh --bootstrap-server  <span class="number">172.31</span><span class="number">.0</span><span class="number">.84</span>:<span class="number">9092</span> --topic chenshuotest --<span class="keyword">from</span>-beginning</span><br></pre></td></tr></table></figure></p>
+<h2><span id="参考文档">参考文档</span></h2><p><a href="http://www.cnblogs.com/JetpropelledSnake/p/10057545.html" target="_blank" rel="noopener">http://www.cnblogs.com/JetpropelledSnake/p/10057545.html</a> （zookeeper+kafka集群的配置，请看这里）</p>
 
       
     </div>
@@ -514,6 +546,12 @@
 			
 		</div>
 	
+      
+        <div class="post-tags">
+          
+            <a href="/tags/kafka/" rel="tag"><i class="fa fa-tag"></i> kafka</a>
+          
+        </div>
       
 
       
@@ -681,7 +719,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">161</span>
+                  <span class="site-state-item-count">162</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -875,7 +913,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共201.2k字</span>
+  <span class="post-count">博客全站共201.9k字</span>
 </div>
         
 
