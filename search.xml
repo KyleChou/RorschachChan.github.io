@@ -1,6 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[将本地时间转化成UTC时间]]></title>
+    <url>%2F2019%2F01%2F22%2F%E5%B0%86%E6%9C%AC%E5%9C%B0%E6%97%B6%E9%97%B4%E8%BD%AC%E5%8C%96%E6%88%90UTC%E6%97%B6%E9%97%B4%2F</url>
+    <content type="text"><![CDATA[实际代码在日常工作中，有些时候需要把本地时间转换成UTC时间，通常来说，最直接的方法就是把北京时间（CST时间）减去8小时，但是如果考虑到夏令时，那么这样简单的数学计算就会得到错误的结果。要解决这种涉及时区的问题，就要使用特殊的模块pytz。 123456789101112131415161718192021222324Python 3.6.4 (default, Sep 3 2018, 10:11:51) [GCC 4.8.5 20150623 (Red Hat 4.8.5-28)] on linuxType "help", "copyright", "credits" or "license" for more information.&gt;&gt;&gt; import datetime,time,pytz #引入模块&gt;&gt;&gt; from pytz import timezone #引入时区&gt;&gt;&gt; now = time.strftime("%Y-%m-%d %H:%M:%S") #得到当前时间&gt;&gt;&gt; now'2019-01-22 14:03:03'&gt;&gt;&gt; type(now)&lt;class 'str'&gt; #此时类型是字符串&gt;&gt;&gt; now = datetime.datetime.now()&gt;&gt;&gt; nowdatetime.datetime(2019, 1, 22, 14, 4, 49, 707859) #转换成datetime模式&gt;&gt;&gt; type(now)&lt;class 'datetime.datetime'&gt;&gt;&gt;&gt; utc_time = now.astimezone(pytz.utc) #转换成了UTC时间就不要用担心夏令时等等麻烦事了&gt;&gt;&gt; print(utc_time)2019-01-22 06:04:49.707859+00:00&gt;&gt;&gt; type(utc_time)&lt;class 'datetime.datetime'&gt; #还需要将datetime格式转换成str&gt;&gt;&gt; utc_now = utc_time.strftime('%Y-%m-%d %H:%M:00')'2019-01-22 13:57:00'&gt;&gt;&gt; type(utc_now)&lt;class 'str'&gt; #此时返回了字符串 如果要查时区名称，可以使用pytz.country_timezones，如下： 1234&gt;&gt;&gt; pytz.country_timezones['CN']['Asia/Shanghai', 'Asia/Urumqi']&gt;&gt;&gt; pytz.country_timezones['US']['America/New_York', 'America/Detroit', 'America/Kentucky/Louisville', 'America/Kentucky/Monticello', 'America/Indiana/Indianapolis', 'America/Indiana/Vincennes', 'America/Indiana/Winamac', 'America/Indiana/Marengo', 'America/Indiana/Petersburg', 'America/Indiana/Vevay', 'America/Chicago', 'America/Indiana/Tell_City', 'America/Indiana/Knox', 'America/Menominee', 'America/North_Dakota/Center', 'America/North_Dakota/New_Salem', 'America/North_Dakota/Beulah', 'America/Denver', 'America/Boise', 'America/Phoenix', 'America/Los_Angeles', 'America/Anchorage', 'America/Juneau', 'America/Sitka', 'America/Metlakatla', 'America/Yakutat', 'America/Nome', 'America/Adak', 'Pacific/Honolulu'] 参考资料https://www.cnblogs.com/cathouse/archive/2012/11/19/2777678.htmlhttps://blog.csdn.net/junli_chen/article/details/52999448Python cookbook字符串如何转化成日期Python cookbook处理设计到市区的日期问题]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>python3</tag>
+        <tag>UTC时间</tag>
+        <tag>时区转换</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[较深入解析filebeat.yml各字段功能]]></title>
+    <url>%2F2019%2F01%2F21%2F%E8%BE%83%E6%B7%B1%E5%85%A5%E8%A7%A3%E6%9E%90filebeat-yml%E5%90%84%E5%AD%97%E6%AE%B5%E5%8A%9F%E8%83%BD%2F</url>
+    <content type="text"><![CDATA[常见的几个参数以下面这个filebeat.yml为例： 1234567891011121314151617181920212223242526filebeat.prospectors:- type: log #这个值可以是stdin(读入标准)、udp（通过udp读取事件） enabled: true paths: - /var/log/messages #指定文件，可以使用通配符 tags: ["logmessages"] #lostash能区分不同目录发过来的日志，用tag区分 encoding: utf-8 #设置字符编码 scan_frequency: 10s #每 10 秒钟扫描一次 harvester_buffer_size: 15000 #实际读取文件时，每次读取15000字节 tail_files: true #是否从文件末尾开始读取 fields: alilogtype: usercenter_serverlog serverip: 172.16.0.207 fields_under_root: true #field 字段会放在根索引下，否则会放在 fields 字段下#这里添加第二个日志路径 - type: log enabled: true paths: - /tmp/test.log tags: ["test"]output.kafka: enabled: true hosts: ["172.31.0.84:9092"] topic: 'system-secure' #支持 topic: '%&#123;[fields][alilogtype]&#125;' 这种写法 在kibana上看到的效果如图： exclude和include而如果是这样： 123456789101112- type: log enabled: true paths: - /tmp/test.log exclude_lines: ['^JAMES'] #排除掉JAMES开头的行 include_lines: ['^HARDEN', '^CURRY'] #保留HARDEN或者CURRY开头的行 tags: ["test"]output.kafka: enabled: true hosts: ["172.31.0.84:9092"] topic: 'system-secure' 效果如图： 注意！如果同时定义了include_lines和exclude_lines，则Filebeat首先执行include_lines，然后执行exclude_lines。 这两个选项的定义顺序无关紧要。 即使exclude_lines出现在配置文件中的include_lines之前，include_lines选项也会始终在exclude_lines选项之前执行。 参考资料http://www.xiaot123.com/post/elk_filebeat1https://blog.csdn.net/u013613428/article/details/78665081http://www.51niux.com/?id=204https://github.com/wangriyu/docker-elk/wiki/Filebeat-Kafka-ELK]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>elk</tag>
+        <tag>filebeat</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[将kafka加入到Elk集群]]></title>
     <url>%2F2019%2F01%2F21%2F%E5%B0%86kafka%E5%8A%A0%E5%85%A5%E5%88%B0Elk%E9%9B%86%E7%BE%A4%2F</url>
     <content type="text"><![CDATA[环境交代架构如图： 1（目标模块 ---&gt;filebeat） ---&gt;（kafka ---&gt;logstash） ---&gt;（es ---&gt;kibana） 具体服务器信息如下： 1234172.16.0.207 工作模块+filebeat CentOS 7.4 64位 阿里云1核2G172.31.0.84 kafka+logstash CentOS 7.4 64位 阿里云2核4G172.31.0.76 es+es-head+kibana CentOS 7.4 64位 阿里云2核16G安全组已经开放了elk相应的端口 首先先执行yum update -y &amp;&amp; yum install java-1.8.0-openjdk* -y，在更新的时候不要闲着，在https://www.elastic.co/downloads网站下载所有的elk模块，然后上传到对应的服务器里。 filebeat的部署、配置和启动filebeat与目标机器安装在一起，它是用6.5.4版本，先从官网上下载rpm包，然后上传到服务器里。 1234#假设已经下载好了filebeat-6.5.4-x86_64.rpmrpm -ivh filebeat-6.5.4-x86_64.rpmcd /etc/filebeatcp filebeat.yml filebeat.yml-default #备份模板配置文件 修改filebeat.yml如下： 12345678910filebeat.prospectors:- type: log enabled: true paths: - /var/log/messages #设定日志输入源output.kafka: enabled: true hosts: ["172.31.0.84:9092"] #这里填入kafka的地址和端口 topic: 'system-secure' #指定一个topic 配置文件说明了数据的来源和目的地，使用/etc/init.d/filebeat start -e -c /etc/filebeat/filebeat.yml启动filebeat，然后ps -aux|grep filebeat查看一下进程。而filebeat的日志地址是在/var/log/filebeat目录下。 logstash的部署、配置和启动logstash是跟kafka在一台服务器里，首先是下载包并且解压缩： 123wget https://artifacts.elastic.co/downloads/logstash/logstash-6.5.4.tar.gztar -zxvf logstash-6.5.4.tar.gz -C /opt/cd /opt/logstash-6.5.4/config 新建一个配置文件，叫logstash_kafka2ES.conf： 12345678910111213input &#123; kafka&#123; bootstrap_servers=&gt;"172.31.0.84:9092" #kafka的地址和端口 topics=&gt;"system-secure" #topic要一致 codec=&gt;plain &#125;&#125;output &#123; elasticsearch &#123; hosts=&gt;["172.31.0.76:9200"] #es的地址和端口 index=&gt;"system-secure-%&#123;+YYYY-MM&#125;" #规定es使用的索引，按月份分类 &#125;&#125; 配置文件里规定数据来源是kafka的system-secure这个topic，再修改同目录下的jvm.options： 12-Xms512m #根据自己实际情况来-Xmx512m #根据自己实际情况来 保存退出，./bin/logstash -f ./config/logstash_kafka2ES.conf &amp;启动之，日志是logstash目录/logs/logstash-plain.log。 kafka的配置和启动已经在https://rorschachchan.github.io/2019/01/16/%E6%90%AD%E5%BB%BAKakfa2-11%E4%B8%BAELK%E6%9C%8D%E5%8A%A1/ 里说过了，这里略过。 elasticsearch-6.5.4的部署、配置和启动登录到es的服务器上，首先先下载安装包并且解压缩： 12345wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.5.4.tar.gztar -zxvf elasticsearch-6.5.4.tar.gz -C /opt/cd elasticsearch-6.5.4/useradd elk #es不能用root启动，需要新建一个用户chown -R elk:elk elasticsearch-6.5.4/ #整个文件夹都给elk了 修改一下elasticsearch.yml： 123456789#cluster.name: my-application #由于实验环境是一个es，就没写集群名称node.name: lcshopelkpath.data: /opt/elasticsearch-6.5.4/data/ #存数据的地方path.logs: /data/tmp/elklog #存日志的路径bootstrap.memory_lock: true #为了防止swapping，官方建议设定为true，阿里云的云服务器是没有swap，可以不写network.host: 0.0.0.0http.port: 9200http.cors.enabled: true #准许es-headhttp.cors.allow-origin: "*" 保存之后修改同目录的jvm.options： 12-Xms2g #根据自己实际情况来-Xmx2g #根据自己实际情况来 这里的配置，官网标准的建议是把50％的可用内存作为Elasticsearch的堆内存，保留剩下的50％。当然它也不会被浪费，Lucene会很乐意利用起余下的内存。查看node下是否开启了Mem_lock的语句是：curl &#39;localhost:9200/_nodes?filter_path=**.mlockall&#39;。 保存完毕，还没完,vim /etc/security/limits.conf，最后两行改成如下: 12345* soft nofile 65536* hard nofile 65536# allow user 'elk' mlockallelk soft memlock unlimitedelk hard memlock unlimited 然后切换成elk用户，执行./elasticsearch -d就是后台启动了。 kibana和es-head的部署、配置和启动es-head是用docker部署的，语句如下： 12#假设docker已经安装好了docker run --name es-head -p 9100:9100 tobias74/elasticsearch-head:6 #这里必须安装6版本，不然的话，数据不会显示 运行完之后，要进入到容器里修改一下对应的配置文件Gruntfile.js，修改一下connect段落： 12345678910connect: &#123; server: &#123; options: &#123; port: 9100, base: '.', keepalive: true, hostname: '*' #新增加这样一句话 &#125; &#125; &#125; 保存文件，docker restart es-head即可。在浏览器里访问外网ip地址:9100，如图： Kibana也是用docker部署的，语句如下： 12#假设docker已经安装好了docker run --name kibana -p 5601:5601 docker.elastic.co/kibana/kibana:6.5.4 运行完之后，要进入到容器里修改一下对应的配置文件kibana.yml： 1234567---# Default Kibana configuration from kibana-docker.server.name: kibanaserver.host: "0.0.0.0" #准许任何人访问elasticsearch.url: http://47.96.94.124:9200 #这里输入外网IP和es的端口xpack.monitoring.ui.container.elasticsearch.enabled: true 修改完事之后，docker restart kibana，然后在浏览器里访问外网ip地址:9100就可以查看kibana了，然后先去menagement —&gt;index pattern填入刚刚生成的index，然后在discover页面里选择刚刚生成的index就能看到日志内容了： X-pack目前还不支持6.2以上的版本，故此先略。 参考资料https://dzone.com/articles/just-say-no-swappinghttps://www.elastic.co/guide/cn/elasticsearch/guide/cn/heap-sizing.html]]></content>
@@ -455,8 +480,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>钉钉</tag>
         <tag>Jenkins</tag>
+        <tag>钉钉</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -1032,18 +1057,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root启动进程以及启动docker]]></title>
-    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root用户启动tomcat进程]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
     <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
@@ -1053,6 +1066,18 @@
       <tags>
         <tag>centos</tag>
         <tag>运维安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root启动进程以及启动docker]]></title>
+    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>安全</tag>
       </tags>
   </entry>
   <entry>
