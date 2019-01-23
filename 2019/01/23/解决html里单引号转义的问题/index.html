@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/django43.png">
 <meta property="og:image" content="http://yoursite.com/images/django43.png">
-<meta property="og:updated_time" content="2019-01-23T09:26:07.034Z">
+<meta property="og:updated_time" content="2019-01-23T09:28:49.520Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="解决html里单引号转义的问题">
 <meta name="twitter:description" content="这样就不用把数据时刻都往数据库里塞了">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  377
+                  379
                 </span>
               
 
@@ -464,7 +464,7 @@
 <p>那么遇到这种问题怎么办?改成这样：<br>    <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function test()</span><br><span class="line">	&#123;</span><br><span class="line">		var str="&#123;&#123;names&#125;&#125;".replace(/&amp;#39;/g,'"')</span><br><span class="line">   		var name=JSON.parse(str)</span><br><span class="line">  			alert(name)</span><br><span class="line">		然后进行for循环，略过不表</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></p>
 <p>执行效果如下：<br><img src="/images/django43.png" alt="akb48"><br>上面代码首先先把所有的单引号replace成双引号，<font color="red">html是不会转义双引号的</font>，所以就可以正常使用了。</p>
 <p>当然如果views.py里提供的name直接是双引号的话，就不用这么折腾了。</p>
-<h2><span id="与正文内容无关的补充">与正文内容无关的补充</span></h2><p>Centos 7修改字符集的方法：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">localedef -c -f UTF<span class="number">-8</span> -i zh_CN zh_CN.UTF<span class="number">-8</span></span><br><span class="line"><span class="keyword">export</span> LC_ALL=zh_CN.UTF<span class="number">-8</span></span><br><span class="line">echo <span class="string">'LANG="zh_CN.UTF-8"'</span> &gt; <span class="regexp">/etc/</span>locale.conf</span><br></pre></td></tr></table></figure></p>
+<h2><span id="与正文内容无关的补充">与正文内容无关的补充</span></h2><p>Centos 7修改中文字符集的方法：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">localedef -c -f UTF<span class="number">-8</span> -i zh_CN zh_CN.UTF<span class="number">-8</span></span><br><span class="line"><span class="keyword">export</span> LC_ALL=zh_CN.UTF<span class="number">-8</span></span><br><span class="line">echo <span class="string">'LANG="zh_CN.UTF-8"'</span> &gt; <span class="regexp">/etc/</span>locale.conf</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
