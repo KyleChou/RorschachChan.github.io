@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/django43.png">
 <meta property="og:image" content="http://yoursite.com/images/django44.png">
-<meta property="og:updated_time" content="2019-01-24T01:47:02.359Z">
+<meta property="og:updated_time" content="2019-01-24T03:02:55.663Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="解决html里单引号转义的问题">
 <meta name="twitter:description" content="这样就不用把数据时刻都往数据库里塞了">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  378
+                  489
                 </span>
               
 
@@ -457,14 +457,21 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="正文">正文</span></h2><p>在使用django展现页面的时候，会出现这样的一个需求：</p>
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="正文">正文</span></h2><p>在使用Django展现页面的时候，会出现这样的一个需求：</p>
 <p>我们在<code>views.py</code>里获取到的一个数组，比如叫name，内容是：<code>[&#39;james&#39;,&#39;wade&#39;,&#39;bosh&#39;,&#39;yaoming&#39;]</code>，然后<code>return render_to_response(&#39;a.html&#39;,{&#39;names&#39;:name,})</code>，让<code>a.html</code>可以使用到这个name数组。若在<code>a.html</code>里需要对这个name数组进行for循环展示，正常思路的话，js如下：<br>    <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function test()</span><br><span class="line">	&#123;</span><br><span class="line">		var name="&#123;&#123;names&#125;&#125;".split(",")</span><br><span class="line">		alert(name)</span><br><span class="line">		然后进行for循环，略过不表</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></p>
 <p>那么得到的会是如下效果：<br><img src="/images/django43.png" alt="akb48"></p>
 <p>可见虽然name在<code>views.py</code>里是list，但是传入到html是一个字符串，对于字符串使用split按照逗号分隔。而html里会把单引号转义成了<code>&amp;#39;</code>，而<code>&amp;#39;</code>这个玩意儿比较恶心，它不能被<code>JSON.parse</code>加工成一个数组，进而不能被for循环。</p>
 <p>那么遇到这种问题怎么办?改成这样：<br>    <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">function test()</span><br><span class="line">	&#123;</span><br><span class="line">		var str="&#123;&#123;names&#125;&#125;".replace(/&amp;#39;/g,'"')</span><br><span class="line">   		var name=JSON.parse(str)</span><br><span class="line">  			alert(name)</span><br><span class="line">		然后进行for循环，略过不表</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure></p>
-<p>执行效果如下：<br><img src="/images/django44.png" alt="akb48"><br>上面代码首先先把所有的单引号replace成双引号，<font color="red">html是不会转义双引号的</font>，所以就可以正常使用了。</p>
+<p>执行效果如下：<br><img src="/images/django44.png" alt="akb48"><br>上面代码首先先把所有的单引号replace成双引号，<font color="red">Html是不会转义双引号的</font>，所以就可以正常使用了。</p>
 <p>当然如果views.py里提供的name直接是双引号的话，就不用这么折腾了。</p>
-<h2><span id="与正文内容无关的补充">与正文内容无关的补充</span></h2><p>Centos 7修改中文字符集的方法：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">localedef -c -f UTF<span class="number">-8</span> -i zh_CN zh_CN.UTF<span class="number">-8</span></span><br><span class="line"><span class="keyword">export</span> LC_ALL=zh_CN.UTF<span class="number">-8</span></span><br><span class="line">echo <span class="string">'LANG="zh_CN.UTF-8"'</span> &gt; <span class="regexp">/etc/</span>locale.conf</span><br></pre></td></tr></table></figure></p>
+<h2><span id="数组如何使用双引号而不是单引号">数组如何使用双引号而不是单引号</span></h2><p>python默认生成数组是单引号的，也就是说是<code>[&#39;apple&#39;,&#39;banana&#39;,&#39;candy&#39;</code>]的样子，而不会自动生成<code>[&quot;apple&quot;,&quot;banana&quot;,&quot;candy&quot;]</code>，这一点是不能改变的。那么要获得到双引号的数组，比较好的办法是json：</p>
+<pre><code>&gt;&gt;&gt; names = [&apos;james&apos;,&apos;wade&apos;,&apos;bosh&apos;,&apos;yaoming&apos;]
+
+&gt;&gt;&gt; import json
+&gt;&gt;&gt; print(json.dumps(names))
+[&quot;james&quot;, &quot;wade&quot;, &quot;bosh&quot;,&quot;yaoming&quot;]
+</code></pre><p>如果元素是中文的话，那么就要用<code>(json.dumps(names,ensure_ascii=False))</code>。</p>
+<h2><span id="与正文内容无关的补充">与正文内容无关的补充</span></h2><p><code>Centos 7</code>修改中文字符集的方法：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">localedef -c -f UTF<span class="number">-8</span> -i zh_CN zh_CN.UTF<span class="number">-8</span></span><br><span class="line"><span class="keyword">export</span> LC_ALL=zh_CN.UTF<span class="number">-8</span></span><br><span class="line">echo <span class="string">'LANG="zh_CN.UTF-8"'</span> &gt; <span class="regexp">/etc/</span>locale.conf</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -861,7 +868,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x6B63;&#x6587;">&#x6B63;&#x6587;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x4E0E;&#x6B63;&#x6587;&#x5185;&#x5BB9;&#x65E0;&#x5173;&#x7684;&#x8865;&#x5145;">&#x4E0E;&#x6B63;&#x6587;&#x5185;&#x5BB9;&#x65E0;&#x5173;&#x7684;&#x8865;&#x5145;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x6B63;&#x6587;">&#x6B63;&#x6587;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x6570;&#x7EC4;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x53CC;&#x5F15;&#x53F7;&#x800C;&#x4E0D;&#x662F;&#x5355;&#x5F15;&#x53F7;">&#x6570;&#x7EC4;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x53CC;&#x5F15;&#x53F7;&#x800C;&#x4E0D;&#x662F;&#x5355;&#x5F15;&#x53F7;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x4E0E;&#x6B63;&#x6587;&#x5185;&#x5BB9;&#x65E0;&#x5173;&#x7684;&#x8865;&#x5145;">&#x4E0E;&#x6B63;&#x6587;&#x5185;&#x5BB9;&#x65E0;&#x5173;&#x7684;&#x8865;&#x5145;</span></span></a></li></ol></div>
             
 
           </div>
@@ -915,7 +922,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共204.5k字</span>
+  <span class="post-count">博客全站共204.7k字</span>
 </div>
         
 
