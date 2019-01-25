@@ -98,7 +98,8 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/django43.png">
 <meta property="og:image" content="http://yoursite.com/images/django44.png">
-<meta property="og:updated_time" content="2019-01-24T06:08:04.096Z">
+<meta property="og:image" content="http://yoursite.com/images/里皮.gif">
+<meta property="og:updated_time" content="2019-01-25T08:35:37.098Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="解决html里单引号转义的问题">
 <meta name="twitter:description" content="这样就不用把数据时刻都往数据库里塞了">
@@ -467,6 +468,7 @@
 <h2><span id="数组如何使用双引号而不是单引号">数组如何使用双引号而不是单引号</span></h2><p>python默认生成数组是单引号的，也就是说是<code>[&#39;apple&#39;,&#39;banana&#39;,&#39;candy&#39;</code>]的样子，而不会自动生成<code>[&quot;apple&quot;,&quot;banana&quot;,&quot;candy&quot;]</code>，这一点是不能改变的。那么要获得到双引号的数组，比较好的办法是json：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>names = [<span class="string">'james'</span>,<span class="string">'wade'</span>,<span class="string">'bosh'</span>,<span class="string">'yaoming'</span>]</span><br><span class="line"></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> json</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(json.dumps(names))</span><br><span class="line">[<span class="string">"james"</span>, <span class="string">"wade"</span>, <span class="string">"bosh"</span>,<span class="string">"yaoming"</span>]</span><br></pre></td></tr></table></figure></p>
 <p>如果元素是中文的话，那么就要用<code>(json.dumps(names,ensure_ascii=False))</code>。</p>
 <h2><span id="与正文内容无关的补充">与正文内容无关的补充</span></h2><p><code>Centos 7</code>修改中文字符集的方法：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">localedef -c -f UTF<span class="number">-8</span> -i zh_CN zh_CN.UTF<span class="number">-8</span></span><br><span class="line"><span class="keyword">export</span> LC_ALL=zh_CN.UTF<span class="number">-8</span></span><br><span class="line">echo <span class="string">'LANG="zh_CN.UTF-8"'</span> &gt; <span class="regexp">/etc/</span>locale.conf</span><br></pre></td></tr></table></figure></p>
+<p><img src="/images/里皮.gif" alt="akb48" title="冯潇霆失误后，气急败坏的里皮"></p>
 
       
     </div>
