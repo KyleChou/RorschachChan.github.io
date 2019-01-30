@@ -399,7 +399,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">201</span>
+                  <span class="site-state-item-count">202</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -599,7 +599,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共204.7k字</span>
+  <span class="post-count">博客全站共205.2k字</span>
 </div>
         
 
@@ -1224,7 +1224,24 @@ const loadScript = function loadScript(c,b){var a=document.createElement("script
 </body>
 </html>
 <!-- 页面点击小红心 -->
-<script type="text/javascript" src="/js/src/love.js"></script>       newcounter.save(null, {
+<script type="text/javascript" src="/js/src/love.js"></script>            $element.find('.leancloud-visitors-count').text(counter.get('time'));
+              },
+              error: function(counter, error) {
+                console.log('Failed to save Visitor num, with error message: ' + error.message);
+              }
+            });
+          } else {
+            var newcounter = new Counter();
+            /* Set ACL */
+            var acl = new AV.ACL();
+            acl.setPublicReadAccess(true);
+            acl.setPublicWriteAccess(true);
+            newcounter.setACL(acl);
+            /* End Set ACL */
+            newcounter.set("title", title);
+            newcounter.set("url", url);
+            newcounter.set("time", 1);
+            newcounter.save(null, {
               success: function(newcounter) {
                 var $element = $(document.getElementById(url));
                 $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
