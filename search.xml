@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[ES对应kafka的topic生成index]]></title>
+    <title><![CDATA[ES对应Kafka的topic生成不同的Index]]></title>
     <url>%2F2019%2F01%2F30%2FES%E5%AF%B9%E5%BA%94kafka%E7%9A%84topic%E7%94%9F%E6%88%90index%2F</url>
     <content type="text"><![CDATA[假设有两个模块分别叫shopauth和shoporder，日志文件也对应分别是shopauth.log和shoporder.log，现在需要把日志对应放到同个kafka里不同的topic里。 shopauth的filebeat.yml内容如下： 12345678910111213141516171819filebeat.prospectors:- type: log enabled: true paths: - /mnt/shopauth/logs/shopauth.log #日志路径 tags: ["logmessages"] encoding: utf-8 scan_frequency: 10s harvester_buffer_size: 15000 tail_files: true fields: alilogtype: app_log serverip: 172.16.0.201 #本地IP地址 log_topics: ecnode-logoutput.kafka: enabled: true hosts: ["172.31.0.84:9092"] #指定kafka的地址信息 topic: '%&#123;[fields][log_topics]&#125;' #自动识别topic 如果只有一个log源输入日志（不是指paths只有一个路径，paths可以指定多个路径），那么output.kafka的topic当然可以写死。如果是多个log源写入日志，而且又要对应输入到kafka的topic里，可以使用&#39;%{[fields][log_topics]}&#39;，达到自动识别的目的。 但是要注意！如果加上了fields_under_root: true，那么&#39;%{[fields][log_topics]}&#39;是错误的，要改成topic: &quot;%{[log_topic]}&quot;才可以。 shoporder的filebeat.yml内容如下： 123456789101112131415161718filebeat.prospectors:- type: log enabled: true paths: - /mnt/shoporder/logs/shoporder.log #指定路径 tags: ["logmessages"] encoding: utf-8 scan_frequency: 10s harvester_buffer_size: 15000 tail_files: true fields: alilogtype: app_log serverip: 172.16.0.207 #本地IP地址output.kafka: enabled: true hosts: ["172.31.0.84:9092"] #指定kafka的地址信息 topic: 'shoporder-log' #指定topic 启动filebeat和kafka，kafka的配置这里略过不表。在kafka里查看，发现已经生成对应的topic： 而logstash.yml内容如下： 123456789101112131415161718192021222324252627input &#123; kafka&#123; bootstrap_servers=&gt;"172.31.0.84:9092" #指定kafka的IP和端口 topics=&gt;["shoporder-log","shopauth-log"] #说明从这两个topic里消费 decorate_events=&gt;"true" #这个很重要 codec=&gt;plain &#125;&#125;filter &#123; #利用kafka域的内容构建自定义的域 if [@metadata][kafka][topic] == "shopauth-log" &#123; mutate &#123; add_field =&gt; &#123;"[@metadata][index]" =&gt; "shopauth-log-%&#123;+YYYY-MM&#125;"&#125; &#125; &#125; else if [@metadata][kafka][topic] == "shoporder-log" &#123; mutate &#123; add_field =&gt; &#123;"[@metadata][index]" =&gt; "shoporder-log-%&#123;+YYYY-MM&#125;"&#125; &#125; &#125;&#125;output &#123; elasticsearch &#123; hosts=&gt;["172.31.0.76:9200"] #指定es的IP和端口 index=&gt;"%&#123;[@metadata][index]&#125;" #对应生成各自的index &#125;&#125; 这里说一下decorate_events，如果只用了单个logstash，订阅了多个主题，你肯定希望在es中为不同主题创建不同的索引，那么decorate_events就是你想要的。这个值默认是false，当指定这个选项为true时，会附加kafka的一些信息到logstash event的一个名为kafka的域（Metadata fields）中，然后再通过filter进行判断，如果是从shopauth-log这个topic得到信息，就把index设定成shopauth-log-%{+YYYY-MM}&quot;。 启动logstash，待其正常之后，在es的控制台查看日志，发现index索引已经成功生成： 现在在kibana里就可以创建索引然后查找了！]]></content>
       <categories>
@@ -9,6 +9,7 @@
       </categories>
       <tags>
         <tag>elk</tag>
+        <tag>logstash</tag>
       </tags>
   </entry>
   <entry>
