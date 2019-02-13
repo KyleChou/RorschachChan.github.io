@@ -97,7 +97,7 @@
 <meta property="og:description" content="都是与数据库相关的问题">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/赌博默示录.jpg">
-<meta property="og:updated_time" content="2019-02-13T07:52:18.863Z">
+<meta property="og:updated_time" content="2019-02-13T08:26:30.607Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十六套">
 <meta name="twitter:description" content="都是与数据库相关的问题">
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  123
+                  829
                 </span>
               
 
@@ -431,7 +431,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  3
                 </span>
               
             </div>
@@ -457,19 +457,30 @@
 
       
         <script src="\assets\js\APlayer.min.js"> </script><ol>
-<li><p>Mysql的<code>bin-log</code>有几种形式？分析其特点以及对应什么场合使用。</p>
+<li>Mysql的<code>bin-log</code>有几种形式？分析其特点以及对应什么场合使用。<br>Statement Level模式: <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">简介：每一条会修改数据的sql都会记录到master的bin-log中。Slave在复制的时候sql线程会解析成和原来master端执行过的相同语句来执行。</span><br><span class="line">优点：不需要记录每一行数据的变化，减少bin-log的日志量，节约IO，提高性能。因为他只记录在master上所执行语句的细节，以及执行语句时候的上下文的信息。</span><br><span class="line">缺点：很多新功能的加入在复制的时候容易导致出现问题。</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>如何在线正确清理MySQL的<code>binlog</code>？</p>
+</ol>
+<p>Row Level模式:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">简介:日志中会记录成每一行数据被修改的模式，然后再slave 端在对相同的数据进行修改。</span><br><span class="line">优点：在row level模式下，bin-log中可以不记录执行的sql语句的上下文相关的信息。仅仅只需要记录那一条记录被修改了。所以row level的日志内容会非常清楚记录下每一行数据修改的细节，非常容易理解。而且不会出现某些特点情况下的存储过程，或function 以及triggeer的调用和触发无法被正确复制的问题。</span><br><span class="line">缺点：所有执行的语句当记录到日志中的时候，都将以每行记录的修改来记录，可能会产生大量的日志。</span><br></pre></td></tr></table></figure></p>
+<p>Mixed （前两种的混合模式）：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">根据执行的每一条具体的sql语句来区分对待记录日志的形式；</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>如何在线正确清理MySQL的<code>binlog</code>？<br>手动删除方法如下： <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#首先查看主从库正在使用的binlog文件名称 </span></span><br><span class="line">show master(slave) status\G</span><br><span class="line"><span class="comment">#删除之前一定要备份</span></span><br><span class="line">purge master logs before<span class="string">'2017-09-01 00:00:00'</span>; </span><br><span class="line"><span class="comment">#删除指定时间前的日志</span></span><br><span class="line">purge master logs to<span class="string">'mysql-bin.000001'</span>;</span><br></pre></td></tr></table></figure>
 </li>
+</ol>
+<p>自动删除的方法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#通过设置binlog的过期时间让系统自动删除日志</span></span><br><span class="line"><span class="comment">#查看过期时间与设置过期时间</span></span><br><span class="line">show variables like <span class="string">'expire_logs_days'</span>; </span><br><span class="line">set <span class="keyword">global</span> expire_logs_days = <span class="number">30</span>;</span><br></pre></td></tr></table></figure></p>
+<ol>
 <li><p>MySQL主从复制原理及配置主从的完整步骤</p>
 </li>
 <li><p>MySQL如何实现双向互为主从复制，并说明应用场景?</p>
 </li>
 <li><p>什么是数据库事务，事务有哪些特性？</p>
 </li>
-<li><p>如何理解MySQL里<code>最大连接数</code>和<code>请求数</code>之间的关系？</p>
+</ol>
+<ol>
+<li><p>如何理解MySQL里<code>最大连接数</code>和<code>请求数</code>之间的关系？<br>假设某个数据库的最大连接数是1000，并不是指最多只能支持1000个访问，因为数据库与应用之间肯定会隔着中间件，这个中间件的连接池会管理链接，一般如果代码写的好、事物控制得当，一个事物完成连接会被连接池收回重复利用，所以不是说一个用户登录你的系统或网站就一直占用着，一个连接也可以包含多次请求。</p>
 </li>
-<li><p>MySQL出现IOPS过高，应该如何处理？</p>
+<li><p>MySQL出现IOPS过高，应该如何处理？<br>IOPS过高比较普遍的原因是<code>实例内存满足不了缓存数据或排序等需要，导致产生大量的物理IO</code>或者是<code>查询执行效率低，扫描过多数据行</code>。</p>
+</li>
+<li><p>Sort_Buffer_Size设置对服务器性能的影响</p>
 </li>
 </ol>
 <p><img src="/images/赌博默示录.jpg" alt="akb48"></p>
@@ -896,7 +907,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共205.6k字</span>
+  <span class="post-count">博客全站共206.3k字</span>
 </div>
         
 
