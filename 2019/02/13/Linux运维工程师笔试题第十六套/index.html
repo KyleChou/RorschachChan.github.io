@@ -97,7 +97,7 @@
 <meta property="og:description" content="都是与数据库相关的问题">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/赌博默示录.jpg">
-<meta property="og:updated_time" content="2019-02-13T08:26:30.607Z">
+<meta property="og:updated_time" content="2019-02-13T08:37:14.328Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十六套">
 <meta name="twitter:description" content="都是与数据库相关的问题">
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  829
+                  946
                 </span>
               
 
@@ -468,7 +468,7 @@
 </ol>
 <p>自动删除的方法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#通过设置binlog的过期时间让系统自动删除日志</span></span><br><span class="line"><span class="comment">#查看过期时间与设置过期时间</span></span><br><span class="line">show variables like <span class="string">'expire_logs_days'</span>; </span><br><span class="line">set <span class="keyword">global</span> expire_logs_days = <span class="number">30</span>;</span><br></pre></td></tr></table></figure></p>
 <ol>
-<li><p>MySQL主从复制原理及配置主从的完整步骤</p>
+<li><p>简述MySQL主从复制原理及配置主从的完整步骤。</p>
 </li>
 <li><p>MySQL如何实现双向互为主从复制，并说明应用场景?</p>
 </li>
@@ -480,7 +480,7 @@
 </li>
 <li><p>MySQL出现IOPS过高，应该如何处理？<br>IOPS过高比较普遍的原因是<code>实例内存满足不了缓存数据或排序等需要，导致产生大量的物理IO</code>或者是<code>查询执行效率低，扫描过多数据行</code>。</p>
 </li>
-<li><p>Sort_Buffer_Size设置对服务器性能的影响</p>
+<li><p><code>Sort_Buffer_Size</code>是什么参数？设置它对服务器性能有何影响？<br><code>Sort_Buffer_Size</code>是一个connection级参数，在每个connection第一次需要使用这个buffer的时候，一次性分配设置的内存。<code>Sort_Buffer_Size</code>并不是越大越好，由于是connection级的参数，过大的设置+高并发可能会耗尽系统内存资源。<code>Sort_Buffer_Size</code>超过256KB的时候，MySQL就会使用<code>mmap()</code>而不是<code>malloc()</code>来进行内存分配，导致效率降低。详情可见：<a href="https://www.cnblogs.com/wajika/p/6718552.html" target="_blank" rel="noopener">https://www.cnblogs.com/wajika/p/6718552.html</a> 。</p>
 </li>
 </ol>
 <p><img src="/images/赌博默示录.jpg" alt="akb48"></p>
@@ -907,7 +907,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共206.3k字</span>
+  <span class="post-count">博客全站共206.4k字</span>
 </div>
         
 
