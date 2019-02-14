@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock9.png">
 <meta property="og:image" content="http://yoursite.com/images/赌博默示录.jpg">
-<meta property="og:updated_time" content="2019-02-14T09:21:56.643Z">
+<meta property="og:updated_time" content="2019-02-14T09:37:18.505Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十六套">
 <meta name="twitter:description" content="都是与数据库mysql相关的问题">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,338
+                  2,396
                 </span>
               
 
@@ -474,6 +474,7 @@
 <h2><span id="如何理解mysql里最大连接数和请求数之间的关系">如何理解MySQL里最大连接数和请求数之间的关系？</span></h2><p>假设某个数据库的最大连接数是1000，并不是指最多只能支持1000个访问，因为数据库与应用之间肯定会隔着中间件，这个中间件的连接池会管理链接，一般如果代码写的好、事物控制得当，一个事物完成连接会被连接池收回重复利用，所以不是说一个用户登录你的系统或网站就一直占用着，一个连接也可以包含多次请求。</p>
 <h2><span id="mysql出现iops过高应该如何处理">MySQL出现IOPS过高，应该如何处理？</span></h2><p>IOPS (Input/Output Operations Per Second)，即每秒进行读写（I/O）操作的次数。IOPS是指存储每秒可接受多少次主机发出的访问，主机的一次IO需要多次访问存储才可以完成。IOPS过高比较普遍的原因是<code>实例内存满足不了缓存数据或排序等需要，导致产生大量的物理IO</code>或者是<code>查询执行效率低，扫描过多数据行</code>。</p>
 <h2><span id="sort_buffer_size是什么参数设置它对服务器性能有何影响">Sort_Buffer_Size是什么参数？设置它对服务器性能有何影响？</span></h2><p><code>Sort_Buffer_Size</code>是一个connection级参数，在每个connection第一次需要使用这个buffer的时候，一次性分配设置的内存。<code>Sort_Buffer_Size</code>并不是越大越好，由于是connection级的参数，过大的设置+高并发可能会耗尽系统内存资源。<code>Sort_Buffer_Size</code>超过256KB的时候，MySQL就会使用<code>mmap()</code>而不是<code>malloc()</code>来进行内存分配，导致性能损耗、效率降低。</p>
+<p>如果列长度大于<code>max_length_for_sort_data</code>的参数值的话，<code>iowait</code>会增加, 响应时间明显变长。此时通过<code>show processlist</code>查看,发现有很多session在处理sort操作,此时需要适当调大<code>max_length_for_sort_data</code>的参数值。</p>
 <h2><span id="如何从mysql全库备份中恢复某个库和某张表">如何从MySQL全库备份中恢复某个库和某张表</span></h2><p>主要用到的参数是–one-database简写-o的参数，举个例子：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">全库备份</span><br><span class="line">[root@HE1 ~]<span class="comment"># mysqldump -uroot -p --single-transaction -A --master-data=2 &gt;dump.sql</span></span><br><span class="line">只还原erp库的内容</span><br><span class="line">[root@HE1 ~]<span class="comment"># mysql -uroot -pMANAGER erp --one-database &lt;dump.sql</span></span><br></pre></td></tr></table></figure></p>
 <p>从全库备份中抽取出t表的表结构:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sed -e<span class="string">'/./&#123;H;$!d;&#125;'</span> -e <span class="string">'x;/CREATE TABLE `t`/!d;q'</span> dump.sql</span><br></pre></td></tr></table></figure></p>
 <p>从全库备份中抽取出t表的内容:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grep<span class="string">'INSERT INTO `t`'</span> dump.sql</span><br></pre></td></tr></table></figure></p>
@@ -929,7 +930,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共207.8k字</span>
+  <span class="post-count">博客全站共207.9k字</span>
 </div>
         
 
