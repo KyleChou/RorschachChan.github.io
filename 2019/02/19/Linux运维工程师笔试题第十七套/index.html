@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是nginx相关的题目">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-20T04:14:15.152Z">
+<meta property="og:updated_time" content="2019-02-20T06:40:43.380Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十七套">
 <meta name="twitter:description" content="这次是nginx相关的题目">
@@ -464,7 +464,7 @@
 <h2><span id="nginx如何实现http跳转https">nginx如何实现http跳转https?</span></h2><p>需要用到地址重写代码，用以下代码能让http强制跳转到https:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    listen [::]:<span class="number">80</span>;		<span class="comment">#支持ipv6</span></span><br><span class="line">    server_name www.test.com;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">301</span> https://$server_name$request_uri;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h2><span id="多域名问题">多域名问题</span></h2><ol>
 <li>如果某个网站做了两个域名，分别是<a href="https://www.aaa.com和https://www.bbb.com，如果做了www.aaa.com" target="_blank" rel="noopener">https://www.aaa.com和https://www.bbb.com，如果做了www.aaa.com</a> cname到www.bbb.com，那么浏览器打开www.aaa.com会是什么界面？<br>打开页面会出现“https证书不正确”的风险提示。</li>
-<li>接着上面问题，在nginx做了rewrite或者配置了显性URL，此时取消掉www.aaa.com本身的ip（即www.aaa.com没有ip,但是www.bbb.com有ip），浏览器里打开www.aaa.com会是什么界面？<br>正常跳转到www.bbb.com，同时浏览器地址栏变成www.bbb.com。</li>
+<li>接着上面问题，在nginx里做了rewrite或者配置了显性URL，此时取消掉www.aaa.com本身的ip（即www.aaa.com没有ip,但是www.bbb.com有ip），浏览器里打开www.aaa.com会是什么界面？<br>会显示“无法找到www.aaa.com的IP地址”（第一步就失败了…）。</li>
 </ol>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://my.oschina.net/mrpei123/blog/1794001" target="_blank" rel="noopener">https://my.oschina.net/mrpei123/blog/1794001</a><br><a href="http://note.qidong.name/2017/09/nginx-https-hsts/" target="_blank" rel="noopener">http://note.qidong.name/2017/09/nginx-https-hsts/</a><br><a href="https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）" target="_blank" rel="noopener">https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）</a></p>
 
