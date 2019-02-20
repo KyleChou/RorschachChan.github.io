@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是nginx相关的题目">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-19T09:35:38.950Z">
+<meta property="og:updated_time" content="2019-02-20T04:14:15.152Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十七套">
 <meta name="twitter:description" content="这次是nginx相关的题目">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  518
+                  669
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  3
                 </span>
               
             </div>
@@ -462,6 +462,10 @@
 <h2><span id="ajax是同步还是异步怎么样实现同步">ajax是同步还是异步，怎么样实现同步?</span></h2><p>ajax里async属性默认的设置值为true，这种情况为异步方式。即网页里有两个函数func(x)和func(y)，在打开网页的时候，后台会先去执行func(x)，然后等待server返回结果，同时还有一个线程会去执行func(y)。</p>
 <p>当把asyn设为false时，这时ajax的请求时同步的，也就是说，这个时候ajax块发出请求后，他会等待在func(x)这个地方，不会去执行func(y)，直到func(x)部分执行完毕。</p>
 <h2><span id="nginx如何实现http跳转https">nginx如何实现http跳转https?</span></h2><p>需要用到地址重写代码，用以下代码能让http强制跳转到https:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    listen [::]:<span class="number">80</span>;		<span class="comment">#支持ipv6</span></span><br><span class="line">    server_name www.test.com;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">301</span> https://$server_name$request_uri;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="多域名问题">多域名问题</span></h2><ol>
+<li>如果某个网站做了两个域名，分别是<a href="https://www.aaa.com和https://www.bbb.com，如果做了www.aaa.com" target="_blank" rel="noopener">https://www.aaa.com和https://www.bbb.com，如果做了www.aaa.com</a> cname到www.bbb.com，那么浏览器打开www.aaa.com会是什么界面？<br>打开页面会出现“https证书不正确”的风险提示。</li>
+<li>接着上面问题，在nginx做了rewrite或者配置了显性URL，此时取消掉www.aaa.com本身的ip（即www.aaa.com没有ip,但是www.bbb.com有ip），浏览器里打开www.aaa.com会是什么界面？<br>正常跳转到www.bbb.com，同时浏览器地址栏变成www.bbb.com。</li>
+</ol>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://my.oschina.net/mrpei123/blog/1794001" target="_blank" rel="noopener">https://my.oschina.net/mrpei123/blog/1794001</a><br><a href="http://note.qidong.name/2017/09/nginx-https-hsts/" target="_blank" rel="noopener">http://note.qidong.name/2017/09/nginx-https-hsts/</a><br><a href="https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）" target="_blank" rel="noopener">https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）</a></p>
 
       
@@ -857,7 +861,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;">&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#xFF0C;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#xFF0C;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5728;nginx&#x4E2D;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;">&#x5728;Nginx&#x4E2D;&#xFF0C;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;">ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#xFF0C;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https">nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;">&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#xFF0C;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#xFF0C;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5728;nginx&#x4E2D;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;">&#x5728;Nginx&#x4E2D;&#xFF0C;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;">ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#xFF0C;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https">nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;">&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -911,7 +915,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共209.5k字</span>
+  <span class="post-count">博客全站共209.7k字</span>
 </div>
         
 
