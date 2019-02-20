@@ -100,7 +100,8 @@
 <meta property="og:image" content="http://yoursite.com/images/grok3.png">
 <meta property="og:image" content="http://yoursite.com/images/grok4.png">
 <meta property="og:image" content="http://yoursite.com/images/grok1.png">
-<meta property="og:updated_time" content="2019-02-19T09:48:14.499Z">
+<meta property="og:image" content="http://yoursite.com/images/grok5.png">
+<meta property="og:updated_time" content="2019-02-20T11:58:03.683Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Logstash的正则匹配日志格式">
 <meta name="twitter:description" content="给日志里添加多个关键词，更加精准定位！">
@@ -418,7 +419,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,045
+                  1,170
                 </span>
               
 
@@ -479,7 +480,10 @@
 <p>应该改成这样：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%&#123;IPORHOST:client_ip&#125; %&#123;USER:ident&#125; %&#123;USER:auth&#125; \[%&#123;HTTPDATE:timestamp&#125;\] "(?:%&#123;WORD:verb&#125; %&#123;NOTSPACE:request&#125;(?: HTTP/%&#123;NUMBER:http_version&#125;)?|-)" %&#123;NUMBER:response&#125; (?:%&#123;NUMBER:bytes&#125;|-) %&#123;QUOTEDSTRING:domain&#125; %&#123;QUOTEDSTRING:data&#125;</span><br></pre></td></tr></table></figure></p>
 <p>一般来说对于字符串，有双引号包含的用QS，没有的用DATA类型，如<code>%{DATA:request_body}</code>。</p>
 <h2><span id="grok配置到logstash">grok配置到logstash</span></h2><p>假设这个服务的日志输入到kafka里的topic叫<code>lcshop-log</code>，那么对应的logstash如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">input &#123;</span><br><span class="line">        kafka&#123;</span><br><span class="line">                bootstrap_servers=&gt;"172.31.0.84:9092"	#这里写的是kafka的ip和端口</span><br><span class="line">                topics=&gt;["lcshop-log","lcshop-errorlog"]	#这里是对应的topic</span><br><span class="line">                decorate_events=&gt;"true"</span><br><span class="line">                codec=&gt;plain</span><br><span class="line">        &#125;       </span><br><span class="line">&#125;   </span><br><span class="line"></span><br><span class="line">filter &#123;</span><br><span class="line">	<span class="keyword">if</span> [@metadata][kafka][topic] == <span class="string">"lcshop-log"</span> &#123;</span><br><span class="line">      mutate &#123;</span><br><span class="line">         add_field =&gt; &#123;"[@metadata][index]" =&gt; "lcshop-log-%&#123;+YYYY-MM&#125;"&#125;</span><br><span class="line">      &#125;  </span><br><span class="line">      grok &#123;	</span><br><span class="line">         match =&gt; &#123; "message" =&gt; "%&#123;IPORHOST:client_ip&#125; %&#123;USER:ident&#125; %&#123;USER:auth&#125; \[%&#123;HTTPDATE:timestamp&#125;\] \"(?:%&#123;WORD:verb&#125; %&#123;NOTSPACE:request&#125;(?: HTTP/%&#123;NUMBER:http_version&#125;)?|-)\" %&#123;NUMBER:response&#125; (?:%&#123;NUMBER:bytes&#125;|-) %&#123;QUOTEDSTRING:domain&#125; %&#123;QUOTEDSTRING:data&#125;"&#125;</span><br><span class="line">         remove_field =&gt; ["message"]</span><br><span class="line">		<span class="comment">#这里对双引号增加了转义符</span></span><br><span class="line">      &#125;</span><br><span class="line">   &#125; <span class="keyword">else</span> <span class="keyword">if</span> [@metadata][kafka][topic] == <span class="string">"lcshop-errorlog"</span> &#123;</span><br><span class="line">      mutate &#123;</span><br><span class="line">         add_field =&gt; &#123;"[@metadata][index]" =&gt; "lcshop-errorlog-%&#123;+YYYY-MM&#125;"&#125;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">output &#123;</span><br><span class="line">       elasticsearch &#123;</span><br><span class="line">               hosts=&gt;["172.31.0.76:9200"]		#这里是es的ip和端口</span><br><span class="line">               index=&gt;"%&#123;[@metadata][index]&#125;"		#这里对不同的topic分配不同的index</span><br><span class="line">       &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>然后去kibana里查看结果即可。</p>
+<p>然后去kibana里查看结果,然而会发现这是失败的。</p>
+<p>为什么明明在grok的测试网站里通过了，但是在实际的kibana里却失败？这是因为在kibana里会自动给双引号添加一个转义符！正式因为多了这个转义符，所以整段正则都不匹配了，自然grok无法生效了。</p>
+<p>这个时候需要改成这样：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">%&#123;IPORHOST:clientip&#125; - %&#123;NOTSPACE:remote_user&#125; \[%&#123;HTTPDATE:timestamp&#125;\] \\<span class="string">"%&#123;DATA:request&#125;\\"</span> %&#123;NUMBER:response&#125; %&#123;NUMBER:bytes&#125; %&#123;DATA:data&#125; \\<span class="string">"%&#123;DATA:detail&#125;\\"</span></span><br></pre></td></tr></table></figure></p>
+<p>重启logstash之后，再去kibana里看结果：<br><img src="/images/grok5.png" alt="akb48"></p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://doc.yonyoucloud.com/doc/logstash-best-practice-cn/filter/date.html" target="_blank" rel="noopener">https://doc.yonyoucloud.com/doc/logstash-best-practice-cn/filter/date.html</a><br><a href="https://segmentfault.com/q/1010000003801260" target="_blank" rel="noopener">https://segmentfault.com/q/1010000003801260</a><br><a href="https://www.cnblogs.com/Orgliny/p/5592186.html" target="_blank" rel="noopener">https://www.cnblogs.com/Orgliny/p/5592186.html</a><br><a href="http://kuring.me/post/elk_nginx/" target="_blank" rel="noopener">http://kuring.me/post/elk_nginx/</a><br><a href="http://blog.51cto.com/seekerwolf/2106509" target="_blank" rel="noopener">http://blog.51cto.com/seekerwolf/2106509</a><br><a href="http://blog.51cto.com/liqingbiao/1928653" target="_blank" rel="noopener">http://blog.51cto.com/liqingbiao/1928653</a><br><a href="https://www.jianshu.com/p/d46b911fb83e" target="_blank" rel="noopener">https://www.jianshu.com/p/d46b911fb83e</a></p>
 
       
@@ -935,7 +939,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共209.7k字</span>
+  <span class="post-count">博客全站共209.9k字</span>
 </div>
         
 
