@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是nginx和CDN相关的题目">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-22T02:55:47.937Z">
+<meta property="og:updated_time" content="2019-02-22T03:21:29.514Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十七套">
 <meta name="twitter:description" content="这次是nginx和CDN相关的题目">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,632
+                  1,575
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7
+                  6
                 </span>
               
             </div>
@@ -475,9 +475,8 @@
 <li><code>limit_rate 20k</code>：对每个连接限速20k。注意，这里是对连接限速，而不是对IP限速。如果一个IP允许2个并发连接，那么这个IP就是限速为<code>limit_rate*2</code>，在设置的时候要根据自己的需要做设置调整。</li>
 </ol>
 <h2><span id="简单说明nginx配置文件里面alias和root的区别">简单说明nginx配置文件里面alias和root的区别</span></h2><p>Nginx配置文件server中指定两个location执行，分别为root和alias指令：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /test/ &#123;</span><br><span class="line">           alias /www/test/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>按照上述配置，则访问/test/目录里面的文件时，nginx会去<code>/www/test/</code>目录找文件：</p>
-<pre><code><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /test/ &#123;</span><br><span class="line">          root /www/test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</code></pre><p>按照这种配置，则访问/test/目录下的文件时，nginx会去<code>/www/test/test/</code>目录下找文件。</p>
+<p>按照上述配置，则访问/test/目录里面的文件时，nginx会去<code>/www/test/</code>目录找文件：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /test/ &#123;</span><br><span class="line">          root /www/test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>按照这种配置，则访问/test/目录下的文件时，nginx会去<code>/www/test/test/</code>目录下找文件。</p>
 <p>另一个区别是alias后面必须要用<code>/</code>结束，否则会找不到文件，而root则对<code>/</code>可有可无。</p>
 <h2><span id="cdn缓存命中率下降的因素有哪些">CDN缓存命中率下降的因素有哪些？</span></h2><ol>
 <li>客户是否刷新过缓存？<br>答：如果刷新缓存，有可能会短时间表现命中率下降。特别说明下：CDN的url或者目录刷新是清除CDN缓存的动作（这个比较容易理解偏差）</li>
@@ -491,7 +490,7 @@
 <li>显示<code>MISS</code>，说明没有命中CDN缓存，是回源的。</li>
 <li>显示<code>HIT</code>，是命中了CDN缓存。</li>
 </ol>
-<p>除了<code>X-Cache</code>还有如下几个参数与CDN有关：<br><code>X-Swift-SaveTime</code>：内容开始在CDN上缓存的时间。由于系统时间是GMT时间，所以需要折算成北京时间。<br><code>X-Swift-CacheTime</code>：CDN的默认缓存时间，以秒为单位。<br><code>Age</code>：该内容在CDN上已经缓存了的时间。图中的163s即该内容已经在CDN缓存了163秒。根据时间，从2015-09-22 14:33:49开始缓存的，当前时间则为2015-09-22 14:36:32。您可以和电脑当前时间进行对比。</p>
+<p>除了<code>X-Cache</code>还有如下几个参数与CDN有关：<br><code>X-Swift-SaveTime</code>：内容开始在CDN上缓存的时间。由于系统时间是GMT时间，所以需要折算成北京时间。<br><code>X-Swift-CacheTime</code>：CDN的默认缓存时间，以秒为单位。<br><code>Age</code>：该内容在CDN上已经缓存了的时间。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://my.oschina.net/mrpei123/blog/1794001" target="_blank" rel="noopener">https://my.oschina.net/mrpei123/blog/1794001</a><br><a href="http://note.qidong.name/2017/09/nginx-https-hsts/" target="_blank" rel="noopener">http://note.qidong.name/2017/09/nginx-https-hsts/</a><br><a href="https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）" target="_blank" rel="noopener">https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）</a></p>
 
       
