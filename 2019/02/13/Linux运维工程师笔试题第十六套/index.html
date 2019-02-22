@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock9.png">
 <meta property="og:image" content="http://yoursite.com/images/赌博默示录.jpg">
-<meta property="og:updated_time" content="2019-02-19T03:31:59.371Z">
+<meta property="og:updated_time" content="2019-02-22T03:16:00.881Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十六套">
 <meta name="twitter:description" content="都是与数据库mysql相关的问题">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  2,396
+                  2,425
                 </span>
               
 
@@ -470,6 +470,7 @@
 <li>从库此时还有一个SQL线程，它负责读取<code>relay log</code>中的内容，解析成具体的操作并执行，最终保证主从数据的一致性。<br><img src="/images/mysql-sock9.png" alt="akb48"></li>
 </ol>
 <p><font color="red">切记！</font>在从库上使用<code>show slave status\G；</code>看到结果里的<code>Slave_IO_Running:Yes</code>和<code>Slave_SQL_Running:Yes</code>，才算是同步成功，两个YES缺一不可。</p>
+<p>注意！MySQL只读实例的Binlog日志是没有记录更新信息的，所以它的Binlog无法使用。</p>
 <h2><span id="如何理解mysql里最大连接数和请求数之间的关系">如何理解MySQL里最大连接数和请求数之间的关系？</span></h2><p>假设某个数据库的最大连接数是1000，并不是指最多只能支持1000个访问，因为数据库与应用之间肯定会隔着中间件，这个中间件的连接池会管理链接，一般如果代码写的好、事物控制得当，一个事物完成连接会被连接池收回重复利用，所以不是说一个用户登录你的系统或网站就一直占用着，一个连接也可以包含多次请求。</p>
 <h2><span id="mysql出现iops过高应该如何处理">MySQL出现IOPS过高，应该如何处理？</span></h2><p>IOPS (Input/Output Operations Per Second)，即每秒进行读写（I/O）操作的次数。IOPS是指存储每秒可接受多少次主机发出的访问，主机的一次IO需要多次访问存储才可以完成。IOPS过高比较普遍的原因是<code>实例内存满足不了缓存数据或排序等需要，导致产生大量的物理IO</code>或者是<code>查询执行效率低，扫描过多数据行</code>。</p>
 <h2><span id="sort_buffer_size是什么参数设置它对服务器性能有何影响">Sort_Buffer_Size是什么参数？设置它对服务器性能有何影响？</span></h2><p><code>Sort_Buffer_Size</code>是一个connection级参数，在每个connection第一次需要使用这个buffer的时候，一次性分配设置的内存。<code>Sort_Buffer_Size</code>并不是越大越好，由于是connection级的参数，过大的设置+高并发可能会耗尽系统内存资源。<code>Sort_Buffer_Size</code>超过256KB的时候，MySQL就会使用<code>mmap()</code>而不是<code>malloc()</code>来进行内存分配，导致性能损耗、效率降低。</p>
