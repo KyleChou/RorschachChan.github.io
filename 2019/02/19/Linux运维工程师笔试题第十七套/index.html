@@ -88,18 +88,18 @@
 
 
 
-<meta name="description" content="这次是nginx相关的题目">
+<meta name="description" content="这次是nginx和CDN相关的题目">
 <meta name="keywords" content="nginx,面试笔试">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux运维工程师笔试题第十七套">
 <meta property="og:url" content="http://yoursite.com/2019/02/19/Linux运维工程师笔试题第十七套/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="这次是nginx相关的题目">
+<meta property="og:description" content="这次是nginx和CDN相关的题目">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-22T02:45:49.870Z">
+<meta property="og:updated_time" content="2019-02-22T02:55:47.937Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十七套">
-<meta name="twitter:description" content="这次是nginx相关的题目">
+<meta name="twitter:description" content="这次是nginx和CDN相关的题目">
 
 
 
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,441
+                  1,632
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  6
+                  7
                 </span>
               
             </div>
@@ -437,7 +437,7 @@
 
           
               <div class="post-description">
-                  这次是nginx相关的题目
+                  这次是nginx和CDN相关的题目
               </div>
           
 
@@ -470,15 +470,15 @@
 <h2><span id="限制可用的请求方法">限制可用的请求方法</span></h2><p>为了安全，Web服务器不要求启用所有可用的方法，只允许<code>GET</code>，<code>HEAD</code>和<code>POST</code>方法，其他的全部过滤掉。实现其功能的代码如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ($request_method !~ ^(GET|HEAD|POST)$ ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">444</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h2><span id="网站限速配置">网站限速配置</span></h2><p>对/download/目录做“最大下载速度20K，同时最多2个并发链接的限制”<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">        limit_zone my_zone $binary_remote_addr <span class="number">10</span>m;	<span class="comment">#在 http 段配置定义一个limit_zone</span></span><br><span class="line">        server &#123;</span><br><span class="line">                 location /download/ &#123;</span><br><span class="line">                                       limit_conn my_zone <span class="number">2</span>;	<span class="comment">#limit_conn和 limit_rate参数进行限速设置</span></span><br><span class="line">                                       limit_rate <span class="number">20</span>k;</span><br><span class="line">                                     &#125;</span><br><span class="line">               &#125;</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure></p>
 <ol>
-<li>limit_zone:针对每个 IP 定义一个存储 session 状态的容器。本例中定义了一个my_zone的10m大小的容器。</li>
-<li>limit_conn my_zone 2：限制在my_zone中记录状态的每个IP只能发起2个并发连接。本例中，客户端访问/download目录时，会限制2个并发连接。 </li>
-<li>limit_rate 20k：对每个连接限速20k。注意，这里是对连接限速，而不是对IP限速。如果一个IP允许2个并发连接，那么这个IP就是限速为<code>limit_rate*2</code>，在设置的时候要根据自己的需要做设置调整。</li>
+<li><code>limit_zone</code>:针对每个 IP 定义一个存储 session 状态的容器。本例中定义了一个my_zone的10m大小的容器。</li>
+<li><code>limit_conn my_zone 2</code>：限制在my_zone中记录状态的每个IP只能发起2个并发连接。本例中，客户端访问/download目录时，会限制2个并发连接。 </li>
+<li><code>limit_rate 20k</code>：对每个连接限速20k。注意，这里是对连接限速，而不是对IP限速。如果一个IP允许2个并发连接，那么这个IP就是限速为<code>limit_rate*2</code>，在设置的时候要根据自己的需要做设置调整。</li>
 </ol>
 <h2><span id="简单说明nginx配置文件里面alias和root的区别">简单说明nginx配置文件里面alias和root的区别</span></h2><p>Nginx配置文件server中指定两个location执行，分别为root和alias指令：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /test/ &#123;</span><br><span class="line">           alias /www/test/;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>按照上述配置，则访问/test/目录里面的文件时，nginx会去<code>/www/test/</code>目录找文件：</p>
 <pre><code><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /test/ &#123;</span><br><span class="line">          root /www/test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </code></pre><p>按照这种配置，则访问/test/目录下的文件时，nginx会去<code>/www/test/test/</code>目录下找文件。</p>
-<p>另一个区别是alias后面必须要用 “/” 结束，否则会找不到文件，而 root 则对 ”/” 可有可无。</p>
+<p>另一个区别是alias后面必须要用<code>/</code>结束，否则会找不到文件，而root则对<code>/</code>可有可无。</p>
 <h2><span id="cdn缓存命中率下降的因素有哪些">CDN缓存命中率下降的因素有哪些？</span></h2><ol>
 <li>客户是否刷新过缓存？<br>答：如果刷新缓存，有可能会短时间表现命中率下降。特别说明下：CDN的url或者目录刷新是清除CDN缓存的动作（这个比较容易理解偏差）</li>
 <li>带宽是否突增？并且访问的都是新的URL？<br>答：带宽突增或者访问的新URL较多，会导致CDN节点回源较多，命中率会表现有下降趋势。</li>
@@ -486,6 +486,12 @@
 <li>源站是否出现过异常导致5XX和4XX增加，由于5XX和4XX不缓存，会表现命中率下降。</li>
 <li>源站的访问url的header参数，或者在CDN控制管理后台的缓存配置规则是否改变过？<br>答：缓存时长的调整，有可能会带来命中率的变化。</li>
 </ol>
+<h2><span id="如果判断url是否命中cdn缓存">如果判断url是否命中CDN缓存？</span></h2><p>查看响应头信息中的<code>X-Cache</code>字段。</p>
+<ol>
+<li>显示<code>MISS</code>，说明没有命中CDN缓存，是回源的。</li>
+<li>显示<code>HIT</code>，是命中了CDN缓存。</li>
+</ol>
+<p>除了<code>X-Cache</code>还有如下几个参数与CDN有关：<br><code>X-Swift-SaveTime</code>：内容开始在CDN上缓存的时间。由于系统时间是GMT时间，所以需要折算成北京时间。<br><code>X-Swift-CacheTime</code>：CDN的默认缓存时间，以秒为单位。<br><code>Age</code>：该内容在CDN上已经缓存了的时间。图中的163s即该内容已经在CDN缓存了163秒。根据时间，从2015-09-22 14:33:49开始缓存的，当前时间则为2015-09-22 14:36:32。您可以和电脑当前时间进行对比。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://my.oschina.net/mrpei123/blog/1794001" target="_blank" rel="noopener">https://my.oschina.net/mrpei123/blog/1794001</a><br><a href="http://note.qidong.name/2017/09/nginx-https-hsts/" target="_blank" rel="noopener">http://note.qidong.name/2017/09/nginx-https-hsts/</a><br><a href="https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）" target="_blank" rel="noopener">https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）</a></p>
 
       
@@ -881,7 +887,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;">&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#xFF0C;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#xFF0C;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5728;nginx&#x4E2D;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;">&#x5728;Nginx&#x4E2D;&#xFF0C;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;">ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#xFF0C;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https">nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;">&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;">&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#xFF0C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">7.</span> <span class="nav-text"><span id="&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;">&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">8.</span> <span class="nav-text"><span id="&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;">&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">9.</span> <span class="nav-text"><span id="&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;">&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">10.</span> <span class="nav-text"><span id="cdn&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;&#x4E0B;&#x964D;&#x7684;&#x56E0;&#x7D20;&#x6709;&#x54EA;&#x4E9B;">CDN&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;&#x4E0B;&#x964D;&#x7684;&#x56E0;&#x7D20;&#x6709;&#x54EA;&#x4E9B;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">11.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;">&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#xFF0C;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#xFF0C;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5728;nginx&#x4E2D;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;">&#x5728;Nginx&#x4E2D;&#xFF0C;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;">ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#xFF0C;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https">nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;">&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;">&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#xFF0C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">7.</span> <span class="nav-text"><span id="&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;">&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">8.</span> <span class="nav-text"><span id="&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;">&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">9.</span> <span class="nav-text"><span id="&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;">&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">10.</span> <span class="nav-text"><span id="cdn&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;&#x4E0B;&#x964D;&#x7684;&#x56E0;&#x7D20;&#x6709;&#x54EA;&#x4E9B;">CDN&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;&#x4E0B;&#x964D;&#x7684;&#x56E0;&#x7D20;&#x6709;&#x54EA;&#x4E9B;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">11.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x5224;&#x65AD;url&#x662F;&#x5426;&#x547D;&#x4E2D;cdn&#x7F13;&#x5B58;">&#x5982;&#x679C;&#x5224;&#x65AD;url&#x662F;&#x5426;&#x547D;&#x4E2D;CDN&#x7F13;&#x5B58;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">12.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -935,7 +941,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共210.6k字</span>
+  <span class="post-count">博客全站共210.8k字</span>
 </div>
         
 
