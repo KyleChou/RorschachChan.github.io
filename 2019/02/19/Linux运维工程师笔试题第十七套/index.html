@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是nginx相关的题目">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-22T02:00:59.301Z">
+<meta property="og:updated_time" content="2019-02-22T02:45:49.870Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十七套">
 <meta name="twitter:description" content="这次是nginx相关的题目">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,190
+                  1,441
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5
+                  6
                 </span>
               
             </div>
@@ -479,6 +479,13 @@
 <pre><code><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /test/ &#123;</span><br><span class="line">          root /www/test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </code></pre><p>按照这种配置，则访问/test/目录下的文件时，nginx会去<code>/www/test/test/</code>目录下找文件。</p>
 <p>另一个区别是alias后面必须要用 “/” 结束，否则会找不到文件，而 root 则对 ”/” 可有可无。</p>
+<h2><span id="cdn缓存命中率下降的因素有哪些">CDN缓存命中率下降的因素有哪些？</span></h2><ol>
+<li>客户是否刷新过缓存？<br>答：如果刷新缓存，有可能会短时间表现命中率下降。特别说明下：CDN的url或者目录刷新是清除CDN缓存的动作（这个比较容易理解偏差）</li>
+<li>带宽是否突增？并且访问的都是新的URL？<br>答：带宽突增或者访问的新URL较多，会导致CDN节点回源较多，命中率会表现有下降趋势。</li>
+<li>源站是否有新内容发布？<br>答：CDN节点访问新内容，导致CDN节点回源较多，命中率会表现有下降趋势。</li>
+<li>源站是否出现过异常导致5XX和4XX增加，由于5XX和4XX不缓存，会表现命中率下降。</li>
+<li>源站的访问url的header参数，或者在CDN控制管理后台的缓存配置规则是否改变过？<br>答：缓存时长的调整，有可能会带来命中率的变化。</li>
+</ol>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://my.oschina.net/mrpei123/blog/1794001" target="_blank" rel="noopener">https://my.oschina.net/mrpei123/blog/1794001</a><br><a href="http://note.qidong.name/2017/09/nginx-https-hsts/" target="_blank" rel="noopener">http://note.qidong.name/2017/09/nginx-https-hsts/</a><br><a href="https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）" target="_blank" rel="noopener">https://www.ssllabs.com/ssltest/index.html（测试ssl安全的网站）</a></p>
 
       
@@ -874,7 +881,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;">&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#xFF0C;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#xFF0C;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5728;nginx&#x4E2D;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;">&#x5728;Nginx&#x4E2D;&#xFF0C;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;">ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#xFF0C;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https">nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;">&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;">&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#xFF0C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">7.</span> <span class="nav-text"><span id="&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;">&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">8.</span> <span class="nav-text"><span id="&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;">&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">9.</span> <span class="nav-text"><span id="&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;">&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">10.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;">&#x5982;&#x679C;&#x7F51;&#x7AD9;&#x914D;&#x7F6E;&#x4E86;&#x591A;&#x57DF;&#x540D;&#xFF0C;&#x8981;&#x6839;&#x636E;&#x4E0D;&#x540C;&#x7684;&#x57DF;&#x540D;&#x5206;&#x522B;https&#x8BBF;&#x95EE;&#xFF0C;&#x5E94;&#x8BE5;&#x600E;&#x4E48;&#x914D;&#x7F6E;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5728;nginx&#x4E2D;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;">&#x5728;Nginx&#x4E2D;&#xFF0C;&#x5982;&#x4F55;&#x4F7F;&#x7528;&#x672A;&#x5B9A;&#x4E49;&#x7684;&#x670D;&#x52A1;&#x5668;&#x540D;&#x79F0;&#x6765;&#x963B;&#x6B62;&#x5904;&#x7406;&#x8BF7;&#x6C42;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;">ajax&#x662F;&#x540C;&#x6B65;&#x8FD8;&#x662F;&#x5F02;&#x6B65;&#xFF0C;&#x600E;&#x4E48;&#x6837;&#x5B9E;&#x73B0;&#x540C;&#x6B65;?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https">nginx&#x5982;&#x4F55;&#x5B9E;&#x73B0;http&#x8DF3;&#x8F6C;https?</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;">&#x591A;&#x57DF;&#x540D;&#x95EE;&#x9898;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;">&#x4E3B;&#x76EE;&#x5F55;&#x8DF3;&#x8F6C;&#xFF0C;&#x5B50;&#x76EE;&#x5F55;&#x4E0D;&#x8DF3;&#x8F6C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">7.</span> <span class="nav-text"><span id="&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;">&#x9650;&#x5236;&#x53EF;&#x7528;&#x7684;&#x8BF7;&#x6C42;&#x65B9;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">8.</span> <span class="nav-text"><span id="&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;">&#x7F51;&#x7AD9;&#x9650;&#x901F;&#x914D;&#x7F6E;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">9.</span> <span class="nav-text"><span id="&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;">&#x7B80;&#x5355;&#x8BF4;&#x660E;nginx&#x914D;&#x7F6E;&#x6587;&#x4EF6;&#x91CC;&#x9762;alias&#x548C;root&#x7684;&#x533A;&#x522B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">10.</span> <span class="nav-text"><span id="cdn&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;&#x4E0B;&#x964D;&#x7684;&#x56E0;&#x7D20;&#x6709;&#x54EA;&#x4E9B;">CDN&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;&#x4E0B;&#x964D;&#x7684;&#x56E0;&#x7D20;&#x6709;&#x54EA;&#x4E9B;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">11.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -928,7 +935,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共210.3k字</span>
+  <span class="post-count">博客全站共210.6k字</span>
 </div>
         
 
