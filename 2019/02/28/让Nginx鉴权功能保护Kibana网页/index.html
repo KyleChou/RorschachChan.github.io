@@ -88,20 +88,20 @@
 
 
 
-<meta name="description" content="阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口来实现">
+<meta name="description" content="阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口的时候指定某些IP访问">
 <meta name="keywords" content="docker,nginx,kibana">
 <meta property="og:type" content="article">
 <meta property="og:title" content="让Nginx鉴权功能保护Kibana网页">
 <meta property="og:url" content="http://yoursite.com/2019/02/28/让Nginx鉴权功能保护Kibana网页/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口来实现">
+<meta property="og:description" content="阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口的时候指定某些IP访问">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/kibana20.png">
-<meta property="og:image" content="http://yoursite.com/images/kibana20.gif">
-<meta property="og:updated_time" content="2019-02-28T08:24:17.916Z">
+<meta property="og:image" content="http://yoursite.com/images/kibana21.gif">
+<meta property="og:updated_time" content="2019-02-28T08:39:31.906Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="让Nginx鉴权功能保护Kibana网页">
-<meta name="twitter:description" content="阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口来实现">
+<meta name="twitter:description" content="阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口的时候指定某些IP访问">
 <meta name="twitter:image" content="http://yoursite.com/images/kibana20.png">
 
 
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  794
+                  818
                 </span>
               
 
@@ -440,7 +440,7 @@
 
           
               <div class="post-description">
-                  阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口来实现
+                  阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口的时候指定某些IP访问
               </div>
           
 
@@ -459,7 +459,7 @@
       
         <script src="\assets\js\APlayer.min.js"> </script><p>Kibana本身是一个Web界面，但是出于安全和机密的考虑，我们肯定不会让互联网上所有的人都能随便看到Kibana里的内容，但是X-pack目前又不支持6.2以上的版本，于是我们可以使用Nginx的密码功能来保护Kibana的网页：要访问Kibana时需要先输入密码，正确就登陆到Kibana，如果错误就是403。</p>
 <p>Kibana是容器安装的，安装过程可以去查看：<a href="https://rorschachchan.github.io/2019/01/21/%E5%B0%86kafka%E5%8A%A0%E5%85%A5%E5%88%B0Elk%E9%9B%86%E7%BE%A4/" target="_blank" rel="noopener">https://rorschachchan.github.io/2019/01/21/%E5%B0%86kafka%E5%8A%A0%E5%85%A5%E5%88%B0Elk%E9%9B%86%E7%BE%A4/</a> </p>
-<h2><span id="事前准备">事前准备</span></h2><p>Nginx也是容器安装，<code>docker pull nginx</code>拉取最新的nginx镜像，在下载的时候呢，我们需要知道Kibana的容器IP，因为Kibana和正在下载的Nginx是两个不同的容器，Nginx是需要跨容器访问的。</p>
+<h2><span id="事前准备">事前准备</span></h2><p>Nginx也是容器安装，<code>docker pull nginx</code>拉取最新的nginx镜像，在下载的时候呢我们也别对着屏幕干巴巴的等。由于在nginx配置转发的时候，需要知道Kibana的容器IP，这是因为Kibana和正在下载的Nginx是两个不同的容器，Nginx是需要跨容器访问的。</p>
 <p>默认的官方Kibana镜像登录是非root的，这种虽然安全，但是不能config也不能yum，于是我们首先要使用root账号登录进去，语句是：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it --user root kibana容器ID /bin/bash</span><br><span class="line">yum update -y</span><br><span class="line">yum install -y net-tools	#下载ifconfig</span><br></pre></td></tr></table></figure></p>
 <p>使用ifconfig和netstat查看容器的IP和工作端口：<br><img src="/images/kibana20.png" alt="办公室"></p>
 <p>可以确认Kibana的IP是<code>172.17.0.4</code>，端口是5601。这时候我们就可以写一个<code>kibana.conf</code>，让nginx容器用这个配置文件达到跳转的目的！</p>
@@ -469,7 +469,7 @@
 <p>这时我们就创建了一个<code>/mnt/nginx/htpasswd.users</code>，里面的用户是kibana，密码是password123。这个密码在文件里是加的，用cat命令无法正常查看到的。</p>
 <h2><span id="启动nginx容器">启动nginx容器</span></h2><p>此时nginx镜像应该下载完毕了，那么就直接启动镜像，启动语句是：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --hostname Kngx -p <span class="number">80</span>:<span class="number">33664</span> --name Knginx -v /mnt/nginx/:/etc/nginx/conf.d/ -d nginx</span><br></pre></td></tr></table></figure></p>
 <p>简单说一下这个命令：这个容器名叫Knginx，hostname是Kngx，做了宿主机80端口到此容器33664端口的转发，将宿主机的<code>/mnt/nginx/</code>挂载到容器里的<code>/etc/nginx/conf.d/</code>，同时直接启动nginx。</p>
-<p>启动成功之后，我们看到刚刚建立的<code>htpasswd.users</code>和kibana.conf都已经成功被Knginx容器配置上，然后打开浏览器，看看效果：<br><img src="/images/kibana20.gif" alt="办公室" title="kibana加载比较慢"></p>
+<p>启动成功之后，我们看到刚刚建立的<code>htpasswd.users</code>和kibana.conf都已经成功被Knginx容器配置上，然后打开浏览器，看看效果：<br><img src="/images/kibana21.gif" alt="办公室" title="kibana加载比较慢"></p>
 <p>这样就达到了密码访问页面的效果，如果想加IP白名单呢，也可以直接在kibana.conf里补充相关配置，修改完毕之后，重启Knginx容器即可。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.hugeserver.com/kb/how-secure-kibana-nginx-centos/" target="_blank" rel="noopener">https://www.hugeserver.com/kb/how-secure-kibana-nginx-centos/</a></p>
 
