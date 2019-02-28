@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-02-27T02:05:48.677Z</updated>
+  <updated>2019-02-28T08:24:17.916Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>让Nginx鉴权功能保护Kibana网页</title>
+    <link href="http://yoursite.com/2019/02/28/%E8%AE%A9Nginx%E9%89%B4%E6%9D%83%E5%8A%9F%E8%83%BD%E4%BF%9D%E6%8A%A4Kibana%E7%BD%91%E9%A1%B5/"/>
+    <id>http://yoursite.com/2019/02/28/让Nginx鉴权功能保护Kibana网页/</id>
+    <published>2019-02-28T07:55:27.000Z</published>
+    <updated>2019-02-28T08:24:17.916Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>Kibana本身是一个Web界面，但是出于安全和机密的考虑，我们肯定不会让互联网上所有的人都能随便看到Kibana里的内容，但是X-pack目前又不支持6.2以上的版本，于是我们可以使用Nginx的密码功能来保护Kibana的网页：要访问Kibana时需要先输入密码，正确就登陆到Kibana，如果错误就是403。</p><p>Kibana是容器安装的，安装过程可以去查看：<a href="https://rorschachchan.github.io/2019/01/21/%E5%B0%86kafka%E5%8A%A0%E5%85%A5%E5%88%B0Elk%E9%9B%86%E7%BE%A4/" target="_blank" rel="noopener">https://rorschachchan.github.io/2019/01/21/%E5%B0%86kafka%E5%8A%A0%E5%85%A5%E5%88%B0Elk%E9%9B%86%E7%BE%A4/</a> </p><h2><span id="事前准备">事前准备</span></h2><p>Nginx也是容器安装，<code>docker pull nginx</code>拉取最新的nginx镜像，在下载的时候呢，我们需要知道Kibana的容器IP，因为Kibana和正在下载的Nginx是两个不同的容器，Nginx是需要跨容器访问的。</p><p>默认的官方Kibana镜像登录是非root的，这种虽然安全，但是不能config也不能yum，于是我们首先要使用root账号登录进去，语句是：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it --user root kibana容器ID /bin/bash</span><br><span class="line">yum update -y</span><br><span class="line">yum install -y net-tools#下载ifconfig</span><br></pre></td></tr></table></figure></p><p>使用ifconfig和netstat查看容器的IP和工作端口：<br><img src="/images/kibana20.png" alt="办公室"></p><p>可以确认Kibana的IP是<code>172.17.0.4</code>，端口是5601。这时候我们就可以写一个<code>kibana.conf</code>，让nginx容器用这个配置文件达到跳转的目的！</p><p>kibana.conf全文如下：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">upstream kibana_server &#123;</span><br><span class="line">        server  172.17.0.3:5601 weight=1 max_fails=3  fail_timeout=60;#这里写的就是kibana的容器IP和端口，如果是多台kibana想要按权重访问，就写weight</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        listen *:33664;#nginx容器自己的端口</span><br><span class="line">        server_name _;</span><br><span class="line">        auth_basic "Restricted Access";      # 验证</span><br><span class="line">        auth_basic_user_file /etc/nginx/conf.d/htpasswd.users;             # 验证文件</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://kibana_server;#这个地方就是upstream</span><br><span class="line">                proxy_http_version 1.1;</span><br><span class="line">                proxy_set_header Upgrade $http_upgrade;</span><br><span class="line">                proxy_set_header Connection 'upgrade';</span><br><span class="line">                proxy_set_header Host $host;</span><br><span class="line">                proxy_cache_bypass $http_upgrade;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p><p>把这个文件保存在/mnt/ngunx目录里。</p><h2><span id="配置nginx密码">配置nginx密码</span></h2><p>nginx要创建验证文件授权,需要先安装httpd-tools工具：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">yum install -y  httpd-tools </span><br><span class="line">htpasswd -bc /mnt/nginx/htpasswd.users kibana password123 <span class="comment"># 创建验证文件</span></span><br><span class="line">Adding password <span class="keyword">for</span> user admin</span><br></pre></td></tr></table></figure></p><p>这时我们就创建了一个<code>/mnt/nginx/htpasswd.users</code>，里面的用户是kibana，密码是password123。这个密码在文件里是加的，用cat命令无法正常查看到的。</p><h2><span id="启动nginx容器">启动nginx容器</span></h2><p>此时nginx镜像应该下载完毕了，那么就直接启动镜像，启动语句是：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --hostname Kngx -p <span class="number">80</span>:<span class="number">33664</span> --name Knginx -v /mnt/nginx/:/etc/nginx/conf.d/ -d nginx</span><br></pre></td></tr></table></figure></p><p>简单说一下这个命令：这个容器名叫Knginx，hostname是Kngx，做了宿主机80端口到此容器33664端口的转发，将宿主机的<code>/mnt/nginx/</code>挂载到容器里的<code>/etc/nginx/conf.d/</code>，同时直接启动nginx。</p><p>启动成功之后，我们看到刚刚建立的<code>htpasswd.users</code>和kibana.conf都已经成功被Knginx容器配置上，然后打开浏览器，看看效果：<br><img src="/images/kibana20.gif" alt="办公室" title="kibana加载比较慢"></p><p>这样就达到了密码访问页面的效果，如果想加IP白名单呢，也可以直接在kibana.conf里补充相关配置，修改完毕之后，重启Knginx容器即可。</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.hugeserver.com/kb/how-secure-kibana-nginx-centos/" target="_blank" rel="noopener">https://www.hugeserver.com/kb/how-secure-kibana-nginx-centos/</a></p>]]></content>
+    
+    <summary type="html">
+    
+      阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口来实现
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="docker" scheme="http://yoursite.com/tags/docker/"/>
+    
+      <category term="nginx" scheme="http://yoursite.com/tags/nginx/"/>
+    
+      <category term="kibana" scheme="http://yoursite.com/tags/kibana/"/>
+    
+  </entry>
   
   <entry>
     <title>Linux运维工程师笔试题第十七套</title>
@@ -302,9 +328,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="zabbix" scheme="http://yoursite.com/tags/zabbix/"/>
-    
       <category term="python" scheme="http://yoursite.com/tags/python/"/>
+    
+      <category term="zabbix" scheme="http://yoursite.com/tags/zabbix/"/>
     
       <category term="api" scheme="http://yoursite.com/tags/api/"/>
     
@@ -354,9 +380,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="Nginx" scheme="http://yoursite.com/tags/Nginx/"/>
-    
       <category term="Django" scheme="http://yoursite.com/tags/Django/"/>
+    
+      <category term="Nginx" scheme="http://yoursite.com/tags/Nginx/"/>
     
       <category term="Uwsgi" scheme="http://yoursite.com/tags/Uwsgi/"/>
     
@@ -477,32 +503,6 @@
     
     
       <category term="Zabbix" scheme="http://yoursite.com/tags/Zabbix/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>将list重新排列后获取原来的索引</title>
-    <link href="http://yoursite.com/2018/12/14/%E5%B0%86list%E9%87%8D%E6%96%B0%E6%8E%92%E5%88%97%E5%90%8E%E8%8E%B7%E5%8F%96%E5%8E%9F%E6%9D%A5%E7%9A%84%E7%B4%A2%E5%BC%95/"/>
-    <id>http://yoursite.com/2018/12/14/将list重新排列后获取原来的索引/</id>
-    <published>2018-12-14T06:02:42.000Z</published>
-    <updated>2018-12-14T07:22:30.089Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="具体需求与解决方案">具体需求与解决方案</span></h2><p>假设我们有一个列表，现在要对列表里进行从大到小排序，然后再获取列表里原来各位元素的索引，怎么办？<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#Python2.7</span></span><br><span class="line">new_list = sorted(enumerate(old_list),key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>],reverse=<span class="keyword">True</span>)     <span class="comment">#old_list就是原列表</span></span><br></pre></td></tr></table></figure></p><p>举一个详细一点的例子：<br><img src="/images/enumerate.png" alt="akb48"></p><p>可见原来aaa这个列表的元素虽然经过了大小排序，但是各元素的索引下标没有丢，而且通过<code>zip（）</code>方法能拆出来供我们继续使用。</p><h2><span id="enumerate-函数">enumerate() 函数</span></h2><p>这个<code>enumerate()</code>函数可以将一个可遍历的数据对象组合一个索引序列，同时列出数据和数据下标，默认情况下标是从0开始的，也可以手动更改，比如：<br>    <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt;seasons = [<span class="string">'Spring'</span>, <span class="string">'Summer'</span>, <span class="string">'Fall'</span>, <span class="string">'Winter'</span>]</span><br><span class="line">&gt;&gt;&gt; list(enumerate(seasons))</span><br><span class="line">[(<span class="number">0</span>, <span class="string">'Spring'</span>), (<span class="number">1</span>, <span class="string">'Summer'</span>), (<span class="number">2</span>, <span class="string">'Fall'</span>), (<span class="number">3</span>, <span class="string">'Winter'</span>)]</span><br><span class="line">&gt;&gt;&gt; list(enumerate(seasons, start=1))       # 下标从 1 开始</span><br><span class="line">[(<span class="number">1</span>, <span class="string">'Spring'</span>), (<span class="number">2</span>, <span class="string">'Summer'</span>), (<span class="number">3</span>, <span class="string">'Fall'</span>), (<span class="number">4</span>, <span class="string">'Winter'</span>)]</span><br></pre></td></tr></table></figure></p><p>有了它，我们就可以轻松获取索引下标值了。</p><h2><span id="sortedkeylambda">sorted(key=lambda)</span></h2><p><code>sorted（）</code>是用来排列列表的函数，默认情况下是从小到大排列。如果列表里是每一个元素并不是单纯的一个数字，而是多字段，那么就要规定以哪一个字段作为标准来排列，这个这顶标准就是<code>key</code>。</p><p>举个例子：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>listA = [<span class="number">3</span>, <span class="number">6</span>, <span class="number">1</span>, <span class="number">0</span>, <span class="number">10</span>, <span class="number">8</span>, <span class="number">9</span>]     <span class="comment">#这个列表就是单字段，排序就是单纯按照数字大小排序</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(sorted(listA))</span><br><span class="line">[<span class="number">0</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">6</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>listC=[(<span class="string">'e'</span>, <span class="number">4</span>), (<span class="string">'o'</span>, <span class="number">2</span>), (<span class="string">'!'</span>, <span class="number">5</span>), (<span class="string">'v'</span>, <span class="number">3</span>), (<span class="string">'l'</span>, <span class="number">1</span>)]      <span class="comment">#这个列表是多字段</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(sorted(listC, key=<span class="keyword">lambda</span> x: x[<span class="number">1</span>]))      <span class="comment">#指定按照多字段里第二个元素，即数字的大小进行排序</span></span><br><span class="line">[(<span class="string">'l'</span>, <span class="number">1</span>), (<span class="string">'o'</span>, <span class="number">2</span>), (<span class="string">'v'</span>, <span class="number">3</span>), (<span class="string">'e'</span>, <span class="number">4</span>), (<span class="string">'!'</span>, <span class="number">5</span>)]</span><br></pre></td></tr></table></figure></p><p><code>x:x[]</code>字母可以随意修改，排序方式按照中括号[]里面的维度进行排序，[0]按照第一维排序，[2]按照第三维排序</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://stackoverflow.com/questions/7851077/how-to-return-index-of-a-sorted-list" target="_blank" rel="noopener">https://stackoverflow.com/questions/7851077/how-to-return-index-of-a-sorted-list</a><br><a href="https://stackoverflow.com/questions/16310015/what-does-this-mean-key-lambda-x-x1" target="_blank" rel="noopener">https://stackoverflow.com/questions/16310015/what-does-this-mean-key-lambda-x-x1</a><br><a href="https://blog.csdn.net/u010758410/article/details/79737498" target="_blank" rel="noopener">https://blog.csdn.net/u010758410/article/details/79737498</a></p><p><img src="/images/conan.gif" alt="akb48" title="灰原哀模仿柯南"></p>]]></content>
-    
-    <summary type="html">
-    
-      这样就可以更加轻松的排列列表元素了
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="python" scheme="http://yoursite.com/tags/python/"/>
-    
-      <category term="enumerate" scheme="http://yoursite.com/tags/enumerate/"/>
-    
-      <category term="列表加工" scheme="http://yoursite.com/tags/%E5%88%97%E8%A1%A8%E5%8A%A0%E5%B7%A5/"/>
     
   </entry>
   
