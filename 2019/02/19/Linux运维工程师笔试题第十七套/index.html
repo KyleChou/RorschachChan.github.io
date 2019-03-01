@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是nginx和CDN相关的题目">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-02-27T02:05:48.677Z">
+<meta property="og:updated_time" content="2019-02-28T12:20:03.806Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十七套">
 <meta name="twitter:description" content="这次是nginx和CDN相关的题目">
@@ -460,7 +460,7 @@
 <p>2.在Nginx中，如何使用未定义的服务器名称来阻止处理请求?<br>只需将请求删除的服务器就可以定义为：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Server &#123;</span><br><span class="line">	listen <span class="number">80</span>;</span><br><span class="line">	server_name <span class="string">" "</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">444</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>这里，服务器名被保留为一个空字符串，它将在没有“主机”头字段的情况下匹配请求，而一个特殊的Nginx的非标准代码444被返回，从而终止连接。</p>
 <p>3.ajax是同步还是异步，怎么样实现同步?<br>ajax里async属性默认的设置值为<code>true</code>，这种情况为<code>异步方式</code>。即网页里有两个函数func(x)和func(y)，在打开网页的时候，后台会先去执行func(x)，然后等待server返回结果，同时还有一个线程会去执行func(y)。</p>
-<p>当把asyn设为<code>false</code>时，这时ajax的请求是<code>同步</code>的，也就是说，这个时候ajax块发出请求后，他会等待在func(x)这个地方，不会去执行func(y)，直到func(x)部分执行完毕。</p>
+<p>当把async设为<code>false</code>时，这时ajax的请求是<code>同步</code>的，也就是说，这个时候ajax块发出请求后，他会等待在func(x)这个地方，不会去执行func(y)，直到func(x)部分执行完毕。</p>
 <p>4.nginx如何实现http跳转https?<br>需要用到地址重写代码，用以下代码能让http强制跳转到https:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">    listen <span class="number">80</span>;</span><br><span class="line">    listen [::]:<span class="number">80</span>;		<span class="comment">#支持ipv6</span></span><br><span class="line">    server_name www.test.com;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">301</span> https://$server_name$request_uri;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>6.如果某个网站做了两个域名，分别是<a href="https://www.aaa.com和https://www.bbb.com，如果做了www.aaa.com" target="_blank" rel="noopener">https://www.aaa.com和https://www.bbb.com，如果做了www.aaa.com</a> cname到www.bbb.com，那么浏览器打开www.aaa.com会是什么界面？<br>打开页面会出现“https证书不正确”的风险提示。</p>
 <p>7.接着上面问题，在nginx里做了rewrite或者配置了显性URL，此时取消掉www.aaa.com本身的ip（即www.aaa.com没有ip,但是www.bbb.com有ip），浏览器里打开www.aaa.com会是什么界面？<br>会显示“无法找到www.aaa.com的IP地址”（第一步就失败了…）。</p>
@@ -727,7 +727,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">206</span>
+                  <span class="site-state-item-count">207</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -749,7 +749,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">170</span>
+                  <span class="site-state-item-count">171</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -943,7 +943,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共211.6k字</span>
+  <span class="post-count">博客全站共212.4k字</span>
 </div>
         
 
