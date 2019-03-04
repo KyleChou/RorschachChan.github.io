@@ -97,7 +97,7 @@
 <meta property="og:description" content="说白了，大量的TIME_WAIT就是服务器里短连接太多。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/time4.png">
-<meta property="og:updated_time" content="2019-03-04T08:10:29.857Z">
+<meta property="og:updated_time" content="2019-03-04T09:06:56.666Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="不要轻易去打开tcp_tw_recycle！">
 <meta name="twitter:description" content="说白了，大量的TIME_WAIT就是服务器里短连接太多。">
@@ -468,7 +468,7 @@
 <li><p>保证对端已经关闭了连接：由于<code>TIME_WAIT</code>的时间被缩短了，对端还处于<code>LAST_ACK</code>状态，本段发送的syn报文被直接RST掉了。</p>
 </li>
 </ol>
-<h2><span id="先说结论">先说结论</span></h2><p>当配置了<code>net.ipv4.tcp_tw_recycle = 1</code>之后，<code>TIME_WAIT</code>这个阶段就几乎是不存在了，因为原本它的存活时间是<code>2MSL</code>时间，现在改成了一个<code>RTO</code>，这个RTO可以远远小于2MSL的。当一个socket连接进入<code>TIME_WAIT</code>状态后，内核里会记录包括该socket连接对应的五元组中的对方IP等在内的一些统计数据，当然也包括从该对方IP所接收到的最近的一次数据包时间。当有新的数据包到达，只要时间晚于内核记录的这个时间，数据包都会被统统的丢掉。</p>
+<h2><span id="再说结论">再说结论</span></h2><p>当配置了<code>net.ipv4.tcp_tw_recycle = 1</code>之后，<code>TIME_WAIT</code>这个阶段就几乎是不存在了，因为原本它的存活时间是<code>2MSL</code>时间，现在改成了一个<code>RTO</code>，这个RTO可以远远小于2MSL的。当一个socket连接进入<code>TIME_WAIT</code>状态后，内核里会记录包括该socket连接对应的五元组中的对方IP等在内的一些统计数据，当然也包括从该对方IP所接收到的最近的一次数据包时间。当有新的数据包到达，只要时间晚于内核记录的这个时间，数据包都会被统统的丢掉。</p>
 <p>那怎么会影响具体业务呢？如果你所在的网络是NAT网络，即“多个客户端，但是同一个IP出口”这样的网络环境，这样很多人其实使用的是同一个IP。但是在服务器端它是始终在跟同一个host打交道，那么在一个RTO的时间内，只能有一个客户端和自己连接成功，而其他人要连接就会出现超时的现象。</p>
 <p>抓包体现是<code>客户端发送了syn给服务端，但是服务端不会回复ack，然后客户端就一直处于等待，通畅以为服务器端此时卡死了，可是此时服务器的负载并不高</code>。</p>
 <h2><span id="为什么tcp4次挥手时等待为2msl">为什么TCP4次挥手时等待为2MSL？</span></h2><p>MSL是<code>Maximum Segment Lifetime</code>,译为“报文最大生存时间”，他是任何报文在网络上存在的最长时间，超过这个时间报文将被丢弃。等待2MSL时间主要目的是怕最后一个ACK包对方没收到，那么对方在超时后将重发第三次握手的FIN包，主动关闭端接到重发的FIN包后可以再发一个ACK应答包。TCP只有断开了才会释放占用端口等资源，新来的链接才能复用这个端口。若被动断开的一方一直收不到最后一个ACK,那就会等待retry times到了上限，会reset连接。</p>
@@ -871,7 +871,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x6316;&#x5751;&#x8FC7;&#x7A0B;">&#x6316;&#x5751;&#x8FC7;&#x7A0B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="time_wait&#x662F;&#x5E72;&#x5565;&#x7684;">TIME_WAIT&#x662F;&#x5E72;&#x5565;&#x7684;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x5148;&#x8BF4;&#x7ED3;&#x8BBA;">&#x5148;&#x8BF4;&#x7ED3;&#x8BBA;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x4E3A;&#x4EC0;&#x4E48;tcp4&#x6B21;&#x6325;&#x624B;&#x65F6;&#x7B49;&#x5F85;&#x4E3A;2msl">&#x4E3A;&#x4EC0;&#x4E48;TCP4&#x6B21;&#x6325;&#x624B;&#x65F6;&#x7B49;&#x5F85;&#x4E3A;2MSL&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x6B63;&#x786E;&#x505A;&#x6CD5;">&#x6B63;&#x786E;&#x505A;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x6316;&#x5751;&#x8FC7;&#x7A0B;">&#x6316;&#x5751;&#x8FC7;&#x7A0B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="time_wait&#x662F;&#x5E72;&#x5565;&#x7684;">TIME_WAIT&#x662F;&#x5E72;&#x5565;&#x7684;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x518D;&#x8BF4;&#x7ED3;&#x8BBA;">&#x518D;&#x8BF4;&#x7ED3;&#x8BBA;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x4E3A;&#x4EC0;&#x4E48;tcp4&#x6B21;&#x6325;&#x624B;&#x65F6;&#x7B49;&#x5F85;&#x4E3A;2msl">&#x4E3A;&#x4EC0;&#x4E48;TCP4&#x6B21;&#x6325;&#x624B;&#x65F6;&#x7B49;&#x5F85;&#x4E3A;2MSL&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x6B63;&#x786E;&#x505A;&#x6CD5;">&#x6B63;&#x786E;&#x505A;&#x6CD5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
