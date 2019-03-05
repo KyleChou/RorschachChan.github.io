@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-03-04T09:06:56.666Z</updated>
+  <updated>2019-03-05T02:22:10.338Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Zabbix出现数据库IIllegal mix of collations的报错</title>
+    <link href="http://yoursite.com/2019/03/05/Zabbix%E5%87%BA%E7%8E%B0%E6%95%B0%E6%8D%AE%E5%BA%93IIllegal-mix-of-collations%E7%9A%84%E6%8A%A5%E9%94%99/"/>
+    <id>http://yoursite.com/2019/03/05/Zabbix出现数据库IIllegal-mix-of-collations的报错/</id>
+    <published>2019-03-05T02:07:04.000Z</published>
+    <updated>2019-03-05T02:22:10.338Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>接到新的私有云工作，登录到甲方爸爸的服务器一看是centos6.1，上面安装了zabbix-server但是仅仅做了<code>auto-discovery</code>，于是我就做<code>templates</code>，可见名称是中文的。但是发现在保存的时候，出现了这样的错误：<br><img src="/images/zabbix4.png" alt="akb48"></p><p>定眼一看，这是数据库的编码问题，整个database都是拉丁编码而不是utf8编码，所以无法输入中文。</p><p>要解决这个问题比较简单，毕竟zabbix刚启动而已，数据库里还没有数据。于是我就干脆把整个zabbix的database干掉，重建一个新的：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql -hlocalhost -uzabbix -p<span class="comment">#登录数据库</span></span><br><span class="line">drop databases zabbix;<span class="comment">#暴力全部删光</span></span><br></pre></td></tr></table></figure></p><p>此时的zabbix-server的web界面是如下的：<br><img src="/images/zabbix5.png" alt="akb48"></p><p>然后返回到mysql里：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">create database zabbix character set utf8;</span><br><span class="line"><span class="comment"># ctrl+c 退出数据库</span></span><br><span class="line">zcat /usr/share/doc/zabbix-server-mysql<span class="number">-3.4</span><span class="number">.15</span>/create.sql.gz  |mysql -uzabbix -p26e9p69r zabbix<span class="comment">#重新导入初始化表</span></span><br></pre></td></tr></table></figure></p><p>然后在web界面点击<code>retry</code>，然后重新登陆一下zabbix-server。再次尝试编辑带有中文的监控项，就能顺利保存了！</p>]]></content>
+    
+    <summary type="html">
+    
+      衷心恳请以后甲方别装centos6了，装7吧...
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
+    
+      <category term="zabbix" scheme="http://yoursite.com/tags/zabbix/"/>
+    
+  </entry>
   
   <entry>
     <title>不要轻易去打开tcp_tw_recycle！</title>
@@ -45,9 +69,9 @@
     <link href="http://yoursite.com/2019/03/04/Linux%E8%BF%90%E7%BB%B4%E5%B7%A5%E7%A8%8B%E5%B8%88%E7%AC%94%E8%AF%95%E9%A2%98%E7%AC%AC%E5%8D%81%E5%85%AB%E5%A5%97/"/>
     <id>http://yoursite.com/2019/03/04/Linux运维工程师笔试题第十八套/</id>
     <published>2019-03-04T03:52:02.000Z</published>
-    <updated>2019-03-04T05:47:06.713Z</updated>
+    <updated>2019-03-05T02:21:38.474Z</updated>
     
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="试题内容">试题内容</span></h2><p>1.docker的exec与attach命令有啥区别？<br>attach开启一个和正在运行的进程交互的终端，如果该进程结束，原docker container的进程也会结束。<br>exec可以开启多个终端实例，<code>exec -i /bin/bash</code>，由此可见exec其实是在运行中的容器中执行一个命令</p><p>2.docker的CMD与ENTRYPOINT命令有啥区别？</p><p>3.docker的kill和stop命令有啥区别？<br>stop是“优雅退出”，先发送SIGTERM信号，在一段时间之后（10s）再发送SIGKILL信号。Docker内部的应用程序可以接收SIGTERM信号，然后做一些“退出前工作”，比如保存状态、处理当前请求等。<br>kill是“暴力退出”，即发送SIGKILL信号，应用程序直接退出。</p><p>4.linux里删除某个用户的所有进程的语句？<br>ps -u username | grep -v PID | awk ‘{print$1}’| xargs kill -9<br>或者killall -u username</p><p>5.linux如何彻底删除一个用户？<br>userdel -r zhidao（前提是这个用户下已经没有程序运行了）</p><p>6.ps -ef |grep 进程名|awk “{print $2}”|xargs kill -9 </p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec" target="_blank" rel="noopener">https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec</a><br><a href="http://dockone.io/question/469" target="_blank" rel="noopener">http://dockone.io/question/469</a></p>]]></content>
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="试题内容">试题内容</span></h2><p>1.docker的exec与attach命令有啥区别？<br>attach开启一个和正在运行的进程交互的终端，如果该进程结束，原docker container的进程也会结束。<br>exec可以开启多个终端实例，<code>exec -i /bin/bash</code>，由此可见exec其实是在运行中的容器中执行一个命令</p><p>2.docker的CMD与ENTRYPOINT命令有啥区别？</p><p>3.docker的kill和stop命令有啥区别？<br>stop是“优雅退出”，先发送SIGTERM信号，在一段时间之后（10s）再发送SIGKILL信号。Docker内部的应用程序可以接收SIGTERM信号，然后做一些“退出前工作”，比如保存状态、处理当前请求等。<br>kill是“暴力退出”，即发送SIGKILL信号，应用程序直接退出。</p><p>4.linux里删除某个用户的所有进程的语句？<br>ps -u username | grep -v PID | awk ‘{print$1}’| xargs kill -9<br>或者killall -u username</p><p>5.linux如何彻底删除一个用户？<br>userdel -r zhidao（前提是这个用户下已经没有程序运行了）</p><p>6.ps -ef |grep 进程名|awk “{print $2}”|xargs kill -9 </p><p>未完待续</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec" target="_blank" rel="noopener">https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec</a><br><a href="http://dockone.io/question/469" target="_blank" rel="noopener">http://dockone.io/question/469</a></p>]]></content>
     
     <summary type="html">
     
@@ -481,30 +505,6 @@
       <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
     
       <category term="excel" scheme="http://yoursite.com/tags/excel/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Python3写文件的几个例子</title>
-    <link href="http://yoursite.com/2019/01/04/Python3%E5%86%99%E6%96%87%E4%BB%B6%E7%9A%84%E5%87%A0%E4%B8%AA%E4%BE%8B%E5%AD%90/"/>
-    <id>http://yoursite.com/2019/01/04/Python3写文件的几个例子/</id>
-    <published>2019-01-04T03:22:55.000Z</published>
-    <updated>2019-01-04T06:31:43.584Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="拷贝一个文件的全部内容到另一个文件">拷贝一个文件的全部内容到另一个文件</span></h2><p>复制<code>aaa.txt</code>内容到另一个<code>bbb.txt</code><br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">fp = open(<span class="string">'aaa.txt'</span>,<span class="string">'r'</span>)</span><br><span class="line">    <span class="keyword">for</span> line <span class="keyword">in</span> fp:</span><br><span class="line">        fq = open(<span class="string">'bbb.txt'</span>,<span class="string">'a'</span>)<span class="comment">#这里用追加模式，这里不能用w</span></span><br><span class="line">        fq.write(line)</span><br><span class="line">    fp.close()</span><br></pre></td></tr></table></figure></p><h2><span id="在文件头部插入数据">在文件头部插入数据</span></h2><p>读出原有文件内容<code>aaa.txt</code>，移动索引到开始，写入新的数据data，然后再写入旧的数据。<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">with</span> open(<span class="string">'aaa.txt'</span>, <span class="string">"r+"</span>) <span class="keyword">as</span> f:</span><br><span class="line">     old = f.read()<span class="comment">#将原来的内容取出</span></span><br><span class="line">     f.seek(<span class="number">0</span>)<span class="comment">#索引移动到头</span></span><br><span class="line">     f.write(data)</span><br><span class="line">     f.write(old)</span><br></pre></td></tr></table></figure></p><h2><span id="清空文件的内容">清空文件的内容</span></h2><p>当已存在一个文件对象，且这个文件对象可以对文件进行写<code>write</code>操作(注意不是追加<code>append</code>操作),则可以通过如下语句来清空一个文件的内容:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>f = open(<span class="string">'file.txt'</span>,<span class="string">'r+'</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>f.truncate()     <span class="comment">#使用文件对象的成员函数truncate()来清空一个文件</span></span><br></pre></td></tr></table></figure></p><h2><span id="如何让html文件识别换行符">如何让html文件识别换行符？</span></h2><p>如果使用替换方法把<code>\r\n</code>替换成<code>&lt;br&gt;</code>的话太蠢了，其实这种需求可以一句话解决：头尾加<code>&lt;pre&gt;&lt;/pre&gt;</code>。</p><p><img src="/images/hardenkill.gif" alt="akb48" title="哈登加时绝杀勇士"></p>]]></content>
-    
-    <summary type="html">
-    
-      整理几个python写文件的特殊情况
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="python" scheme="http://yoursite.com/tags/python/"/>
-    
-      <category term="文件读写" scheme="http://yoursite.com/tags/%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99/"/>
     
   </entry>
   
