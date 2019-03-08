@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是跟docker相关的题">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-03-05T02:21:38.474Z">
+<meta property="og:updated_time" content="2019-03-08T09:54:37.841Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十八套">
 <meta name="twitter:description" content="这次是跟docker相关的题">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  293
+                  515
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -454,9 +454,11 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="试题内容">试题内容</span></h2><p>1.docker的exec与attach命令有啥区别？<br>attach开启一个和正在运行的进程交互的终端，如果该进程结束，原docker container的进程也会结束。<br>exec可以开启多个终端实例，<code>exec -i /bin/bash</code>，由此可见exec其实是在运行中的容器中执行一个命令</p>
-<p>2.docker的CMD与ENTRYPOINT命令有啥区别？</p>
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="试题内容">试题内容</span></h2><p>1.docker的exec与attach命令有啥区别？<br><code>attach</code>开启一个和正在运行的进程交互的终端，如果该进程结束，原docker container的进程也会结束。<br><code>exec</code>可以开启多个终端实例，<code>exec -i /bin/bash</code>，由此可见exec其实是在运行中的容器中执行一个命令。</p>
+<p>2.docker的CMD与ENTRYPOINT命令有啥区别？<br><code>CMD</code>的命令会被<code>docker run</code>里的命令覆盖，而<code>ENTRYPOINT</code>命令不会。<br>如果要覆盖<code>ENTRYPOINT</code>，则在<code>docker run</code>里添加<code>--entrypoint</code>标签来覆盖即可。<br>如果dockerfile里指定了<code>WORKDIR</code>，那么无论是<code>CMD</code>还是<code>ENTRYPOINT</code>命令都是在这个WORKDIR目录里执行。</p>
 <p>3.docker的kill和stop命令有啥区别？<br>stop是“优雅退出”，先发送SIGTERM信号，在一段时间之后（10s）再发送SIGKILL信号。Docker内部的应用程序可以接收SIGTERM信号，然后做一些“退出前工作”，比如保存状态、处理当前请求等。<br>kill是“暴力退出”，即发送SIGKILL信号，应用程序直接退出。</p>
+<p>4.假设有一个AAA的容器，现在需要备份它的挂载卷/DATA里的数据，请问如何操作？<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --volumes-form A -v /tmp:/backup --name BACKUP ubuntu tar cvf /backup/A.tar /DATA</span><br></pre></td></tr></table></figure></p>
+<p>上面这个语句新建立一个叫BACKUP的容器，它与A容器挂载情况相同（即都是挂载/DATA），同时将本地的/tmp挂载到容器的/backup，在容器生成的时候，执行了<code>tar cvf /backup/A.tar /DATA</code>将DATA文件夹的内容进行了打包，又由于/tmp已经与/backup挂载，所以就可以直接从宿主机上的/tmp里得到A.tar了。</p>
 <p>4.linux里删除某个用户的所有进程的语句？<br>ps -u username | grep -v PID | awk ‘{print$1}’| xargs kill -9<br>或者killall -u username</p>
 <p>5.linux如何彻底删除一个用户？<br>userdel -r zhidao（前提是这个用户下已经没有程序运行了）</p>
 <p>6.ps -ef |grep 进程名|awk “{print $2}”|xargs kill -9 </p>
@@ -914,7 +916,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共216.9k字</span>
+  <span class="post-count">博客全站共217.1k字</span>
 </div>
         
 
