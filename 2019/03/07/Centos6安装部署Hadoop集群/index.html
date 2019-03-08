@@ -100,7 +100,7 @@
 <meta property="og:image" content="http://yoursite.com/images/hadoop2.png">
 <meta property="og:image" content="http://yoursite.com/images/hadoop3.png">
 <meta property="og:image" content="http://yoursite.com/images/hadoop4.png">
-<meta property="og:updated_time" content="2019-03-08T02:42:16.843Z">
+<meta property="og:updated_time" content="2019-03-08T02:52:39.940Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Centos7安装部署Hadoop集群">
 <meta name="twitter:description" content="如果服务器ifconfig命令屏蔽了外网网卡导致无法得到外网IP，可以尝试curl ifconfig.me获取，不过如果有路由可能会不准">
@@ -418,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,742
+                  1,788
                 </span>
               
 
@@ -460,7 +460,7 @@
 
       
         <script src="\assets\js\APlayer.min.js"> </script><p>目前大环境感觉不好，哪哪都是裁人的消息，所以这个时候更是要摆正心态、沉淀自己。</p>
-<p>今年我个人的小目标是：Hadoop+k8s+Django，这次就先写Hadoop的部署过程，下一篇再说名词解释。</p>
+<p>今年我个人的小目标是：Hadoop+k8s+python开发，这次就先写Hadoop的部署过程，可能会有一些名词看不懂，等下一篇再说名词解释。</p>
 <p>先说环境：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">192.168</span><span class="number">.1</span><span class="number">.86</span>	Master	华为云Centos7<span class="number">.5</span></span><br><span class="line"><span class="number">192.168</span><span class="number">.1</span><span class="number">.165</span>	Salve	华为云Centos7<span class="number">.5</span></span><br></pre></td></tr></table></figure></p>
 <p>为了高可用，还要部署zookeeper来监视节点心跳情况，我这个例子里没有，如果有需要可以单独部署。</p>
 <h2><span id="所有机器都要操作">所有机器都要操作</span></h2><font color="red" size="3">本段过程是所有的服务器都要一起操作的！</font>
@@ -468,12 +468,12 @@
 <ol>
 <li><p>先<code>yum update -y</code>，在等待的时候，我们就新开一个窗口，<code>wget http://apache.01link.hk/hadoop/common/hadoop-3.1.2/hadoop-3.1.2.tar.gz</code> 下载3.1.2版本的hadoop，下载完毕后，解压缩<code>hadoop-3.1.2.tar.gz</code>到<code>/opt</code>下，然后把hadoop-3.1.2改名叫hadoop。</p>
 </li>
-<li><p>在<code>yum update -y</code>之后，我们还要<code>yum install java-1.8.0-openjdk* -y</code>，安装完毕之后，执行<code>java -version</code>确认已经安装java 1.8成功。</p>
+<li><p>在<code>yum update -y</code>完成之后，我们还要<code>yum install java-1.8.0-openjdk* -y</code>，安装完毕之后，执行<code>java -version</code>确认已经安装java 1.8成功。</p>
 </li>
 <li><p>在<code>/etc/hosts</code>文件里添加：</p>
  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">192.168</span><span class="number">.1</span><span class="number">.86</span>	master</span><br><span class="line"><span class="number">192.168</span><span class="number">.1</span><span class="number">.165</span>	slave</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>修改配置文件，hadoop所有的配置文件都在<code>/opt/hadoop/etc/hadoop</code>路径下。<br>先修改hadoop-env.sh，添加一句<code>export JAVA_HOME=/usr</code>，因为我们直接用yum安装的，java默认就会安装到<code>/usr/bin/java</code>。所以这里写/usr即可，如果是另外方法安装需要写具体的路径而且要修改<code>/etc/profile</code>和<code>source /etc/profile</code>。</p>
+<li><p>修改配置文件，hadoop所有的配置文件都在<code>/opt/hadoop/etc/hadoop</code>路径下。<br>先修改<code>hadoop-env.sh</code>，添加一句<code>export JAVA_HOME=/usr</code>，因为我们直接用yum安装的，java默认就会安装到<code>/usr/bin/java</code>。所以这里写/usr即可，如果是另外方法安装需要写具体的路径而且要修改<code>/etc/profile</code>和<code>source /etc/profile</code>。</p>
 </li>
 </ol>
 <p>在<code>core-site.xml</code>里的<code>configuration</code>里添加如下内容：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">&lt;!-- 指定hadoop运行时产生文件的存储目录,可以指定自己熟悉的目录，默认/tmp/hadoop-$&#123;user.name&#125; --&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;/opt/hadoop/tmp&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br><span class="line">&lt;!-- 指定hadoop使用的文件系统，HDFS的老大NameNode的地址 --&gt;</span><br><span class="line">&lt;property&gt;</span><br><span class="line">    &lt;name&gt;fs.default.name&lt;/name&gt;</span><br><span class="line">    &lt;value&gt;hdfs://master:9000&lt;/value&gt;</span><br><span class="line">&lt;/property&gt;</span><br></pre></td></tr></table></figure></p>
@@ -487,7 +487,7 @@
 <h2><span id="只有master操作">只有Master操作</span></h2><font color="red" size="3">以下操作只有master操作！</font>
 
 <p>由于Master是namenode，slave是datanode，现在就需要对namenode进行一个初始化的操作，即是hdfs的一个初始化。</p>
-<p>进入<code>/opt/hadoop/bin</code>里，执行<code>./hadoop namenode -format</code> ，格式化一个新的分布式文件系统。如果不报错那就说明成功，成功完毕，可以去/opt/hadoop/dfs/name这个目录下发现多了一个current文件夹。</p>
+<p>进入<code>/opt/hadoop/bin</code>里，执行<code>./hadoop namenode -format</code> ，格式化一个新的分布式文件系统，如果不报错那就说明成功。完毕之后，可以去<code>/opt/hadoop/dfs/name</code>这个目录下发现多了一个current文件夹。</p>
 <h2><span id="配置普通用户免密码登录">配置普通用户免密码登录</span></h2><p>至此整个部署过程就完毕了，如果是root用户就可以直接去<code>/opt/hadoop/hadoop-2.8.0/sbin</code>下执行<code>./start-all.sh</code>了，但是为了安全，我们不要用root用户去启动hadoop，而是用普通用户去启动它。</p>
 <p>于是我们先在两台机器上<code>adduser hadoop</code>，这里不设置密码。然后<code>chown -R /opt/hadoop</code>，把整个hadoop文件夹的权限都给hadoop用户。</p>
 <p>然后执行<code>ssh-keygen -t rsa</code>，一顿回车之后发现在<code>/home/hadoop/.ssh</code>下有了<code>id_rsa</code>和<code>id_rsa.pub</code>这俩文件。这俩就是root用户的ssh公钥和私钥文件，<code>su hadoop</code>切换到hadoop用户上，同样的操作一遍，获取到hadoop用户的ssh公钥和私钥文件。</p>
@@ -496,7 +496,7 @@
 <h2><span id="启动hadoop">启动Hadoop</span></h2><p>当前用户是hadoop，在master机器上执行<code>/opt/hadoop/sbin/start-all.sh</code>即启动hadoop，如图：<br><img src="/images/hadoop2.png" alt="akb48"></p>
 <p>此时在slave机器上会看到有两个进程启动：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hadoop   13552     1  2 10:35 ?        00:00:03 /usr//bin/java -Dproc_datanode -Djava.net.preferIPv4Stack=true -Dhadoop.security.logger=ERROR,RFAS -Dyarn.log.dir=/opt/hadoop/logs -Dyarn.log.file=hadoop-hadoop-datanode-slave.log -Dyarn.home.dir=/opt/hadoop -Dyarn.root.logger=INFO,console -Djava.library.path=/opt/hadoop/lib/native -Dhadoop.log.dir=/opt/hadoop/logs -Dhadoop.log.file=hadoop-hadoop-datanode-slave.log -Dhadoop.home.dir=/opt/hadoop -Dhadoop.id.str=hadoop -Dhadoop.root.logger=INFO,RFA -Dhadoop.policy.file=hadoop-policy.xml org.apache.hadoop.hdfs.server.datanode.DataNode</span><br><span class="line">hadoop   13670     1  3 10:35 ?        00:00:04 /usr//bin/java -Dproc_nodemanager -Djava.net.preferIPv4Stack=true -Dyarn.log.dir=/opt/hadoop/logs -Dyarn.log.file=hadoop-hadoop-nodemanager-slave.log -Dyarn.home.dir=/opt/hadoop -Dyarn.root.logger=INFO,console -Djava.library.path=/opt/hadoop/lib/native -Dhadoop.log.dir=/opt/hadoop/logs -Dhadoop.log.file=hadoop-hadoop-nodemanager-slave.log -Dhadoop.home.dir=/opt/hadoop -Dhadoop.id.str=hadoop -Dhadoop.root.logger=INFO,RFA -Dhadoop.policy.file=hadoop-policy.xml -Dhadoop.security.logger=INFO,NullAppender org.apache.hadoop.yarn.server.nodemanager.NodeManager</span><br></pre></td></tr></table></figure></p>
 <p>或者使用jps命令在双方机器上查看启动的进程名：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@slave hadoop]<span class="comment"># jps</span></span><br><span class="line"><span class="number">13552</span> DataNode</span><br><span class="line"><span class="number">13670</span> NodeManager</span><br><span class="line"><span class="number">1543</span> WrapperSimpleApp</span><br><span class="line"><span class="number">13790</span> Jps</span><br></pre></td></tr></table></figure></p>
-<p>在浏览器里输入<code>http://master公网IP:50070</code>即可查看效果：<br><img src="/images/hadoop3.png" alt="akb48"></p>
+<p>在华为云的安全组里对这俩服务器打开50070端口和8088的公网访问端口，然后在浏览器里输入<code>http://master公网IP:50070</code>即可查看效果：<br><img src="/images/hadoop3.png" alt="akb48"></p>
 <p>而输入<code>http://master公网IP:8088</code>就会看到cluster页面：<br><img src="/images/hadoop4.png" alt="akb48"></p>
 <p>如果要关闭，就在master执行<code>/opt/hadoop/sbin/stop-all.sh</code>，至此一个简单的hadoop集群搭建和启动完毕。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.cnblogs.com/charlesblc/p/6030008.html" target="_blank" rel="noopener">https://www.cnblogs.com/charlesblc/p/6030008.html</a><br><a href="https://blog.wuwii.com/linux-hadoop.html" target="_blank" rel="noopener">https://blog.wuwii.com/linux-hadoop.html</a></p>
@@ -948,7 +948,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共216.8k字</span>
+  <span class="post-count">博客全站共216.9k字</span>
 </div>
         
 
