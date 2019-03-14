@@ -100,7 +100,7 @@
 <meta property="og:image" content="http://yoursite.com/images/k8s27.png">
 <meta property="og:image" content="http://yoursite.com/images/k8s28.png">
 <meta property="og:image" content="http://yoursite.com/images/k8s29.png">
-<meta property="og:updated_time" content="2019-03-14T08:08:48.329Z">
+<meta property="og:updated_time" content="2019-03-14T08:37:03.200Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从limit和request来理解k8s的资源调配">
 <meta name="twitter:description" content="这个玩意搞得我脑子有点疼...">
@@ -418,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  788
+                  786
                 </span>
               
 
@@ -468,10 +468,10 @@
 <p>request和limit的关系:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">request能保证pod有足够的资源来运行, 而limit则是防止某个pod无限制的使用资源, 导致其他pod崩溃. 两者的关系必须满足:</span><br><span class="line"><span class="number">0</span> &lt;= request &lt;= limit &lt;= Infinity </span><br><span class="line">复制代码如果limit=<span class="number">0</span>表示不对资源进行限制, 这时可以小于request。</span><br><span class="line">目前CPU支持设置request和limit，memory只支持设置request， limit必须强制等于request， 这样确保容器不会因为内存的使用量超过request但是没有超过limit的情况下被意外kill掉。</span><br></pre></td></tr></table></figure></p>
 <p>举个例子，在一个2核4G的node里，运行一个<code>(CPU Requst,CPU Limit,Memory Requst, Memory Limit)= (1U, 1U, 2G,2G)</code>的POD是完全OK的，这个POD不一定一定要用满2G，它可以用到0.1G或者1.99G,只要是内存在2G以内，这个POD都是不受影响的。</p>
 <p>如果这个时候，又来了一个POD，他的资源参数为<code>(CPU Requst,CPU Limit,Memory Requst, Memory Limit)= (1U, 1U, 1G,2G)</code>，那么这个POD2的内存在2G以内的情况下，POD1和POD2都是OK的。如果POD2的超过了2G，那么POD2会挂掉，而POD1安全无事。</p>
-<p>若namespace里事前设定了request和limit，那么在生成pod的时候，除非特殊说明，pod的request和limit值与所处的namespace相同。如果pod说明了request没说明limit，那么pod的limit等于声明的request。如果pod说明了request没有说明limit，那么limit值等于namespace默认的limit。</p>
+<p>若namespace里事前设定了CPU和内存的request和limit，那么在生成pod的时候，若无特殊说明，pod的request和limit值与所处的namespace相同。如果pod说明了request没说明limit，那么pod的limit等于声明的request。如果pod说明了request没有说明limit，那么limit值等于namespace默认的limit。</p>
 <p>注意！namespace的limit值是可以比实际pod的limit值小的，如图：<br><img src="/images/k8s28.png" alt="akb48"></p>
-<p>可见这个叫default-mem-example的namespace默认的request是256Mi，limit是512Mi，而我是可以在这个namespace里创建一个request是1G的pod，如图：<br><img src="/images/k8s29.png" alt="akb48"></p>
-<p>额外补充一下，k8s里的计量单位：Mi表示（1Mi=1024x1024）,M表示（1M=1000x1000），其它单位类推， 如Ki/K、Gi/G。</p>
+<p>可见这个叫<code>default-mem-example</code>的namespace默认的request是256Mi，limit是512Mi，而我是可以在这个namespace里创建一个request是1G的pod，如图：<br><img src="/images/k8s29.png" alt="akb48"></p>
+<p>额外补充一下，k8s里的计量单位：1Mi=1024x1024，1M=1000x1000，其它单位类推，如Ki/K、Gi/G。</p>
 <h2><span id="如何理解taints">如何理解Taints</span></h2><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.qikqiak.com/post/understand-kubernetes-affinity/" target="_blank" rel="noopener">https://www.qikqiak.com/post/understand-kubernetes-affinity/</a><br><a href="https://blog.frognew.com/2018/05/taint-and-toleration.html" target="_blank" rel="noopener">https://blog.frognew.com/2018/05/taint-and-toleration.html</a><br><a href="https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html" target="_blank" rel="noopener">https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html</a><br><a href="https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources" target="_blank" rel="noopener">https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources</a><br><a href="http://dockone.io/article/2509" target="_blank" rel="noopener">http://dockone.io/article/2509</a><br><a href="https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/" target="_blank" rel="noopener">https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/</a><br><a href="http://blog.whysdomain.com/blog/171/" target="_blank" rel="noopener">http://blog.whysdomain.com/blog/171/</a></p>
 
       
