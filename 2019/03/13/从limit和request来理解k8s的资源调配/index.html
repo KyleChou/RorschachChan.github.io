@@ -102,7 +102,7 @@
 <meta property="og:image" content="http://yoursite.com/images/k8s29.png">
 <meta property="og:image" content="http://yoursite.com/images/k8s30.png">
 <meta property="og:image" content="http://yoursite.com/images/k8s31.png">
-<meta property="og:updated_time" content="2019-03-14T09:10:04.437Z">
+<meta property="og:updated_time" content="2019-03-14T09:44:11.934Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从limit和request来理解k8s的资源调配">
 <meta name="twitter:description" content="这个玩意搞得我脑子有点疼...">
@@ -420,7 +420,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  985
+                  971
                 </span>
               
 
@@ -474,11 +474,10 @@
 <p>注意！namespace的limit值是可以比实际pod的limit值小的，如图：<br><img src="/images/k8s28.png" alt="akb48"></p>
 <p>可见这个叫<code>default-mem-example</code>的namespace默认的request是256Mi，limit是512Mi，而我是可以在这个namespace里创建一个request是1G的pod，如图：<br><img src="/images/k8s29.png" alt="akb48"></p>
 <p>额外补充一下，k8s里的计量单位：1Mi=1024x1024，1M=1000x1000，其它单位类推，如Ki/K、Gi/G。</p>
-<h2><span id="重新说回来">重新说回来</span></h2><p>再次说回<code>0/4 nodes are available: 1 Insufficient memory, 3 node(s) had taints that the pod didn&#39;t tolerate.</code>，从这句话里我们看到虽然这个k8s集群有4个node（3个master+1worker)，但是在worker上只有4G，而我生成了5个limit=512Mi的pod，也就是说每一个node会分到一个pod，而剩下的一个由于污点互斥而没有node可以去生成他了，所以出现<code>Insufficient memory</code>的错误。</p>
-<p>使用<code>kubectl describe node master节点名称</code>来查看它是否存在默认的taint:<br><img src="/images/k8s30.png" alt="akb48"></p>
+<h2><span id="重新说回来">重新说回来</span></h2><p>再次说回<code>0/4 nodes are available: 1 Insufficient memory, 3 node(s) had taints that the pod didn&#39;t tolerate.</code>，从这句话里我们看到虽然这个k8s集群有4个node（3个master+1worker)，使用<code>kubectl describe node master节点名称</code>来查看master上是否存在默认的taint:<br><img src="/images/k8s30.png" alt="akb48"></p>
 <p>再看一下worker节点的taint:<br><img src="/images/k8s31.png" alt="akb48"></p>
-<p>在master上默认是<code>不会将Pod调度到具有该污点的Node上</code>，也就是说所有pod都是在worker这个节点上的。</p>
-<h2><span id="如何理解taints">如何理解Taints</span></h2><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.qikqiak.com/post/understand-kubernetes-affinity/" target="_blank" rel="noopener">https://www.qikqiak.com/post/understand-kubernetes-affinity/</a><br><a href="https://blog.frognew.com/2018/05/taint-and-toleration.html" target="_blank" rel="noopener">https://blog.frognew.com/2018/05/taint-and-toleration.html</a><br><a href="https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html" target="_blank" rel="noopener">https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html</a><br><a href="https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources" target="_blank" rel="noopener">https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources</a><br><a href="http://dockone.io/article/2509" target="_blank" rel="noopener">http://dockone.io/article/2509</a><br><a href="https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/" target="_blank" rel="noopener">https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/</a><br><a href="http://blog.whysdomain.com/blog/171/" target="_blank" rel="noopener">http://blog.whysdomain.com/blog/171/</a></p>
+<p>在master上默认是<code>不会将Pod调度到具有该污点的Node上</code>，也就是说所有pod都是在worker这个节点上的。worker上只有4G，而我生成了5个limit=512Mi的pod，需要2.5G的内存空间。然而worker现在剩余的内存值并不满足2.5G，所以生成失败，需要适当调小limit值。</p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.qikqiak.com/post/understand-kubernetes-affinity/" target="_blank" rel="noopener">https://www.qikqiak.com/post/understand-kubernetes-affinity/</a><br><a href="https://blog.frognew.com/2018/05/taint-and-toleration.html" target="_blank" rel="noopener">https://blog.frognew.com/2018/05/taint-and-toleration.html</a><br><a href="https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html" target="_blank" rel="noopener">https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html</a><br><a href="https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources" target="_blank" rel="noopener">https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources</a><br><a href="http://dockone.io/article/2509" target="_blank" rel="noopener">http://dockone.io/article/2509</a><br><a href="https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/" target="_blank" rel="noopener">https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/</a><br><a href="http://blog.whysdomain.com/blog/171/" target="_blank" rel="noopener">http://blog.whysdomain.com/blog/171/</a></p>
 
       
     </div>
@@ -873,7 +872,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x80CC;&#x666F;&#x4EA4;&#x4EE3;">&#x80CC;&#x666F;&#x4EA4;&#x4EE3;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="limit&#x548C;request&#x7684;&#x4E0D;&#x540C;">limit&#x548C;request&#x7684;&#x4E0D;&#x540C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x91CD;&#x65B0;&#x8BF4;&#x56DE;&#x6765;">&#x91CD;&#x65B0;&#x8BF4;&#x56DE;&#x6765;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x5982;&#x4F55;&#x7406;&#x89E3;taints">&#x5982;&#x4F55;&#x7406;&#x89E3;Taints</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x80CC;&#x666F;&#x4EA4;&#x4EE3;">&#x80CC;&#x666F;&#x4EA4;&#x4EE3;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="limit&#x548C;request&#x7684;&#x4E0D;&#x540C;">limit&#x548C;request&#x7684;&#x4E0D;&#x540C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x91CD;&#x65B0;&#x8BF4;&#x56DE;&#x6765;">&#x91CD;&#x65B0;&#x8BF4;&#x56DE;&#x6765;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
