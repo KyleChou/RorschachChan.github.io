@@ -102,7 +102,7 @@
 <meta property="og:image" content="http://yoursite.com/images/k8s29.png">
 <meta property="og:image" content="http://yoursite.com/images/k8s30.png">
 <meta property="og:image" content="http://yoursite.com/images/k8s31.png">
-<meta property="og:updated_time" content="2019-03-14T11:39:18.530Z">
+<meta property="og:updated_time" content="2019-03-15T08:12:31.155Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从limit和request来理解k8s的资源调配">
 <meta name="twitter:description" content="在已有的worker上再扩容一个worker!">
@@ -420,7 +420,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,065
+                  1,093
                 </span>
               
 
@@ -479,6 +479,7 @@
 <p>再看一下worker节点的taint:<br><img src="/images/k8s31.png" alt="akb48"></p>
 <p>在master上默认是<code>不会将Pod调度到具有该污点的Node上</code>，也就是说所有pod都是在worker这个节点上的。worker上只有4G，而我生成了5个limit=512Mi的pod，需要2.5G的内存空间。然而worker这个pod现在有多少可用的内存呢？<code>kubectl describe node worker名称</code>可见剩余的memory已经不足，如图:<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Allocated resources:</span><br><span class="line">  (Total limits may be over <span class="number">100</span> percent, i.e., overcommitted.)</span><br><span class="line">  Resource  Requests      Limits</span><br><span class="line">  --------  --------      ------</span><br><span class="line">  cpu       <span class="number">200</span>m (<span class="number">10</span>%)    <span class="number">0</span> (<span class="number">0</span>%)</span><br><span class="line">  memory    <span class="number">1736</span>Mi (<span class="number">62</span>%)  <span class="number">2248</span>Mi (<span class="number">80</span>%)</span><br><span class="line">Events:     &lt;none&gt;</span><br></pre></td></tr></table></figure></p>
 <p>现在剩余的内存值仅有20%，所以由于内存不够而生成失败，需要在<code>kubectl run</code>里适当调小内存的limit值，或者干脆扩容一个worker，让它在另一个worker里出现。</p>
+<p>如果想要查看某个pod是具体落在哪个node里，使用命令：<code>kubectl get pods -o wide</code>即可。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.qikqiak.com/post/understand-kubernetes-affinity/" target="_blank" rel="noopener">https://www.qikqiak.com/post/understand-kubernetes-affinity/</a><br><a href="https://blog.frognew.com/2018/05/taint-and-toleration.html" target="_blank" rel="noopener">https://blog.frognew.com/2018/05/taint-and-toleration.html</a><br><a href="https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html" target="_blank" rel="noopener">https://jimmysong.io/kubernetes-handbook/concepts/taint-and-toleration.html</a><br><a href="https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources" target="_blank" rel="noopener">https://stackoverflow.com/questions/53192999/pod-dont-run-insufficient-resources</a><br><a href="http://dockone.io/article/2509" target="_blank" rel="noopener">http://dockone.io/article/2509</a><br><a href="https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/" target="_blank" rel="noopener">https://www.yangcs.net/posts/understanding-resource-limits-in-kubernetes-cpu-time/</a><br><a href="http://blog.whysdomain.com/blog/171/" target="_blank" rel="noopener">http://blog.whysdomain.com/blog/171/</a></p>
 
       
