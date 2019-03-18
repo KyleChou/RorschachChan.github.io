@@ -96,12 +96,13 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="在web高效性问题上，缓存是一个绕不过的话题">
 <meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://yoursite.com/images/CDN5.png">
 <meta property="og:image" content="http://yoursite.com/images/CDN4.png">
-<meta property="og:updated_time" content="2019-03-18T12:53:58.240Z">
+<meta property="og:updated_time" content="2019-03-18T13:44:30.259Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从Nginx配置缓存到HTTP缓存">
 <meta name="twitter:description" content="在web高效性问题上，缓存是一个绕不过的话题">
-<meta name="twitter:image" content="http://yoursite.com/images/CDN4.png">
+<meta name="twitter:image" content="http://yoursite.com/images/CDN5.png">
 
 
 
@@ -415,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,306
+                  1,290
                 </span>
               
 
@@ -461,7 +462,7 @@
 <p>然后手动建立<code>/data/httpd/nginx_cache/ecstore</code>这个文件夹，给予它nginx可访问的权限，然后在具体的配置文件里加上：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    location = /wap/ &#123;</span><br><span class="line">            <span class="keyword">if</span> ($query_string) &#123;</span><br><span class="line">                    proxy_pass http://172.16.0.199:3000/wap/?$query_string;</span><br><span class="line">            &#125;</span><br><span class="line">            proxy_pass http://<span class="number">172.16</span><span class="number">.0</span><span class="number">.199</span>:<span class="number">3000</span>/wap/;</span><br><span class="line">            include headerproxy.conf;</span><br><span class="line">            proxy_cache ecstore;	<span class="comment">#这里的ecstore就是上面keys_zone的名称</span></span><br><span class="line">            proxy_cache_key <span class="string">"$host$request_uri$cookie_user"</span>;	<span class="comment">#这里就是缓存的key</span></span><br><span class="line">proxy_cache_min_uses <span class="number">5</span>;		<span class="comment">#至少访问5次就开始缓存，默认情况是访问一次就缓存</span></span><br><span class="line">proxy_cache_methods GET HEAD POST；	<span class="comment">#对GET、HEAD、POST方法都可以缓存</span></span><br><span class="line">            add_header NGINX-Cache web1$upstream_cache_status;	</span><br><span class="line">            proxy_cache_valid <span class="number">200</span> <span class="number">206</span> <span class="number">302</span> <span class="number">301</span> <span class="number">304</span> <span class="number">2</span>h;	<span class="comment">#对200、206、302、301、304状态码缓存2小时</span></span><br><span class="line">proxy_no_cache $http_pragma $http_authorization;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
 <p>上面这个例子就是“如果访问/wap，会跳转到<a href="http://172.16.0.199:3000/，同时记录下缓存”的配置。" target="_blank" rel="noopener">http://172.16.0.199:3000/，同时记录下缓存”的配置。</a></p>
 <p>重启nginx就会生效。</p>
-<h2><span id="验证和排错">验证和排错</span></h2><p>验证nginx是否缓存成功很简单，因为我们在配置文件夹加上了<code>add_header NGINX-Cache web1$upstream_cache_status;</code>这样的配置，那么我们打开目标的网页，查看元素的回答头（这里我使用了<code>crul -I</code>）：</p>
+<h2><span id="验证和排错">验证和排错</span></h2><p>验证nginx是否缓存成功很简单，因为我们在配置文件夹加上了<code>add_header NGINX-Cache web1$upstream_cache_status;</code>这样的配置，那么我们打开目标的网页：<br><img src="/images/CDN5.png" alt="akb48"></p>
 <p>发现看到了<code>add_header</code>的内容，可见缓存是成功的。</p>
 <p>如果此刻给这个nginx外面套上一个CDN，那么<code>curl -I</code>的结果就会变：<br><img src="/images/CDN4.png" alt="akb48"></p>
 <p>我这里用的是阿里云的CDN，可见他们使用<code>Server: Tengine</code>做的CDN，我这个js元素被CDN缓存，如果是<code>TCP_MEM_HIT</code>的字样，那么就说明是是从内存命中的。不同厂家的CDN展示结果不一样的。</p>
