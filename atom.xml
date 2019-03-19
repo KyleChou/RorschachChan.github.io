@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-03-19T06:15:29.800Z</updated>
+  <updated>2019-03-19T14:28:13.932Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>较深入的理解Pod下的多个容器</title>
+    <link href="http://yoursite.com/2019/03/19/%E8%BE%83%E6%B7%B1%E5%85%A5%E7%9A%84%E7%90%86%E8%A7%A3Pod%E4%B8%8B%E7%9A%84%E5%A4%9A%E4%B8%AA%E5%AE%B9%E5%99%A8/"/>
+    <id>http://yoursite.com/2019/03/19/较深入的理解Pod下的多个容器/</id>
+    <published>2019-03-19T07:40:52.000Z</published>
+    <updated>2019-03-19T14:28:13.932Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>首先，先写了一个<code>test.yaml</code>用来启动Pod：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1<span class="comment">#这里注意版本号</span></span><br><span class="line">kind: Pod<span class="comment">#注意这里的大小写</span></span><br><span class="line">metadata:</span><br><span class="line">  name: nginx-greenbook</span><br><span class="line">  labels:</span><br><span class="line">app: test</span><br><span class="line">spec:</span><br><span class="line">      volumes:</span><br><span class="line">      - name: test</span><br><span class="line">        emptyDir: &#123;&#125;</span><br><span class="line">      containers:</span><br><span class="line">      - name: nginx</span><br><span class="line">        image: nginx</span><br><span class="line">        ports:</span><br><span class="line">        - containerPort: <span class="number">80</span></span><br><span class="line">        volumeMounts:</span><br><span class="line">        - name: test<span class="comment">#这里必须要跟Volumes的名称一致，都是test</span></span><br><span class="line">          mountPath: /usr/share/nginx/html</span><br><span class="line">      - name: debian1</span><br><span class="line">        image: debian</span><br><span class="line">        volumeMounts:</span><br><span class="line">        - name: test</span><br><span class="line">          mountPath: /html</span><br><span class="line">        command: [<span class="string">"/bin/sh"</span>,<span class="string">"-c"</span>]</span><br><span class="line">        args:</span><br><span class="line">          - <span class="keyword">while</span> true; do</span><br><span class="line">              date &gt;&gt; /html/index.html;</span><br><span class="line">              sleep <span class="number">1</span>;</span><br><span class="line">            done</span><br><span class="line">      - name: debian2<span class="comment">#每一个容器的名称不能一样</span></span><br><span class="line">        image: debian</span><br><span class="line">        volumeMounts:</span><br><span class="line">        - name: test</span><br><span class="line">          mountPath: /html</span><br><span class="line">        command: [<span class="string">"/bin/sh"</span>,<span class="string">"-c"</span>]</span><br><span class="line">        args:</span><br><span class="line">          - <span class="keyword">while</span> true; do</span><br><span class="line">              echo <span class="string">"woxcwy"</span> &gt;&gt; /html/index.html;</span><br><span class="line">              sleep <span class="number">2</span>;</span><br><span class="line">            done</span><br><span class="line">   restartPolicy: Never<span class="comment">#死了就死了</span></span><br></pre></td></tr></table></figure></p><p>这个yaml主要是建立了一个存储卷叫html，它默认类型是<code>emptyDir</code>。这意味着当一个POD被分配到一个节点时，卷先被创建，并只要Pod在节点上运行时，这个卷仍存在（node重启的话，卷内容丢失，所以它只能做一个临时行的存储，如果想要持久化存储请使用<code>hostPath</code>）。第一容器运行nginx的服务器并将共享卷挂载到目录<code>/usr/share/Nginx/html</code>。第二容器使用Debian的镜像，并将共享卷挂载到目录<code>/html</code>，每一秒输入当前时间。第三个容器同理，每两秒输入一些字符串。</p><p>然后<code>kubectl create -f test.yaml --record</code>创建这个pod，然后使用<code>docker ps -a</code>就能看到生成了四个docker—分别是pod的三个容器和一个pause容器。使用<code>kubectl exec -it pod名 -c 容器名 /bin/bash</code>进入nginx的容器，会发现里面的<code>/usr/share/nginx/html/index.html</code>果然按照我们的要求在不断的输出日期和字符串。可见这三个容器已经挂载了同一个卷，如图：<br><img src="/images/k8s32.png" alt="akb48"></p><p>如果在这三个容器<code>ps -ef</code>一下，会发现他们的<code>pid=1</code>的进程是各自的进程而不是pause容器的<code>/pause</code>进程，如图：<br><img src="/images/k8s33.png" alt="akb48"><br><img src="/images/k8s34.png" alt="akb48"></p><p>所以很多人说pod里每个容器的init进程其实是<code>/pause</code>，而pause容器的作用，可以担任init的角色（默认都<code>docker run -ipc:container:pause</code>），及时的清理僵尸进程。但是在我这里的实验结果看来并不是真的。</p><p>话说回来，这个例子很明显的体现了“一个pod里可以有多个容器”这句话，每个pod是一个namespace，即这些容器都可以通过localhost来彼此访问，但是不能重复使用同一个端口而且所有的pod都是同时启动的。</p>]]></content>
+    
+    <summary type="html">
+    
+      学习k8s的第二篇笔记
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="容器" scheme="http://yoursite.com/tags/%E5%AE%B9%E5%99%A8/"/>
+    
+      <category term="云原生" scheme="http://yoursite.com/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
+    
+      <category term="k8s" scheme="http://yoursite.com/tags/k8s/"/>
+    
+  </entry>
   
   <entry>
     <title>从Nginx配置缓存到HTTP缓存</title>
@@ -477,28 +503,6 @@
       <category term="celery" scheme="http://yoursite.com/tags/celery/"/>
     
       <category term="异步任务" scheme="http://yoursite.com/tags/%E5%BC%82%E6%AD%A5%E4%BB%BB%E5%8A%A1/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>大量任务冲击下的activeMQ报错&quot;GC overhead limit exceeded&quot;</title>
-    <link href="http://yoursite.com/2019/01/14/%E5%A4%A7%E9%87%8F%E4%BB%BB%E5%8A%A1%E5%86%B2%E5%87%BB%E4%B8%8B%E7%9A%84activeMQ%E6%8A%A5%E9%94%99GC-overhead-limit-exceeded/"/>
-    <id>http://yoursite.com/2019/01/14/大量任务冲击下的activeMQ报错GC-overhead-limit-exceeded/</id>
-    <published>2019-01-14T11:54:19.000Z</published>
-    <updated>2019-01-14T13:19:20.601Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>半夜阿里云的杭州可用B区出现了机房抖动，几乎所有的B区服务全部掉线。阿里云的技术人员捅咕了半个小时左右，在大约11点40左右恢复了正常。此时几百万的设备开始同时恢复上线，然而经过了1个小时左右，依旧有几十万设备无法上线，有的甚至上线后又掉线。</p><p>我们的架构是设备要先去“注册中心”注册，注册成功之后才会正常的工作。如果多次注册不成功，就会释放连接，把连接让给其他需要注册的设备。但是发现设备上线的速度很慢，扩容了几台“注册中心”模块，效果依旧不见好转。发现注册模块的CPU全部都达到了100%：<br><img src="/images/activemq4.png" alt="akb48"></p><p>登录到服务器里一看，日志不断的刷新这样的内容：<br><img src="/images/activemq1.png" alt="akb48"></p><p>模块与activemq的延迟特别大，此时activemq又有几百万的消息没有消费堆积在队列里。大约十分钟左右，就开始抛出<code>java.lang.OutOfMemoryError: GC overhead limit exceeded</code>的错误，如图：<br><img src="/images/activemq2.png" alt="akb48"></p><p>但是同一时间段里的activemq并没有出现内存吃紧的情况：<br><img src="/images/activemq3.png" alt="akb48"></p><p>没有办法，就先赌一下的重启了activemq，没想到问题就解决了…</p><p>奇怪，明明activemq没有内存的明显消耗，却报内存耗尽。先把结果记录下来，等下一次再有类似的情况，好好观察一下（也但愿不要再在放假的时候出现故障了…）</p>]]></content>
-    
-    <summary type="html">
-    
-      大半夜的出问题，我也是醉了...
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="activemq" scheme="http://yoursite.com/tags/activemq/"/>
     
   </entry>
   
