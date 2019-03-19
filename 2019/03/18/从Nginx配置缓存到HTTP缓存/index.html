@@ -98,7 +98,8 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/CDN5.png">
 <meta property="og:image" content="http://yoursite.com/images/CDN4.png">
-<meta property="og:updated_time" content="2019-03-19T03:13:48.857Z">
+<meta property="og:image" content="http://yoursite.com/images/greenbook.jpg">
+<meta property="og:updated_time" content="2019-03-19T06:15:29.800Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从Nginx配置缓存到HTTP缓存">
 <meta name="twitter:description" content="在web高效性问题上，缓存是一个绕不过的话题">
@@ -474,7 +475,7 @@
 <p>通常为了更好的利用中间实体的缓存功能，我们都用第二种方案。对于<code>css</code>、<code>js</code>这样的静态资源，只要客户端支持gzip，服务端应该总是启用它；同时为了避免有BUG的缓存服务器给用户返回错误的版本，还应该输出<code>Vary: Accept-Encoding</code>。</p>
 <p>nginx配置<code>Vary：Accept-Encoding</code>也很简单，在<code>nginx.conf</code>的http段里加上<code>gzip_vary on;</code>即可。</p>
 <p>当然Vary还要很多种，比如<code>Vary: User-Agent, Cookie</code>，这表示“服务端同时使用请求头中User-Agent和Cookie这两个字段来生成内容”。注意！客户端如果直接访问源服务器的话，Vary就没意义了。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://blog.csdn.net/dengjiexian123/article/details/53386586" target="_blank" rel="noopener">https://blog.csdn.net/dengjiexian123/article/details/53386586</a><br><a href="https://blog.csdn.net/t12x3456/article/details/17301897" target="_blank" rel="noopener">https://blog.csdn.net/t12x3456/article/details/17301897</a><br><a href="https://www.jianshu.com/p/625c2b15dad5" target="_blank" rel="noopener">https://www.jianshu.com/p/625c2b15dad5</a><br><a href="https://imququ.com/post/vary-header-in-http.html" target="_blank" rel="noopener">https://imququ.com/post/vary-header-in-http.html</a><br><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ</a><br><a href="https://segmentfault.com/a/1190000016648967" target="_blank" rel="noopener">https://segmentfault.com/a/1190000016648967</a></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://blog.csdn.net/dengjiexian123/article/details/53386586" target="_blank" rel="noopener">https://blog.csdn.net/dengjiexian123/article/details/53386586</a><br><a href="https://blog.csdn.net/t12x3456/article/details/17301897" target="_blank" rel="noopener">https://blog.csdn.net/t12x3456/article/details/17301897</a><br><a href="https://www.jianshu.com/p/625c2b15dad5" target="_blank" rel="noopener">https://www.jianshu.com/p/625c2b15dad5</a><br><a href="https://imququ.com/post/vary-header-in-http.html" target="_blank" rel="noopener">https://imququ.com/post/vary-header-in-http.html</a><br><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ</a><br><a href="https://segmentfault.com/a/1190000016648967" target="_blank" rel="noopener">https://segmentfault.com/a/1190000016648967</a><br><img src="/images/greenbook.jpg" alt="akb48" title="其实有时候不一定要用仇恨去对抗仇恨"></p>
 
       
     </div>
