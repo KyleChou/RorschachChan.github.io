@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/CDN5.png">
 <meta property="og:image" content="http://yoursite.com/images/CDN4.png">
-<meta property="og:updated_time" content="2019-03-18T14:05:38.799Z">
+<meta property="og:updated_time" content="2019-03-19T03:13:48.857Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="从Nginx配置缓存到HTTP缓存">
 <meta name="twitter:description" content="在web高效性问题上，缓存是一个绕不过的话题">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,293
+                  1,304
                 </span>
               
 
@@ -463,13 +463,13 @@
 <p>上面这个例子就是“如果访问/wap，会跳转到<a href="http://172.16.0.199:3000/，同时记录下缓存”" target="_blank" rel="noopener">http://172.16.0.199:3000/，同时记录下缓存”</a> 的配置。重启nginx就会生效。</p>
 <h2><span id="验证和排错">验证和排错</span></h2><p>验证nginx是否缓存成功很简单，因为我们在配置文件夹加上了<code>add_header X-Cache web1$upstream_cache_status;</code>这样的配置，那么我们打开目标的网页：<br><img src="/images/CDN5.png" alt="akb48" title="我是三台nginx集群，分别是Web1~3，这个显示缓存到了第三台nginx上"></p>
 <p>发现看到了<code>add_header</code>的内容，可见缓存是成功的。</p>
-<p>如果此刻给这个nginx外面套上一个CDN，那么<code>curl -I</code>的结果就会变：<br><img src="/images/CDN4.png" alt="akb48"></p>
+<p>如果此刻给这个nginx外面套上一个CDN，那么<code>curl -I</code>在访问页面里具体元素的结果就会是：<br><img src="/images/CDN4.png" alt="akb48"></p>
 <p>我这里用的是阿里云的CDN，可见他们使用<code>Server: Tengine</code>做的CDN，而且这个js元素被CDN成功缓存。如果是<code>TCP_MEM_HIT</code>的字样，那么就说明是是从内存命中的。不同厂家的CDN展示结果不一样的。</p>
 <p>如果nginx缓存没有生效，很大可能是<code>Cache-Control</code>和<code>Set-Cookie</code>的问题，那么就要在上面的配置文件里添加：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxy_ignore_headers Set-Cookie Cache-Control;</span><br></pre></td></tr></table></figure></p>
 <p>重启nginx看看效果。</p>
 <h2><span id="vary跟etag的差别">Vary跟Etag的差别</span></h2><p>在上面的截图里看到了<code>Etag</code>和<code>Vary</code>这两个字段，先说<code>Etag</code>。</p>
 <p><code>Etag</code>是一个比较常见的字段，HTTP利用它来判断所访问的元素是否发生了变化—如果浏览器发送请求的请求头<code>If-None-Match</code>里的<code>Etag</code>没有变化（为False）那么服务器就直接304，把缓存内容返给浏览器；如果<code>Etag</code>发生变化了，那么服务器就拿出新的内容给它同时反馈200。它比<code>Last-Modified</code>强的最重要的地方就是<code>Last-Modified</code>只能精确到秒，遇到1s内修改了N次的情况就只能干瞪眼了，而<code>Etag</code>不会。</p>
-<p>而说Vary之前要先说一下<code>Cache-Control</code>，<code>Cache-Control</code>有四个比较出名的缓存策略，分别是：<br>1.no-cache：为本次响应不可直接用于后续请求（在没有向服务器进行校验的情况下）；<br>2.no-store：为禁止缓存（不得存储到非易失性介质，如果有的话尽量移除，用于敏感信息）；<br>3.private：为仅浏览器客户端可缓存；<br>4.public：为多个用户都可以缓存，比如可以缓存到CDN上。</p>
+<p>而说Vary之前要先说一下<code>Cache-Control</code>，<code>Cache-Control</code>有四个比较出名的缓存策略，分别是：<br>1.no-cache：可以在本地缓存，可以在代理服务器缓存，但是这个缓存要服务器验证才可以使用；<br>2.no-store：彻底得禁用缓存，本地和代理服务器都不缓存，每次都从服务器获取；<br>3.private：为仅浏览器客户端可缓存；<br>4.public：为多个用户都可以缓存，比如可以缓存到CDN上。</p>
 <p>而图片里的<code>Vary: Accept-Encoding</code>是什么意思呢？它是告诉缓存服务器根据<code>Accept-Encoding</code>头值的不同去缓存不同的版本，比如同一个文件可能有gzip方式压缩的，有compress方式压缩的，甚至还有没压缩的。因为在实际的场景中，我们需要一些特殊的缓存：它会忽略响应头中的<code>Content-Encoding</code>，从而可能给不支持压缩的客户端返回缓存的压缩版本。有两个方案可以避免这种情况发生：<br>1.将响应头中的<code>Cache-Control</code>字段设为<code>private</code>，告诉中继缓存（比如CDN）不要缓存它；<br>2.增加<code>Vary: Accept-Encoding</code>响应头，明确告知缓存服务器按照<code>Accept-Encoding</code>字段的内容，分别缓存不同的版本；</p>
 <p>通常为了更好的利用中间实体的缓存功能，我们都用第二种方案。对于<code>css</code>、<code>js</code>这样的静态资源，只要客户端支持gzip，服务端应该总是启用它；同时为了避免有BUG的缓存服务器给用户返回错误的版本，还应该输出<code>Vary: Accept-Encoding</code>。</p>
 <p>nginx配置<code>Vary：Accept-Encoding</code>也很简单，在<code>nginx.conf</code>的http段里加上<code>gzip_vary on;</code>即可。</p>
