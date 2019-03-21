@@ -317,6 +317,210 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/21/给Django添加用户登录页面、验证码和拦截器/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Chris Chan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Chris Chan's BLOG">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/03/21/给Django添加用户登录页面、验证码和拦截器/" itemprop="url">给Django添加用户登录页面、验证码和拦截器</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-03-21T19:50:48+08:00">
+                2019-03-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
+                    <span itemprop="name">工作与技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/03/21/给Django添加用户登录页面、验证码和拦截器/" class="leancloud_visitors" data-flag-title="给Django添加用户登录页面、验证码和拦截器">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+				 <span>℃</spam>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  1,022
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  5
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <script src="\assets\js\APlayer.min.js"> </script><p>我的Django运维平台很不幸的被公司安全系统扫描出来了，给了我一个超级大警告。主要也怪我当时偷懒，只是在SLB层面做了IP访问限制但是没有给服务器nginx里做白名单，所以网站是可以通过“IP地址加端口”访问的。恰巧我里面用了一个AES加解密的脚本，那个算法有问题，可以获取当前用户的权限，我特么的还是直接用root启动的nginx，而且我这个机器里面还有ansible，当然后果很严重。</p>
+<p>有了问题，不能消极对待而要积极解决，首先就是要先给网站做一个用户登录鉴权系统。再一次背景介绍：<br>    python：3.6.5<br>    Django：2.1.1<br>    Project：Kubernetes，文件夹路径就是/django/Kubernetes/<br>    App：createyaml，文件夹路径就是/django/Kubernetes/createyaml</p>
+<h2><span id="实现用户登录鉴权">实现用户登录鉴权</span></h2><p>首先，先编写一个<code>index.html</code>的页面做登录界面，如下：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang=<span class="string">"en"</span>&gt;</span><br><span class="line">        &lt;head&gt;</span><br><span class="line">                &lt;meta charset=<span class="string">"UTF-8"</span>&gt;</span><br><span class="line">                &lt;title&gt;请先登录&lt;/title&gt;</span><br><span class="line">                &lt;link rel=<span class="string">"stylesheet"</span> href=<span class="string">"/static/bootstrap-3.3.7/css/bootstrap.min.css"</span>&gt;	<span class="comment">#引入css样式</span></span><br><span class="line">                &lt;link rel=<span class="string">"icon"</span> href=<span class="string">"/static/pic/batman.ico"</span> type=<span class="string">"image/x-icon"</span>&gt;	<span class="comment">#引入一个标签图</span></span><br><span class="line">        &lt;/head&gt;</span><br><span class="line">        &lt;body background=<span class="string">"/static/pic/easyplane.jpg"</span>&gt;	<span class="comment">#背景图片设置</span></span><br><span class="line">                &lt;div style=<span class="string">"margin-top: 200px"</span>&gt;</span><br><span class="line">                &lt;div style=<span class="string">"text-align:center;"</span>&gt;</span><br><span class="line">                        &lt;font color='brown'&gt;&lt;h1&gt;请输入您的账号密码&lt;/h1&gt;&lt;/font&gt;</span><br><span class="line">                                &lt;div&gt;</span><br><span class="line">                                        &lt;div&gt;</span><br><span class="line">                                                &lt;form class="ui form" method="post" action=""&gt;</span><br><span class="line">                                                &lt;div class="field"&gt;</span><br><span class="line">                                                &lt;input type=<span class="string">"text"</span> name=<span class="string">"username"</span> placeholder=<span class="string">"username"</span>&gt;&lt;br&gt;</span><br><span class="line">                                                &lt;/div&gt;</span><br><span class="line">                                                &lt;div class="field"&gt;</span><br><span class="line">                                                &lt;input type=<span class="string">"password"</span> name=<span class="string">"password"</span> placeholder=<span class="string">"password"</span>&gt;&lt;br&gt;</span><br><span class="line">                                                &lt;/div&gt;</span><br><span class="line">                                                &lt;font color=red&gt;&#123;&#123; error &#125;&#125;&lt;/font&gt;&lt;br&gt;	#登录错误红色表示</span><br><span class="line">                                                &lt;button class="btn btn-default" type="submit"&gt;登陆&lt;/button&gt;</span><br><span class="line">                                                &#123;% csrf_token %&#125;</span><br><span class="line">                                                &lt;/form&gt;</span><br><span class="line">                                        &lt;/div&gt;</span><br><span class="line">                                &lt;/div&gt;</span><br><span class="line">                        &lt;/div&gt;</span><br><span class="line">                &lt;/div&gt;</span><br><span class="line">        &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></p>
+<p>效果如下：<br><img src="/images/django45.png" alt="akb48"></p>
+<p>在Kubernetes这个app文件夹里的<code>urls.py</code>里给这个鉴权网站添加一个路由：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> django.contrib <span class="keyword">import</span> admin</span><br><span class="line"><span class="keyword">from</span> django.urls <span class="keyword">import</span> path,include</span><br><span class="line"><span class="keyword">from</span> . <span class="keyword">import</span> views</span><br><span class="line"></span><br><span class="line">urlpatterns = [</span><br><span class="line">    path(<span class="string">''</span>,views.login_action,name=<span class="string">'login'</span>),	<span class="comment">#首页就是login_action的函数</span></span><br><span class="line">    path(<span class="string">'homepage.html'</span>,views.home,name=<span class="string">'home'</span>),	<span class="comment">#将原来的首页改成叫homepage.html</span></span><br><span class="line">	path(<span class="string">'admin/'</span>, admin.site.urls),</span><br><span class="line">	...其余省略</span><br><span class="line">	]</span><br></pre></td></tr></table></figure></p>
+<p>在同级的<code>views.py</code>里编写<code>login_action</code>函数，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> django.shortcuts <span class="keyword">import</span> render,render_to_response</span><br><span class="line"><span class="keyword">from</span> django.http <span class="keyword">import</span> HttpResponse,HttpResponseRedirect</span><br><span class="line"><span class="keyword">from</span> django.contrib <span class="keyword">import</span> auth</span><br><span class="line"></span><br><span class="line"><span class="comment">#登陆</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">login_action</span><span class="params">(request)</span>:</span></span><br><span class="line">    <span class="keyword">if</span> request.method == <span class="string">'POST'</span>:	<span class="comment">#通过post形式获取，get的话会在地址栏里看到账号密码</span></span><br><span class="line">        username = request.POST.get(<span class="string">'username'</span>, <span class="string">''</span>)</span><br><span class="line">        password = request.POST.get(<span class="string">'password'</span>, <span class="string">''</span>)</span><br><span class="line">        user = auth.authenticate(username=username, password=password)	<span class="comment">#使用django自带方式鉴权</span></span><br><span class="line">        <span class="keyword">if</span> user <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">            auth.login(request, user)  <span class="comment"># 登录</span></span><br><span class="line">            request.session[<span class="string">'user'</span>] = username  <span class="comment"># 将session信息记录到浏览器</span></span><br><span class="line">            response = HttpResponseRedirect(<span class="string">'homepage.html'</span>)	<span class="comment">#鉴权OK就跳转到homepage.html</span></span><br><span class="line">            <span class="keyword">return</span> response</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">return</span> render(request,<span class="string">'index.html'</span>, &#123;<span class="string">'error'</span>: <span class="string">'账号密码有误，请联系管理员!'</span>&#125;)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> render(request,<span class="string">'index.html'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#首页</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">home</span><span class="params">(request)</span>:</span></span><br><span class="line">    context = &#123;&#125;</span><br><span class="line">    <span class="keyword">return</span> render_to_response(<span class="string">'homepage.html'</span>,context)</span><br></pre></td></tr></table></figure></p>
+<p>登陆的用户/密码就是django后台的账号/密码，可以用superuser来登陆。保存文件之后，系统会重启django，查看效果如图：<br><img src="/images/django47.gif" alt="akb48"></p>
+<h2><span id="render和render_to_response的区别">render和render_to_response的区别</span></h2><p>上面的<code>login_action</code>函数里，用了<code>render</code>和<code>render_to_response</code>，如果只用<code>render_to_response</code>，同时把所有的<code>render</code>改成<code>render_to_response</code>，那么在访问首页的时候就会出现<code>TemplateDoesNotExist at /</code>这样的错误：<br><img src="/images/django46.png" alt="akb48"></p>
+<p>明明他俩都是用来展示模板页面的。为什么会有模板不存在这样？原因是<code>render_to_response()</code>的第一个参数必须是要使用的模板名称。如果要给定第二个参数，那么该参数必须是为该模板创建Context时所使用的字典。如果不提供第二个参数，<code>render_to_response()</code>使用一个空字典。而<code>render</code>第一个参数可以是request。</p>
+<p>所以如果都要用<code>render_to_response</code>，那么就要改成如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span>:</span><br><span class="line">           <span class="keyword">return</span> render_to_response(<span class="string">'index.html'</span>, &#123;<span class="string">'error'</span>: <span class="string">'账号密码有误，请联系管理员!'</span>&#125;，context_instance=RequestContext(request))</span><br><span class="line">   <span class="keyword">else</span>:</span><br><span class="line">       <span class="keyword">return</span> render_to_response(<span class="string">'index.html'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>但是这样的话，可能在登录的时候就会有csrf的错误，需要把csrf去掉。</p>
+<h2><span id="登录拦截器">登录拦截器</span></h2><p>现在看这个登录效果</p>
+<h2><span id="登录验证码">登录验证码</span></h2><h2><span id="参考资料">参考资料</span></h2><p><a href="http://www.nowamagic.net/academy/detail/1318431" target="_blank" rel="noopener">http://www.nowamagic.net/academy/detail/1318431</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	
+	
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+		   
+		<div>    
+			
+		</div>
+	
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/19/较深入的理解Pod下的多个容器/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2068,202 +2272,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/02/28/让Nginx鉴权功能保护Kibana网页/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Chris Chan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Chris Chan's BLOG">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/02/28/让Nginx鉴权功能保护Kibana网页/" itemprop="url">让Nginx鉴权功能保护Kibana网页</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-02-28T15:55:27+08:00">
-                2019-02-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
-                    <span itemprop="name">工作与技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2019/02/28/让Nginx鉴权功能保护Kibana网页/" class="leancloud_visitors" data-flag-title="让Nginx鉴权功能保护Kibana网页">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-				 <span>℃</spam>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  819
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  3
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          阿里云SLB自带白名单功能，可以通过SLB端口跳转到Kibana的5601端口的时候指定某些IP访问
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/02/28/让Nginx鉴权功能保护Kibana网页/">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-	
-	
-	
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-		   
-		<div>    
-			
-		</div>
-	
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2320,7 +2328,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">215</span>
+                  <span class="site-state-item-count">216</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2520,7 +2528,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共220.7k字</span>
+  <span class="post-count">博客全站共221.7k字</span>
 </div>
         
 
