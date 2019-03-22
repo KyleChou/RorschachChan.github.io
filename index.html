@@ -359,6 +359,28 @@
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
+                    <span itemprop="name">工作与技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -392,7 +414,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  495
+                  839
                 </span>
               
 
@@ -408,7 +430,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  2
+                  3
                 </span>
               
             </div>
@@ -431,13 +453,19 @@
       
         
           
-            <script src="\assets\js\APlayer.min.js"> </script><h2><span id="自建的登陆拦截器">自建的登陆拦截器</span></h2><p>现在看这个登录和登出效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！</p>
-<p>这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。首先是在APP的目录里（我的APP叫Kubernetes）新建一个叫<code>middleware.py</code>的文件，代码如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> django.shortcuts <span class="keyword">import</span> HttpResponseRedirect</span><br><span class="line"><span class="keyword">from</span> django.utils.deprecation <span class="keyword">import</span> MiddlewareMixin</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SimpleMiddleware</span><span class="params">(MiddlewareMixin)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_request</span><span class="params">(self, request)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> request.path != <span class="string">''</span> <span class="keyword">and</span> request.path != <span class="string">'/login/'</span>:	<span class="comment">#判断请求的地址不是首页和/login/</span></span><br><span class="line">            <span class="keyword">if</span>  request.session.get(<span class="string">'user'</span>,<span class="keyword">None</span>):		<span class="comment">#如果session里不存在</span></span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="keyword">return</span> HttpResponseRedirect(<span class="string">'/login/'</span>)	<span class="comment">#自动跳回到登录页面</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BlockedIpMiddleware</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_request</span><span class="params">(self, request)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> request.META[<span class="string">'REMOTE_ADDR'</span>] <span class="keyword">in</span> getattr(settings, <span class="string">"BLOCKED_IPS"</span>, []):	<span class="comment">#如果有IP短时间内多次访问</span></span><br><span class="line">            <span class="keyword">return</span> http.HttpResponseForbidden(<span class="string">'&lt;h1&gt;Forbidden&lt;/h1&gt;'</span>)	<span class="comment">#针对此IP给予403</span></span><br></pre></td></tr></table></figure></p>
+            <script src="\assets\js\APlayer.min.js"> </script><p>前一篇文章里写了如何做登录、登出界面，看上去效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！</p>
+<p>这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。</p>
+<h2><span id="自建的登陆拦截器">自建的登陆拦截器</span></h2><p>首先是在APP的目录里（我的APP叫Kubernetes）新建一个叫<code>middleware.py</code>的文件，代码如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> django.shortcuts <span class="keyword">import</span> HttpResponseRedirect</span><br><span class="line"><span class="keyword">from</span> django.utils.deprecation <span class="keyword">import</span> MiddlewareMixin</span><br><span class="line"></span><br><span class="line"><span class="comment">#强制登录</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SimpleMiddleware</span><span class="params">(MiddlewareMixin)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_request</span><span class="params">(self, request)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> request.path != <span class="string">''</span> <span class="keyword">and</span> request.path != <span class="string">'/login/'</span>:	<span class="comment">#判断请求的地址不是首页和/login/</span></span><br><span class="line">            <span class="keyword">if</span>  request.session.get(<span class="string">'user'</span>,<span class="keyword">None</span>):		<span class="comment">#如果session里不存在</span></span><br><span class="line">                <span class="keyword">pass</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="keyword">return</span> HttpResponseRedirect(<span class="string">'/login/'</span>)	<span class="comment">#自动跳回到登录页面</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#多次访问IP拉黑</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BlockedIpMiddleware</span><span class="params">(object)</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">process_request</span><span class="params">(self, request)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> request.META[<span class="string">'REMOTE_ADDR'</span>] <span class="keyword">in</span> getattr(settings, <span class="string">"BLOCKED_IPS"</span>, []):	<span class="comment">#如果有IP短时间内多次访问</span></span><br><span class="line">            <span class="keyword">return</span> http.HttpResponseForbidden(<span class="string">'&lt;h1&gt;Forbidden&lt;/h1&gt;'</span>)	<span class="comment">#针对此IP给予403</span></span><br></pre></td></tr></table></figure></p>
 <p>然后在APP的目录里（我的APP叫Kubernetes）的<code>setting.py</code>里把这两个中间件加进去。如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">MIDDLEWARE = [</span><br><span class="line">    <span class="string">'django.middleware.security.SecurityMiddleware'</span>,</span><br><span class="line">    <span class="string">'django.contrib.sessions.middleware.SessionMiddleware'</span>,</span><br><span class="line">    <span class="string">'django.middleware.common.CommonMiddleware'</span>,</span><br><span class="line">    <span class="string">'django.middleware.csrf.CsrfViewMiddleware'</span>,</span><br><span class="line">    <span class="string">'django.contrib.auth.middleware.AuthenticationMiddleware'</span>,</span><br><span class="line">    <span class="string">'django.contrib.messages.middleware.MessageMiddleware'</span>,</span><br><span class="line">    <span class="string">'django.middleware.clickjacking.XFrameOptionsMiddleware'</span>,</span><br><span class="line">    <span class="string">'Kubernetes.middleware.SimpleMiddleware'</span>,	<span class="comment">#这个就是新加的</span></span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
 <p>系统自动重启之后，来验证一下效果，是否在不登录的前提下成功拦截直接访问的url。</p>
-<h2><span id="django自带的登陆拦截器">Django自带的登陆拦截器</span></h2><p>上面那个方法逻辑上来说比较简单，能实现功能但是也不是很强力，Django也自带一个“强制登录”的功能，效果比那个强一点，</p>
+<h2><span id="django自带的登陆拦截器">Django自带的登陆拦截器</span></h2><p>上面那个方法逻辑上来说比较简单，能实现功能但是并不是很强力，Django也自带一个“强制登录”的功能，效果比那个强一丢丢。</p>
 <p>首先我们先把APP目录里<code>setting.py</code>刚刚新加的<code>&#39;Kubernetes.middleware.SimpleMiddleware&#39;</code>注释掉。在文件末尾添加一句：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#登录路径</span></span><br><span class="line">LOGIN_URL = <span class="string">'/login/'</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="登录验证码">登录验证码</span></h2>
+<p>然后返回到<code>views.py</code>，给需要登陆才能访问的页面添加一个装饰器：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> django.contrib.auth.decorators <span class="keyword">import</span> login_required</span><br><span class="line"><span class="meta">@login_required	#这个页面需要登陆</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">tt</span><span class="params">(request)</span>:</span></span><br><span class="line">    name = [<span class="string">'james'</span>,<span class="string">'wade'</span>,<span class="string">'bosh'</span>,<span class="string">'yaoming'</span>]</span><br><span class="line">    <span class="keyword">return</span> render_to_response(<span class="string">'test111.html'</span>,&#123;<span class="string">'names'</span>:name&#125;)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ttt</span><span class="params">(request)</span>:</span>	<span class="comment">#这个页面就不需要了，公共读</span></span><br><span class="line">   	cpu = <span class="number">9.66</span></span><br><span class="line">   	mem = <span class="number">66.6</span></span><br><span class="line">   	disk = <span class="number">16.88</span></span><br><span class="line">   	<span class="keyword">return</span> render_to_response(<span class="string">'test222.html'</span>,&#123;<span class="string">'CPU'</span>:cpu,<span class="string">'MEMORY'</span>:mem,<span class="string">'DISKUSED'</span>:disk&#125;)</span><br></pre></td></tr></table></figure></p>
+<p>我在<code>views.py</code>里设定，访问tt这个函数（urls.py里配置的域名是/k8s/test111)的时候需要强制登陆,访问ttt这个函数（urls.py里配置的域名是/k8s/test222）就可以直接打开。系统重启django之后，我们试一下效果：<br><img src="/images/django49.gif" alt="akb48"></p>
+<p>可见当访问到<code>/k8s/test111</code>的时候，浏览器会自动跳转到/login/?next=/k8s/test111/ 让你登录，登陆完毕之后才能顺利访问。而<code>/k8s/test222</code>就可以直接访问了。这个方法就是可以更加对受保护的网页有针对性配置，而不是上一个方法统一都跳转到登录面去。</p>
+<p>测试的时候出现<code>TypeError: object() takes no parameters</code>报错，看一下是否是post方法请求的，因为get方法是产生一个tcp包，而post是两个。</p>
+<h2><span id="登录验证码">登录验证码</span></h2><h2><span id="参考资料">参考资料</span></h2><p><a href="https://code.ziqiangxuetang.com/django/django-middleware.html" target="_blank" rel="noopener">https://code.ziqiangxuetang.com/django/django-middleware.html</a></p>
+
           
         
       
@@ -627,7 +655,7 @@
 
       
         
-          未完待续
+          在form表单中添加{% csrf_token %},打开网站就会在页面生成token(令牌)来进行认证，当别人登录会，页面会生成完全不一样的token
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2019/03/21/给Django添加用户登录页面、验证码和拦截器/">
@@ -2321,7 +2349,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">178</span>
+                  <span class="site-state-item-count">179</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -2499,7 +2527,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共222.3k字</span>
+  <span class="post-count">博客全站共222.7k字</span>
 </div>
         
 

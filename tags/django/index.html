@@ -321,6 +321,34 @@
 
       <h2 class="post-title">
         
+            <a class="post-title-link" href="/2019/03/22/给Django添加登录拦截器和登录验证码/" itemprop="url">
+              
+                <span itemprop="name">给Django添加登录拦截器和登录验证码</span>
+              
+            </a>
+        
+      </h2>
+
+      <div class="post-meta">
+        <time class="post-time" itemprop="dateCreated"
+              datetime="2019-03-22T11:39:14+08:00"
+              content="2019-03-22" >
+          03-22
+        </time>
+      </div>
+
+    </header>
+  </article>
+
+
+      
+        
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+    <header class="post-header">
+
+      <h2 class="post-title">
+        
             <a class="post-title-link" href="/2019/03/21/给Django添加用户登录页面、验证码和拦截器/" itemprop="url">
               
                 <span itemprop="name">给Django添加用户登录登出界面</span>
@@ -505,7 +533,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">178</span>
+                  <span class="site-state-item-count">179</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -683,7 +711,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共222.3k字</span>
+  <span class="post-count">博客全站共222.7k字</span>
 </div>
         
 
@@ -1308,29 +1336,7 @@ const loadScript = function loadScript(c,b){var a=document.createElement("script
 </body>
 </html>
 <!-- 页面点击小红心 -->
-<script type="text/javascript" src="/js/src/love.js"></script>    entries.push( $(this).attr("id").trim() );
-      });
-
-      query.containedIn('url', entries);
-      query.find()
-        .done(function (results) {
-          var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
-
-          if (results.length === 0) {
-            $visitors.find(COUNT_CONTAINER_REF).text(0);
-            return;
-          }
-
-          for (var i = 0; i < results.length; i++) {
-            var item = results[i];
-            var url = item.get('url');
-            var time = item.get('time');
-            var element = document.getElementById(url);
-
-            $(element).find(COUNT_CONTAINER_REF).text(time);
-          }
-          for(var i = 0; i < entries.length; i++) {
-            var url = entries[i];
+<script type="text/javascript" src="/js/src/love.js"></script>rl = entries[i];
             var element = document.getElementById(url);
             var countSpan = $(element).find(COUNT_CONTAINER_REF);
             if( countSpan.text() == '') {
