@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[给Django添加用户登录页面、验证码和拦截器]]></title>
+    <title><![CDATA[给Django添加登录拦截器和登录验证码]]></title>
+    <url>%2F2019%2F03%2F22%2F%E7%BB%99Django%E6%B7%BB%E5%8A%A0%E7%99%BB%E5%BD%95%E6%8B%A6%E6%88%AA%E5%99%A8%E5%92%8C%E7%99%BB%E5%BD%95%E9%AA%8C%E8%AF%81%E7%A0%81%2F</url>
+    <content type="text"><![CDATA[自建的登陆拦截器现在看这个登录和登出效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！ 这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。首先是在APP的目录里（我的APP叫Kubernetes）新建一个叫middleware.py的文件，代码如下： 123456789101112131415from django.shortcuts import HttpResponseRedirectfrom django.utils.deprecation import MiddlewareMixinclass SimpleMiddleware(MiddlewareMixin): def process_request(self, request): if request.path != '' and request.path != '/login/': #判断请求的地址不是首页和/login/ if request.session.get('user',None): #如果session里不存在 pass else: return HttpResponseRedirect('/login/') #自动跳回到登录页面class BlockedIpMiddleware(object): def process_request(self, request): if request.META['REMOTE_ADDR'] in getattr(settings, "BLOCKED_IPS", []): #如果有IP短时间内多次访问 return http.HttpResponseForbidden('&lt;h1&gt;Forbidden&lt;/h1&gt;') #针对此IP给予403 然后在APP的目录里（我的APP叫Kubernetes）的setting.py里把这两个中间件加进去。如下： 12345678910MIDDLEWARE = [ 'django.middleware.security.SecurityMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware', 'Kubernetes.middleware.SimpleMiddleware', #这个就是新加的] 系统自动重启之后，来验证一下效果，是否在不登录的前提下成功拦截直接访问的url。 Django自带的登陆拦截器上面那个方法逻辑上来说比较简单，能实现功能但是也不是很强力，Django也自带一个“强制登录”的功能，效果比那个强一点， 首先我们先把APP目录里setting.py刚刚新加的&#39;Kubernetes.middleware.SimpleMiddleware&#39;注释掉。在文件末尾添加一句： 12#登录路径LOGIN_URL = '/login/' 登录验证码]]></content>
+  </entry>
+  <entry>
+    <title><![CDATA[给Django添加用户登录登出界面]]></title>
     <url>%2F2019%2F03%2F21%2F%E7%BB%99Django%E6%B7%BB%E5%8A%A0%E7%94%A8%E6%88%B7%E7%99%BB%E5%BD%95%E9%A1%B5%E9%9D%A2%E3%80%81%E9%AA%8C%E8%AF%81%E7%A0%81%E5%92%8C%E6%8B%A6%E6%88%AA%E5%99%A8%2F</url>
-    <content type="text"><![CDATA[我的Django运维平台很不幸的被公司安全系统扫描出来了，给了我一个超级大警告。主要也怪我当时偷懒，只是在SLB层面做了IP访问限制但是没有给服务器nginx里做白名单，所以网站是可以通过“IP地址加端口”访问的。恰巧ping里面用了一个AES加解密的脚本，那个算法有问题，可以获取当前用户的权限，我特么的还是直接用root启动的nginx，而且这个机器里面还有ansible，当然后果很严重。 出了问题，不能消极对待而要积极解决，于是要先给网站做一个完善的用户登录鉴权系统。再一次背景介绍： python：3.6.5 Django：2.1.1 Project：Kubernetes，文件夹路径就是/django/Kubernetes/ App：createyaml，文件夹路径就是/django/Kubernetes/createyaml 实现用户登录鉴权首先，先编写一个index.html的页面做登录界面，如下： 12345678910111213141516171819202122232425262728293031&lt;!DOCTYPE html&gt;&lt;html lang="en"&gt; &lt;head&gt; &lt;meta charset="UTF-8"&gt; &lt;title&gt;请先登录&lt;/title&gt; &lt;link rel="stylesheet" href="/static/bootstrap-3.3.7/css/bootstrap.min.css"&gt; #引入css样式 &lt;link rel="icon" href="/static/pic/batman.ico" type="image/x-icon"&gt; #引入一个标签图 &lt;/head&gt; &lt;body background="/static/pic/easyplane.jpg"&gt; #背景图片设置 &lt;div style="margin-top: 200px"&gt; &lt;div style="text-align:center;"&gt; &lt;font color='brown'&gt;&lt;h1&gt;请输入您的账号密码&lt;/h1&gt;&lt;/font&gt; &lt;div&gt; &lt;div&gt; &lt;form class="ui form" method="post" action=""&gt; &lt;div class="field"&gt; &lt;input type="text" name="username" placeholder="username"&gt;&lt;br&gt; &lt;/div&gt; &lt;div class="field"&gt; &lt;input type="password" name="password" placeholder="password"&gt;&lt;br&gt; &lt;/div&gt; &lt;font color=red&gt;&#123;&#123; error &#125;&#125;&lt;/font&gt;&lt;br&gt; #登录错误红色表示 &lt;button class="btn btn-default" type="submit"&gt;登陆&lt;/button&gt; &#123;% csrf_token %&#125; &lt;/form&gt; &lt;/div&gt; &lt;/div&gt; &lt;/div&gt; &lt;/div&gt; &lt;/body&gt;&lt;/html&gt; 效果如下： 在Kubernetes这个app文件夹里的urls.py里给这个鉴权网站添加一个路由： 12345678910from django.contrib import adminfrom django.urls import path,includefrom . import viewsurlpatterns = [ path('',views.login_action,name='login'), #首页就是login_action的函数 path('homepage.html',views.home,name='home'), #将原来的首页改成叫homepage.html path('admin/', admin.site.urls), ...其余省略 ] 在同级的views.py里编写login_action函数，如下： 123456789101112131415161718192021222324from django.shortcuts import render,render_to_responsefrom django.http import HttpResponse,HttpResponseRedirectfrom django.contrib import auth#登陆def login_action(request): if request.method == 'POST': #通过post形式获取，get的话会在地址栏里看到账号密码 username = request.POST.get('username', '') password = request.POST.get('password', '') user = auth.authenticate(username=username, password=password) #使用django自带方式鉴权 if user is not None: auth.login(request, user) # 登录 request.session['user'] = username # 将session信息记录到浏览器 response = HttpResponseRedirect('homepage.html') #鉴权OK就跳转到homepage.html return response else: return render(request,'index.html', &#123;'error': '账号密码有误，请联系管理员!'&#125;) else: return render(request,'index.html')#首页def home(request): context = &#123;&#125; return render_to_response('homepage.html',context) 登陆的用户/密码就是django后台的账号/密码，可以用superuser来登陆。保存文件之后，系统会重启django，查看效果如图： render和render_to_response的区别上面的login_action函数里，用了render和render_to_response，如果只用render_to_response，同时把所有的render改成render_to_response，那么在访问首页的时候就会出现TemplateDoesNotExist at /这样的错误： 明明他俩都是用来展示模板页面的。为什么会有模板不存在这样？原因是render_to_response()的第一个参数必须是要使用的模板名称。如果要给定第二个参数，那么该参数必须是为该模板创建Context时所使用的字典。如果不提供第二个参数，render_to_response()使用一个空字典。而render第一个参数可以是request。 所以如果都要用render_to_response，那么就要改成如下： 1234else: return render_to_response('index.html', &#123;'error': '账号密码有误，请联系管理员!'&#125;，context_instance=RequestContext(request)) else: return render_to_response('index.html') 但是这样的话，可能在登录的时候就会有csrf的错误，需要把csrf去掉。 实现登出功能有了登录还得有登出，还是老套路，先编写路由如下： 1path(r'logout/', views.logout,name="logout"), 然后对应去views.py里写logout这个函数： 123456from django.http import HttpResponseRedirectfrom django.contrib import auth #引入django默认的auth功能#注销def logout(request): auth.logout(request) return HttpResponseRedirect('/login') #跳转到登录页/login 然后就是在首页里添加一个登出的链接，链接指向就是/logout/。测试一下效果： 登录拦截器现在看这个登录和登出效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！ 这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。首先是在APP的目录里（我的APP叫Kubernetes）新建一个叫middleware.py的文件，代码如下： 123456789101112131415from django.shortcuts import HttpResponseRedirectfrom django.utils.deprecation import MiddlewareMixinclass SimpleMiddleware(MiddlewareMixin): def process_request(self, request): if request.path != '' and request.path != '/login/': #判断请求的地址不是首页和/login/ if request.session.get('user',None): #如果session里不存在 pass else: return HttpResponseRedirect('/login/') #自动跳回到登录页面class BlockedIpMiddleware(object): def process_request(self, request): if request.META['REMOTE_ADDR'] in getattr(settings, "BLOCKED_IPS", []): #如果有IP短时间内多次访问 return http.HttpResponseForbidden('&lt;h1&gt;Forbidden&lt;/h1&gt;') #针对此IP给予403 然后在APP的目录里（我的APP叫Kubernetes）的setting.py里把这两个中间件加进去。如下： 12345678910MIDDLEWARE = [ 'django.middleware.security.SecurityMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware', 'Kubernetes.middleware.SimpleMiddleware', #这个就是新加的] 系统自动重启之后，来验证一下效果，是否在不登录的前提下成功拦截直接访问的url。 登录验证码参考资料http://www.nowamagic.net/academy/detail/1318431]]></content>
+    <content type="text"><![CDATA[我的Django运维平台很不幸的被公司安全系统扫描出来了，给了我一个超级大警告。主要也怪我当时偷懒，只是在SLB层面做了IP访问限制但是没有给服务器nginx里做白名单，所以网站是可以通过“IP地址加端口”访问的。恰巧ping里面用了一个AES加解密的脚本，那个算法有问题，可以获取当前用户的权限，我特么的还是直接用root启动的nginx，而且这个机器里面还有ansible，当然后果很严重。 出了问题，不能消极对待而要积极解决，于是要先给网站做一个完善的用户登录鉴权系统。再一次背景介绍： python：3.6.5 Django：2.1.1 Project：Kubernetes，文件夹路径就是/django/Kubernetes/ App：createyaml，文件夹路径就是/django/Kubernetes/createyaml 实现用户登录鉴权首先，先编写一个index.html的页面做登录界面，如下： 12345678910111213141516171819202122232425262728293031&lt;!DOCTYPE html&gt;&lt;html lang="en"&gt; &lt;head&gt; &lt;meta charset="UTF-8"&gt; &lt;title&gt;请先登录&lt;/title&gt; &lt;link rel="stylesheet" href="/static/bootstrap-3.3.7/css/bootstrap.min.css"&gt; #引入css样式 &lt;link rel="icon" href="/static/pic/batman.ico" type="image/x-icon"&gt; #引入一个标签图 &lt;/head&gt; &lt;body background="/static/pic/easyplane.jpg"&gt; #背景图片设置 &lt;div style="margin-top: 200px"&gt; &lt;div style="text-align:center;"&gt; &lt;font color='brown'&gt;&lt;h1&gt;请输入您的账号密码&lt;/h1&gt;&lt;/font&gt; &lt;div&gt; &lt;div&gt; &lt;form class="ui form" method="post" action=""&gt; &lt;div class="field"&gt; &lt;input type="text" name="username" placeholder="username"&gt;&lt;br&gt; &lt;/div&gt; &lt;div class="field"&gt; &lt;input type="password" name="password" placeholder="password"&gt;&lt;br&gt; &lt;/div&gt; &lt;font color=red&gt;&#123;&#123; error &#125;&#125;&lt;/font&gt;&lt;br&gt; #登录错误红色表示 &lt;button class="btn btn-default" type="submit"&gt;登陆&lt;/button&gt; &#123;% csrf_token %&#125; &lt;/form&gt; &lt;/div&gt; &lt;/div&gt; &lt;/div&gt; &lt;/div&gt; &lt;/body&gt;&lt;/html&gt; 效果如下： 在Kubernetes这个app文件夹里的urls.py里给这个鉴权网站添加一个路由： 12345678910from django.contrib import adminfrom django.urls import path,includefrom . import viewsurlpatterns = [ path('',views.login_action,name='login'), #首页就是login_action的函数 path('homepage.html',views.home,name='home'), #将原来的首页改成叫homepage.html path('admin/', admin.site.urls), ...其余省略 ] 在同级的views.py里编写login_action函数，如下： 123456789101112131415161718192021222324from django.shortcuts import render,render_to_responsefrom django.http import HttpResponse,HttpResponseRedirectfrom django.contrib import auth#登陆def login_action(request): if request.method == 'POST': #通过post形式获取，get的话会在地址栏里看到账号密码 username = request.POST.get('username', '') password = request.POST.get('password', '') user = auth.authenticate(username=username, password=password) #使用django自带方式鉴权 if user is not None: auth.login(request, user) # 登录 request.session['user'] = username # 将session信息记录到浏览器 response = HttpResponseRedirect('homepage.html') #鉴权OK就跳转到homepage.html return response else: return render(request,'index.html', &#123;'error': '账号密码有误，请联系管理员!'&#125;) else: return render(request,'index.html')#首页def home(request): context = &#123;&#125; return render_to_response('homepage.html',context) 登陆的用户/密码就是django后台的账号/密码，可以用superuser来登陆。保存文件之后，系统会重启django，查看效果如图： render和render_to_response的区别上面的login_action函数里，用了render和render_to_response，如果只用render_to_response，同时把所有的render改成render_to_response，那么在访问首页的时候就会出现TemplateDoesNotExist at /这样的错误： 明明他俩都是用来展示模板页面的。为什么会有模板不存在这样？原因是render_to_response()的第一个参数必须是要使用的模板名称。如果要给定第二个参数，那么该参数必须是为该模板创建Context时所使用的字典。如果不提供第二个参数，render_to_response()使用一个空字典。而render第一个参数可以是request。 所以如果都要用render_to_response，那么就要改成如下： 1234else: return render_to_response('index.html', &#123;'error': '账号密码有误，请联系管理员!'&#125;，context_instance=RequestContext(request)) else: return render_to_response('index.html') 但是这样的话，可能在登录的时候就会有csrf的错误，需要把csrf去掉。 实现登出功能有了登录还得有登出，还是老套路，先编写路由如下： 1path(r'logout/', views.logout,name="logout"), 然后对应去views.py里写logout这个函数： 123456from django.http import HttpResponseRedirectfrom django.contrib import auth #引入django默认的auth功能#注销def logout(request): auth.logout(request) return HttpResponseRedirect('/login') #跳转到登录页/login 然后就是在首页里添加一个登出的链接，链接指向就是/logout/。测试一下效果： 参考资料http://www.nowamagic.net/academy/detail/1318431]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>django</tag>
+        <tag>Django</tag>
+        <tag>认证鉴权</tag>
       </tags>
   </entry>
   <entry>
@@ -838,8 +844,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -863,8 +869,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -876,8 +882,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -2482,8 +2488,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Nginx</tag>
         <tag>运维</tag>
+        <tag>Nginx</tag>
       </tags>
   </entry>
   <entry>
@@ -2494,8 +2500,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Nginx</tag>
         <tag>运维</tag>
+        <tag>Nginx</tag>
       </tags>
   </entry>
   <entry>
