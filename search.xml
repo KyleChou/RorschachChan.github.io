@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Django搭配anymail去发送邮件]]></title>
+    <url>%2F2019%2F03%2F22%2FDjango%E6%90%AD%E9%85%8Danymail%E5%8E%BB%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6%2F</url>
+    <content type="text"><![CDATA[注册mailgun账号首先登陆https://app.mailgun.com/sessions/new 里注册一个账号，填写邮件和密码之后，会出现这样的页面： 然后在注册的邮件会接到两个邮件，一个是API的邮件，另一个是激活账号邮件，如下： 点击激活之后，就要添加可信任邮箱，mailgun只能对这些可信任邮箱发送邮件，其他邮件就会失败，在Account里选择Authorized Recipients，然后Invite new Recipients创建新的守信邮箱，创建完毕之后，邮箱应该是Unverified的状态，如下： 点击那个Unverified的状态的邮箱，如果你的机器有装foxmail或者outlook的话，就会自动弹出来他们，你就可以发送一个邮件到指定的邮箱里，不久邮箱就会收到一个确认信，如下： 点击I agree即完成授信，邮箱状态也变成了Verified。 点击Domains就可以看到账号的api和domain了，如图： 开始配置给Django安装邮件服务，可以在必要的时候发送邮件。首先安装pip install django-anymail组件，并且在setting.py里添加如下内容： 12345678910111213INSTALLED_APPS = [ ... "anymail", ...]ANYMAIL = &#123; "MAILGUN_API_KEY": "这里填写API", "MAILGUN_SENDER_DOMAIN": '这里填写domain',&#125;EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"# DEFAULT_FROM_EMAIL = "you@example.com" # if you don't already have this in settings# SERVER_EMAIL = "your-server@example.com" # ditto (default from-email for Django errors) 保存退出之后，在views.py里添加如下信息： 1234from django.core.mail import send_mail#只需一个send_mail 函数，便能发送邮件send_mail("It works!", "This will get sent through Mailgun","domian的内容", ["授信的邮箱地址"]) 保存之后，django会自动重启，就会看到邮件顺利发出去了！ 故障排错 如果出现Please activate your Mailgun account. Check your inbox or log in to your control panel to resend the activation email.，即账号没激活； 如果出现Sandbox subdomains are for test purposes only. Please add your own domain or add the address to authorized recipients in Account Settings.，即目标邮箱不是授信邮箱，需要添加到授信名单里。 参考资料https://github.com/anymail/django-anymail]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>django</tag>
+        <tag>anymail</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[给Django添加登录拦截器和登录验证码]]></title>
     <url>%2F2019%2F03%2F22%2F%E7%BB%99Django%E6%B7%BB%E5%8A%A0%E7%99%BB%E5%BD%95%E6%8B%A6%E6%88%AA%E5%99%A8%E5%92%8C%E7%99%BB%E5%BD%95%E9%AA%8C%E8%AF%81%E7%A0%81%2F</url>
-    <content type="text"><![CDATA[前一篇文章里写了如何做登录、登出界面，看上去效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！ 这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。 自建的登陆拦截器首先是在APP的目录里（我的APP叫Kubernetes）新建一个叫middleware.py的文件，代码如下： 1234567891011121314151617from django.shortcuts import HttpResponseRedirectfrom django.utils.deprecation import MiddlewareMixin#强制登录class SimpleMiddleware(MiddlewareMixin): def process_request(self, request): if request.path != '' and request.path != '/login/': #判断请求的地址不是首页和/login/ if request.session.get('user',None): #如果session里不存在 pass else: return HttpResponseRedirect('/login/') #自动跳回到登录页面#多次访问IP拉黑class BlockedIpMiddleware(object): def process_request(self, request): if request.META['REMOTE_ADDR'] in getattr(settings, "BLOCKED_IPS", []): #如果有IP短时间内多次访问 return http.HttpResponseForbidden('&lt;h1&gt;Forbidden&lt;/h1&gt;') #针对此IP给予403 然后在APP的目录里（我的APP叫Kubernetes）的setting.py里把这两个中间件加进去。如下： 12345678910MIDDLEWARE = [ 'django.middleware.security.SecurityMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware', 'Kubernetes.middleware.SimpleMiddleware', #这个就是新加的] 系统自动重启之后，来验证一下效果，是否在不登录的前提下成功拦截直接访问的url。 Django自带的登陆拦截器上面那个方法逻辑上来说比较简单，能实现功能但是并不是很强力，Django也自带一个“强制登录”的功能，效果比那个强一丢丢。 首先我们先把APP目录里setting.py刚刚新加的&#39;Kubernetes.middleware.SimpleMiddleware&#39;注释掉。在文件末尾添加一句： 12#登录路径LOGIN_URL = '/login/' 然后返回到views.py，给需要登陆才能访问的页面添加一个装饰器： 1234567891011from django.contrib.auth.decorators import login_required@login_required #这个页面需要登陆def tt(request): name = ['james','wade','bosh','yaoming'] return render_to_response('test111.html',&#123;'names':name&#125;)def ttt(request): #这个页面就不需要了，公共读 cpu = 9.66 mem = 66.6 disk = 16.88 return render_to_response('test222.html',&#123;'CPU':cpu,'MEMORY':mem,'DISKUSED':disk&#125;) 我在views.py里设定，访问tt这个函数（urls.py里配置的域名是/k8s/test111)的时候需要强制登陆,访问ttt这个函数（urls.py里配置的域名是/k8s/test222）就可以直接打开。系统重启django之后，我们试一下效果： 可见当访问到/k8s/test111的时候，浏览器会自动跳转到/login/?next=/k8s/test111/ 让你登录，登陆完毕之后才能顺利访问。而/k8s/test222就可以直接访问了。这个方法就是可以更加对受保护的网页有针对性配置，而不是上一个方法统一都跳转到登录面去。 测试的时候出现TypeError: object() takes no parameters报错，看一下是否是post方法请求的，因为get方法是产生一个tcp包，而post是两个。 登录验证码参考资料https://code.ziqiangxuetang.com/django/django-middleware.htmlhttps://www.jianshu.com/p/1a95808faed9https://blog.csdn.net/xxm524/article/details/48370337http://www.calmkart.com/?p=332https://fanquqi.github.io/2018/03/30/Django%E7%99%BB%E5%BD%95%E9%AA%8C%E8%AF%81/]]></content>
+    <content type="text"><![CDATA[前一篇文章里写了如何做登录、登出界面，看上去效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！ 这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。 自建的登陆拦截器首先是在APP的目录里（我的APP叫Kubernetes）新建一个叫middleware.py的文件，代码如下： 1234567891011121314151617from django.shortcuts import HttpResponseRedirectfrom django.utils.deprecation import MiddlewareMixin#强制登录class SimpleMiddleware(MiddlewareMixin): def process_request(self, request): if request.path != '' and request.path != '/login/': #判断请求的地址不是首页和/login/ if request.session.get('user',None): #如果session里不存在 pass else: return HttpResponseRedirect('/login/') #自动跳回到登录页面#多次访问IP拉黑class BlockedIpMiddleware(object): def process_request(self, request): if request.META['REMOTE_ADDR'] in getattr(settings, "BLOCKED_IPS", []): #如果有IP短时间内多次访问 return http.HttpResponseForbidden('&lt;h1&gt;Forbidden&lt;/h1&gt;') #针对此IP给予403 然后在APP的目录里（我的APP叫Kubernetes）的setting.py里把这两个中间件加进去。如下： 12345678910MIDDLEWARE = [ 'django.middleware.security.SecurityMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'django.contrib.messages.middleware.MessageMiddleware', 'django.middleware.clickjacking.XFrameOptionsMiddleware', 'Kubernetes.middleware.SimpleMiddleware', #这个就是新加的] 系统自动重启之后，来验证一下效果，是否在不登录的前提下成功拦截直接访问的url。 Django自带的登陆拦截器上面那个方法逻辑上来说比较简单，能实现功能但是并不是很强力，Django也自带一个“强制登录”的功能，效果比那个强一丢丢。 首先我们先把APP目录里setting.py刚刚新加的&#39;Kubernetes.middleware.SimpleMiddleware&#39;注释掉。在文件末尾添加一句： 12#登录路径LOGIN_URL = '/login/' 然后返回到views.py，给需要登陆才能访问的页面添加一个装饰器： 1234567891011from django.contrib.auth.decorators import login_required@login_required #这个页面需要登陆def tt(request): name = ['james','wade','bosh','yaoming'] return render_to_response('test111.html',&#123;'names':name&#125;)def ttt(request): #这个页面就不需要了，公共读 cpu = 9.66 mem = 66.6 disk = 16.88 return render_to_response('test222.html',&#123;'CPU':cpu,'MEMORY':mem,'DISKUSED':disk&#125;) 我在views.py里设定，访问tt这个函数（urls.py里配置的域名是/k8s/test111)的时候需要强制登陆,访问ttt这个函数（urls.py里配置的域名是/k8s/test222）就可以直接打开。系统重启django之后，我们试一下效果： 可见当访问到/k8s/test111的时候，浏览器会自动跳转到/login/?next=/k8s/test111/ 让你登录，登陆完毕之后才能顺利访问。而/k8s/test222就可以直接访问了。这个方法就是可以更加对受保护的网页有针对性配置，而不是上一个方法统一都跳转到登录面去。 测试的时候出现TypeError: object() takes no parameters报错，看一下是否是post方法请求的，因为get方法是产生一个tcp包，而post是两个。 登录验证码参考资料https://code.ziqiangxuetang.com/django/django-middleware.htmlhttps://www.jianshu.com/p/1a95808faed9https://blog.csdn.net/xxm524/article/details/48370337http://www.calmkart.com/?p=332https://fanquqi.github.io/2018/03/30/Django%E7%99%BB%E5%BD%95%E9%AA%8C%E8%AF%81/https://pypi.org/project/django_click_captcha/]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -1265,18 +1277,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root启动进程以及启动docker]]></title>
-    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root用户启动tomcat进程]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
     <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
@@ -1286,6 +1286,18 @@
       <tags>
         <tag>centos</tag>
         <tag>运维安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root启动进程以及启动docker]]></title>
+    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>安全</tag>
       </tags>
   </entry>
   <entry>
@@ -2495,8 +2507,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维</tag>
         <tag>Nginx</tag>
+        <tag>运维</tag>
       </tags>
   </entry>
   <entry>
@@ -2507,8 +2519,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维</tag>
         <tag>Nginx</tag>
+        <tag>运维</tag>
       </tags>
   </entry>
   <entry>
