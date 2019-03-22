@@ -88,19 +88,19 @@
 
 
 
-<meta name="description" content="前一篇文章里写了如何做登录、登出界面，看上去效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！ 这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。 自建的登陆拦截器首先是在APP的目录里（我的APP叫Kubernetes">
+<meta name="description" content="要是支持面部识别或者图片识别就更加高大上了">
 <meta name="keywords" content="Django,url拦截">
 <meta property="og:type" content="article">
 <meta property="og:title" content="给Django添加登录拦截器和登录验证码">
 <meta property="og:url" content="http://yoursite.com/2019/03/22/给Django添加登录拦截器和登录验证码/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="前一篇文章里写了如何做登录、登出界面，看上去效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！ 这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。 自建的登陆拦截器首先是在APP的目录里（我的APP叫Kubernetes">
+<meta property="og:description" content="要是支持面部识别或者图片识别就更加高大上了">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/django49.gif">
-<meta property="og:updated_time" content="2019-03-22T06:38:48.565Z">
+<meta property="og:updated_time" content="2019-03-22T07:12:17.448Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="给Django添加登录拦截器和登录验证码">
-<meta name="twitter:description" content="前一篇文章里写了如何做登录、登出界面，看上去效果好像很不错，但是却有一个致命的漏洞：如果有人直接在地址栏里输入对应的url，那么就可以跳过登录验证直接访问！ 这种情况我们需要做一个登录拦截器，这个拦截器的作用就是通过session来判断，如果在没有session的前提下登录网站内部url就会强制跳转到首页，让访问的人登录。 自建的登陆拦截器首先是在APP的目录里（我的APP叫Kubernetes">
+<meta name="twitter:description" content="要是支持面部识别或者图片识别就更加高大上了">
 <meta name="twitter:image" content="http://yoursite.com/images/django49.gif">
 
 
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  839
+                  879
                 </span>
               
 
@@ -431,12 +431,16 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
           
 
+          
+              <div class="post-description">
+                  要是支持面部识别或者图片识别就更加高大上了
+              </div>
           
 
         </div>
@@ -463,7 +467,7 @@
 <p>我在<code>views.py</code>里设定，访问tt这个函数（urls.py里配置的域名是/k8s/test111)的时候需要强制登陆,访问ttt这个函数（urls.py里配置的域名是/k8s/test222）就可以直接打开。系统重启django之后，我们试一下效果：<br><img src="/images/django49.gif" alt="akb48"></p>
 <p>可见当访问到<code>/k8s/test111</code>的时候，浏览器会自动跳转到/login/?next=/k8s/test111/ 让你登录，登陆完毕之后才能顺利访问。而<code>/k8s/test222</code>就可以直接访问了。这个方法就是可以更加对受保护的网页有针对性配置，而不是上一个方法统一都跳转到登录面去。</p>
 <p>测试的时候出现<code>TypeError: object() takes no parameters</code>报错，看一下是否是post方法请求的，因为get方法是产生一个tcp包，而post是两个。</p>
-<h2><span id="登录验证码">登录验证码</span></h2><h2><span id="参考资料">参考资料</span></h2><p><a href="https://code.ziqiangxuetang.com/django/django-middleware.html" target="_blank" rel="noopener">https://code.ziqiangxuetang.com/django/django-middleware.html</a></p>
+<h2><span id="登录验证码">登录验证码</span></h2><h2><span id="参考资料">参考资料</span></h2><p><a href="https://code.ziqiangxuetang.com/django/django-middleware.html" target="_blank" rel="noopener">https://code.ziqiangxuetang.com/django/django-middleware.html</a><br><a href="https://www.jianshu.com/p/1a95808faed9" target="_blank" rel="noopener">https://www.jianshu.com/p/1a95808faed9</a><br><a href="https://blog.csdn.net/xxm524/article/details/48370337" target="_blank" rel="noopener">https://blog.csdn.net/xxm524/article/details/48370337</a><br><a href="http://www.calmkart.com/?p=332" target="_blank" rel="noopener">http://www.calmkart.com/?p=332</a><br><a href="https://fanquqi.github.io/2018/03/30/Django%E7%99%BB%E5%BD%95%E9%AA%8C%E8%AF%81/" target="_blank" rel="noopener">https://fanquqi.github.io/2018/03/30/Django%E7%99%BB%E5%BD%95%E9%AA%8C%E8%AF%81/</a></p>
 
       
     </div>
