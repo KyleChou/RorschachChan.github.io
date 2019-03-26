@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Atlas出了一个很诡异的bug]]></title>
+    <url>%2F2019%2F03%2F26%2FAtlas%E5%87%BA%E4%BA%86%E4%B8%80%E4%B8%AA%E5%BE%88%E8%AF%A1%E5%BC%82%E7%9A%84bug%2F</url>
+    <content type="text"><![CDATA[这几天数据库更换密码，就在原有的atlas文件基础上拷贝出来一个新文件，修改了密码，然后启动进程。但是启动之后，发现虽然端口起来了，但是atlas没有连接数据库成功，如图: 登录到atlas后台一看，竟然是双down: 可是在atlas服务器上单独直连阿里云数据库是没任何问题的，而且数据库的监控也没有任何异常。我怀疑是密码含有了atlas不识别的特殊符号，改成了纯数字和字母的组合，重新启动还是不行，这就很尴尬了，明明原来的配置文件可以启动，我就更改了密码和端口，怎么新的进程就不好使？ 于是我尝试抓包，使用tcpdump -s 0 -i any -v port 3318 and src host 100.114.3.91 -w test.pcap，结果发现3318的包少的可怜，于是我就改用tcpdump -s 0 -i any -v host 100.114.3.91 -w test2.pcap扩大了范围，然后发现包有这样的字样： 可见atlas一直以root去请求数据库，但是我这个是阿里云的RDS服务（Mysql 5.6.7)，本身是没有root的，所以就爆“User not exist”。 这就很尴尬了，为什么会突然以root身份请求数据库？莫非这是atlas的BUG？先把问题记录下来，然后慢慢解决…]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+        <tag>atlas</tag>
+        <tag>读写分离</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Django搭配anymail去发送邮件]]></title>
     <url>%2F2019%2F03%2F22%2FDjango%E6%90%AD%E9%85%8Danymail%E5%8E%BB%E5%8F%91%E9%80%81%E9%82%AE%E4%BB%B6%2F</url>
     <content type="text"><![CDATA[注册mailgun账号首先登陆https://app.mailgun.com/sessions/new 里注册一个账号，填写邮件和密码点击注册，会出现这样的页面： 然后在注册的邮件会接到两个邮件，一个是API的邮件，另一个是激活账号邮件，如下： 点击激活之后，就要添加可信任邮箱，mailgun只能对这些可信任邮箱发送邮件，其他邮件就会失败，在Account里选择Authorized Recipients，然后Invite new Recipients创建新的守信邮箱，创建完毕之后，邮箱应该是Unverified的状态，如下： 点击那个Unverified的状态的邮箱，如果你的机器有装foxmail或者outlook的话，就会自动弹出来，你就可以发送一个邮件到指定的邮箱里，不久邮箱就会收到一个确认信，如下： 点击I agree即完成授信，邮箱状态也变成了绿色的Verified。 点击Domains就可以看到账号的api和domain了，如图： 至此，邮箱账号申请部分完成。 开始配置首先安装pip install django-anymail组件，并且在setting.py里添加如下内容： 12345678910111213INSTALLED_APPS = [ ... "anymail", ...]ANYMAIL = &#123; "MAILGUN_API_KEY": "这里填写API", "MAILGUN_SENDER_DOMAIN": '这里填写domain',&#125;EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"# DEFAULT_FROM_EMAIL = "you@example.com" # if you don't already have this in settings# SERVER_EMAIL = "your-server@example.com" # ditto (default from-email for Django errors) 保存退出之后，在views.py里添加如下信息： 1234from django.core.mail import send_mail#只需一个send_mail 函数，便能发送邮件send_mail("It works!这里是标题", "This will get sent through Mailgun，这里是内容","domian的内容，即上面图片里那个mailgun.org结尾的东西", ["授信的邮箱地址"]) 保存之后，django会自动重启，就会看到邮件顺利发出去了！ 可以看出只需要一个send_mail就能发送邮件，的确比SMTP方便多了。在实际运用中，就把send_mail放到对应的函数里，然后灵活搭配标题和内容就能使用了！ 故障排错 如果出现Please activate your Mailgun account. Check your inbox or log in to your control panel to resend the activation email.，即账号没激活； 如果出现Sandbox subdomains are for test purposes only. Please add your own domain or add the address to authorized recipients in Account Settings.，即目标邮箱不是授信邮箱，需要添加到授信名单里。 参考资料https://github.com/anymail/django-anymail]]></content>
@@ -1709,8 +1722,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>atlas</tag>
         <tag>mysql</tag>
+        <tag>atlas</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
