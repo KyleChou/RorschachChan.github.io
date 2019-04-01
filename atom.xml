@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-03-26T09:37:23.565Z</updated>
+  <updated>2019-04-01T07:16:30.635Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>将Gateone添加到django，实现WEB的ssh链接</title>
+    <link href="http://yoursite.com/2019/04/01/%E5%B0%86Gateone%E6%B7%BB%E5%8A%A0%E5%88%B0django%EF%BC%8C%E5%AE%9E%E7%8E%B0WEB%E7%9A%84ssh%E9%93%BE%E6%8E%A5/"/>
+    <id>http://yoursite.com/2019/04/01/将Gateone添加到django，实现WEB的ssh链接/</id>
+    <published>2019-04-01T04:40:07.000Z</published>
+    <updated>2019-04-01T07:16:30.635Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="背景交代">背景交代</span></h2><p>python3 + django2.1<br>Django project:accessgateway</p><h2><span id="gateone的安装">gateone的安装</span></h2><p>gateone是一个web界面的交互工具，很多堡垒机都会使用到它，它的生命力很长久。不过最近github上已经不再对它有更新了，应该是一定很稳定了，安装方法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pip install --upgrade setuptools</span><br><span class="line">pip install tornado==<span class="number">4.3</span></span><br><span class="line">pip install Pillow</span><br><span class="line">docker pull liftoff/gateone<span class="comment">#拉取镜像，个人推荐把原有的镜像修改一下，添加vim等工具</span></span><br><span class="line">docker run -t -p <span class="number">8008</span>:<span class="number">8000</span> -h GATEONE --name gateone liftoff/gateone gateone<span class="comment">#创建容器</span></span><br></pre></td></tr></table></figure></p><p>这样我们就创建了一个叫gateone的容器，宿主机端口是8008，此时通过浏览器访问<code>https://IP：8008</code>，就会看到效果：<br><img src="/images/gateone1.png" alt="akb48"></p><p>默认的gateone是https访问，如果要改成http访问。那么就要修改容器里的<code>/etc/gateone/conf.d</code>文件夹下的<code>10server.conf</code>，修改如下两处：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"disable_ssl"</span>: true,<span class="comment">#改成http方式</span></span><br><span class="line"><span class="string">"origins"</span>: [<span class="string">"localhost:8000"</span>, <span class="string">"127.0.0.1:8000"</span>, <span class="string">"594f279c70b0:8000"</span>, <span class="string">"121.41.37.251:33664"</span>],<span class="comment">#添加django的地址和端口</span></span><br></pre></td></tr></table></figure></p><p>然后重启容器，改用<code>http://IP：8008</code>方式去访问，发现已经改成HTTP协议了：<br><img src="/images/gateone2.png" alt="akb48"></p>]]></content>
+    
+    <summary type="html">
+    
+      paramiko更适合去用于批量操作
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="django" scheme="http://yoursite.com/tags/django/"/>
+    
+      <category term="gateone" scheme="http://yoursite.com/tags/gateone/"/>
+    
+  </entry>
   
   <entry>
     <title>Atlas出了一个很诡异的bug</title>
@@ -34,9 +58,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
-    
       <category term="atlas" scheme="http://yoursite.com/tags/atlas/"/>
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
     
       <category term="读写分离" scheme="http://yoursite.com/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
     
@@ -254,9 +278,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
-    
       <category term="zabbix" scheme="http://yoursite.com/tags/zabbix/"/>
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
     
   </entry>
   
@@ -479,32 +503,6 @@
       <category term="html" scheme="http://yoursite.com/tags/html/"/>
     
       <category term="js" scheme="http://yoursite.com/tags/js/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>将本地时间转化成UTC时间</title>
-    <link href="http://yoursite.com/2019/01/22/%E5%B0%86%E6%9C%AC%E5%9C%B0%E6%97%B6%E9%97%B4%E8%BD%AC%E5%8C%96%E6%88%90UTC%E6%97%B6%E9%97%B4/"/>
-    <id>http://yoursite.com/2019/01/22/将本地时间转化成UTC时间/</id>
-    <published>2019-01-22T05:56:46.000Z</published>
-    <updated>2019-01-22T08:06:39.478Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="实际代码">实际代码</span></h2><p>在日常工作中，有些时候需要把本地时间转换成UTC时间，通常来说，最直接的方法就是把北京时间（<code>CST时间</code>）减去8小时，但是如果考虑到夏令时，那么这样简单的数学计算就会得到错误的结果。要解决这种涉及时区的问题，就要使用特殊的模块<code>pytz</code>。<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Python <span class="number">3.6</span><span class="number">.4</span> (default, Sep  <span class="number">3</span> <span class="number">2018</span>, <span class="number">10</span>:<span class="number">11</span>:<span class="number">51</span>) </span><br><span class="line">[GCC <span class="number">4.8</span><span class="number">.5</span> <span class="number">20150623</span> (Red Hat <span class="number">4.8</span><span class="number">.5</span><span class="number">-28</span>)] on linux</span><br><span class="line">Type <span class="string">"help"</span>, <span class="string">"copyright"</span>, <span class="string">"credits"</span> <span class="keyword">or</span> <span class="string">"license"</span> <span class="keyword">for</span> more information.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> datetime,time,pytz    <span class="comment">#引入模块</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>now = time.strftime(<span class="string">"%Y-%m-%d %H:%M:%S"</span>)     <span class="comment">#得到当前时间</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>now</span><br><span class="line"><span class="string">'2019-01-22 14:03:03'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>type(now)</span><br><span class="line">&lt;<span class="class"><span class="keyword">class</span> '<span class="title">str</span>'&gt;     #此时类型是字符串</span></span><br><span class="line">&gt;&gt;&gt; now = datetime.datetime.now()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>now</span><br><span class="line">datetime.datetime(<span class="number">2019</span>, <span class="number">1</span>, <span class="number">22</span>, <span class="number">14</span>, <span class="number">4</span>, <span class="number">49</span>, <span class="number">707859</span>)     <span class="comment">#转换成datetime模式</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>type(now)</span><br><span class="line">&lt;<span class="class"><span class="keyword">class</span> '<span class="title">datetime</span>.<span class="title">datetime</span>'&gt;</span></span><br><span class="line">&gt;&gt;&gt; utc_time = now.astimezone(pytz.utc)    #转换成了UTC时间就不要用担心夏令时等等麻烦事了</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(utc_time)</span><br><span class="line"><span class="number">2019</span><span class="number">-01</span><span class="number">-22</span> <span class="number">06</span>:<span class="number">04</span>:<span class="number">49.707859</span>+<span class="number">00</span>:<span class="number">00</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>type(utc_time)</span><br><span class="line">&lt;<span class="class"><span class="keyword">class</span> '<span class="title">datetime</span>.<span class="title">datetime</span>'&gt;     #还需要将<span class="title">datetime</span>格式转换成<span class="title">str</span></span></span><br><span class="line">&gt;&gt;&gt; utc_now = utc_time.strftime('%Y-%m-%d %H:%M:00')</span><br><span class="line"><span class="string">'2019-01-22 13:57:00'</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>type(utc_now)</span><br><span class="line">&lt;<span class="class"><span class="keyword">class</span> '<span class="title">str</span>'&gt;     #此时返回了字符串</span></span><br></pre></td></tr></table></figure></p><p>上面的代码说明了过程，以及得到的东西的类型，其实精简下来只有三行：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">import</span> datetime,time,pytz</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>now = datetime.datetime.now()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>utc_time = now.astimezone(pytz.utc)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>utc_now = utc_time.strftime(<span class="string">'%Y-%m-%dT%H:%M:00Z'</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">print</span> (utc_now)</span><br><span class="line"><span class="number">2019</span><span class="number">-01</span><span class="number">-22</span>T06:<span class="number">46</span>:<span class="number">00</span>Z</span><br></pre></td></tr></table></figure></p><p>如果要查时区名称，可以使用<code>pytz.country_timezones</code>，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> pytz <span class="keyword">import</span> timezone </span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pytz.country_timezones[<span class="string">'CN'</span>]</span><br><span class="line">[<span class="string">'Asia/Shanghai'</span>, <span class="string">'Asia/Urumqi'</span>]</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>pytz.country_timezones[<span class="string">'US'</span>]</span><br><span class="line">[<span class="string">'America/New_York'</span>, <span class="string">'America/Detroit'</span>, <span class="string">'America/Kentucky/Louisville'</span>, <span class="string">'America/Kentucky/Monticello'</span>, <span class="string">'America/Indiana/Indianapolis'</span>, <span class="string">'America/Indiana/Vincennes'</span>, <span class="string">'America/Indiana/Winamac'</span>, <span class="string">'America/Indiana/Marengo'</span>, <span class="string">'America/Indiana/Petersburg'</span>, <span class="string">'America/Indiana/Vevay'</span>, <span class="string">'America/Chicago'</span>, <span class="string">'America/Indiana/Tell_City'</span>, <span class="string">'America/Indiana/Knox'</span>, <span class="string">'America/Menominee'</span>, <span class="string">'America/North_Dakota/Center'</span>, <span class="string">'America/North_Dakota/New_Salem'</span>, <span class="string">'America/North_Dakota/Beulah'</span>, <span class="string">'America/Denver'</span>, <span class="string">'America/Boise'</span>, <span class="string">'America/Phoenix'</span>, <span class="string">'America/Los_Angeles'</span>, <span class="string">'America/Anchorage'</span>, <span class="string">'America/Juneau'</span>, <span class="string">'America/Sitka'</span>, <span class="string">'America/Metlakatla'</span>, <span class="string">'America/Yakutat'</span>, <span class="string">'America/Nome'</span>, <span class="string">'America/Adak'</span>, <span class="string">'Pacific/Honolulu'</span>]</span><br></pre></td></tr></table></figure></p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.cnblogs.com/cathouse/archive/2012/11/19/2777678.html" target="_blank" rel="noopener">https://www.cnblogs.com/cathouse/archive/2012/11/19/2777678.html</a><br><a href="https://blog.csdn.net/junli_chen/article/details/52999448" target="_blank" rel="noopener">https://blog.csdn.net/junli_chen/article/details/52999448</a><br>《Python cookbook》字符串如何转化成日期<br>《Python cookbook》处理设计到市区的日期问题</p>]]></content>
-    
-    <summary type="html">
-    
-      遇到转换时区的事情真是够蛋疼的！
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="python3" scheme="http://yoursite.com/tags/python3/"/>
-    
-      <category term="UTC时间" scheme="http://yoursite.com/tags/UTC%E6%97%B6%E9%97%B4/"/>
-    
-      <category term="时区转换" scheme="http://yoursite.com/tags/%E6%97%B6%E5%8C%BA%E8%BD%AC%E6%8D%A2/"/>
     
   </entry>
   
