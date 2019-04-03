@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Zabbix-api获取值在Django页面展示]]></title>
+    <url>%2F2019%2F04%2F02%2FZabbix-api%E8%8E%B7%E5%8F%96%E5%80%BC%E5%9C%A8Django%E9%A1%B5%E9%9D%A2%E5%B1%95%E7%A4%BA%2F</url>
+    <content type="text"><![CDATA[背景交代私有云的同学要求把几个涉及录像的模块带宽每小时从zabbix获取一次，然后在django页面展示出来。由于django跟zabbix并不在一个服务器，那么就采取“zabbix上跑脚本，脚本将实时的带宽值存储到某个数据库里，然后django去数据库取值并且展示”。 python3 + Django 2.1.1APP：accessgateway 建立数据库首先需要先建立数据模型，在app下的models.py里添加如下： 123456789#这里是数据模型class lbmrs(models.Model): host = models.CharField(verbose_name='MRS服务器名称',max_length=50) inbandwidth = models.FloatField(verbose_name='入网带宽') outbandwidth = models.FloatField(verbose_name='出网带宽') time = models.TimeField(auto_now_add=False, auto_now=True) #获取录入时间，而且有新录入就会覆盖 def __unicode__(self): return self.host admin.py里添加对应的值： 12345from .models import lbmrsclass lbmrsAdmin(admin.ModelAdmin): list_display = ('host','inbandwidth','outbandwidth','time')admin.site.register(lbmrs,lbmrsAdmin) 这里要注意，由于我们使用了TimeField，所以要修改一下setting.py: 12TIME_ZONE = 'Asia/Shanghai'USE_TZ = False 这样就能输入准确的时间，不然就是UTC时间。然后就是python manage.py makemigrations和python manage.py migrate，如果在python manage.py migrate的时候出现如下MySQL Strict Mode is not set for database connection &#39;default&#39;的提示，如图： 这个提示其实不重要，主要是说当前连接mysql的方式不严谨，如果要避免还是修改一下setting.py，新加一个OPTIONS: 1234567891011121314DATABASES = &#123; 'default': &#123;# 'ENGINE': 'django.db.backends.sqlite3',# 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), 'ENGINE': 'django.db.backends.mysql', 'NAME': '这里是database名', 'USER': '这里是用户名', 'PASSWORD': '这里是密码', 'HOST': '这里是数据库地址', 'OPTIONS': &#123; "init_command": "SET sql_mode='STRICT_TRANS_TABLES'", &#125; &#125;&#125; 数据库方面完成，在后台界面里随便添加一个值，如下： 然后在mysql命令行看一下效果： 将值录入数据库由于我使用的是阿里云数据库，所以要现在阿里云数据库里对django服务器和zabbix服务器同时开放白名单。 使用zabbix-api获取zabbix数值的脚本以前在 https://rorschachchan.github.io/2019/01/09/%E4%BD%BF%E7%94%A8Zabbix%E7%9A%84python-api%E5%8E%BB%E8%8E%B7%E5%8F%96%E5%BD%93%E5%89%8D%E7%9B%91%E6%8E%A7%E5%80%BC/ 里面说过了，要把获取的值保存到mysql里，只需要添加下面的代码： 12345678#将值保存到mysqlconnection = pymysql.connect(host='Mysql地址', port=3306, user='账号', passwd='密码', db='databases名称')cursor = connection.cursor() # 创建游标# 执行SQL,插入多行数据并返回受影响行数sql = cursor.executemany("insert into lbmrs (host,inbandwidth,outbandwidth,time) values (%s,%s,%s,now())",[("第一台机器",firstin,firstout),("第二台机器",secondin,secondout),("第三台机器",thirdin,thirdout), ("第四台机器",fourthin,fourthout),("第五台机器",fivethin,fivethout)])connection.commit() # 提交,不然无法保存修改cursor.close() # 关闭游标connection.close() # 关闭连接 依旧是每小时执行一次，看见mysql能成功存储到值，如图： 将数据库的值反馈到页面上数据库现在已经取到了值，那么思路就很简单了：在views.py里设定变量，让变量可以去数据库里通过objects.values取到相应的值，然后再把这个变量通过render反应到前端页面。url.py很简单： 12#前略path(r'lb_mrs_flow.html',views.lb_mrs_flow,name="lb_mrs_flow"), 这次需求要取到以下几个值，分别是“此时的带宽”，“前一小时的带宽”，“昨天此时的带宽”。在数据库里我们也设定了date和time这两个列，所以通过限制条件就能获取到对应的值了！views.py如下： 123456789101112131415import datetime#展示服务器1.1.1.1当前流量@login_required #需要登陆才能访问def lb_mrs_flow(request): today = str(datetime.date.today()) #获取当前日期 yesterday = str(datetime.date.today() - datetime.timedelta(days=1)) #获取昨天日期 hour = str(datetime.datetime.now().hour) #获取现在小时 lasthour = str((datetime.datetime.now() - datetime.timedelta(hours=1)).hour) #获取前一小时 print (today,yesterday,hour) firstin = lbmrs.objects.values("inbandwidth").filter(host='1.1.1.1',date=today,time__istartswith=hour)) #当前值 firstin_last = lbmrs.objects.values("inbandwidth").filter(host='1.1.1.1',date=today,time__istartswith=lasthour) #前一个小时值 firstin_yes = lbmrs.objects.values("inbandwidth").filter(host='1.1.1.1',date=yesterday,time__istartswith=hour) #昨天的值 print (firstin，firstin_last，firstin_yes) return render(request, 'lb_mrs_flow.html',&#123;'firstin':firstin,'firstin_last':firstin_last,'firstin_yes':firstin_yes,&#125;) #传递到前端 数据库里我们只需要inbandwidth这一列的值，所以这里就不用get()方法了，改用vales()方法，同时搭配filter()添加条件筛选。但是这样获取到的结果是一个QuerySet（查询集），元素为字典，如果要获得里面具体的值，那么就是QuerySet[0][&#39;inbandwidth&#39;],用上面的firstin为例子，如果想要得到具体的值就要改成下面： 1firstin = lbmrs.objects.values("inbandwidth").filter(host='172.1.1.19',date=today,time__istartswith=hour)[0]['inbandwidth'] value和value_list都可以获取指定的字段，但是value_list获得是元素是元组。value_list和value返回的并不是真正的列表或字典，通俗地说，就是用的时候才真正的去数据库查，如果查询后没有使用，在数据库更新后再使用，得到的是新内容。 然后就是前端html文件lb_mrs_flow.html里写一个简单的表格，前端内容就略过不表了，直接来看结果： 可以看到如果value()方法得不到值的话，返回一个&lt;QuerySet []&gt;，如果是get()的话，返回就是一个错误，所以从友好度来说，还是``value()更佳。 参考资料https://blog.csdn.net/geerniya/article/details/78549182http://yshblog.com/blog/157]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>django</tag>
+        <tag>MySQL</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[将Gateone添加到django，实现WEB的ssh链接]]></title>
     <url>%2F2019%2F04%2F01%2F%E5%B0%86Gateone%E6%B7%BB%E5%8A%A0%E5%88%B0django%EF%BC%8C%E5%AE%9E%E7%8E%B0WEB%E7%9A%84ssh%E9%93%BE%E6%8E%A5%2F</url>
     <content type="text"><![CDATA[背景交代python3 + django2.1Django project:accessgateway gateone的安装Gateone是一个web界面的交互工具，很多堡垒机都会使用到它，它的生命力很长久也很经得住考验（不过最近github上已经不再对它有更新了）。安装方法如下： 12345pip install --upgrade setuptoolspip install tornado==4.3pip install Pillowdocker pull liftoff/gateone #拉取镜像，个人推荐把原有的镜像修改一下，添加vim等工具docker run -t -p 8008:8000 -h GATEONE --name gateone liftoff/gateone gateone #创建容器 这样我们就创建了一个叫gateone的容器，宿主机端口是8008，此时通过浏览器访问https://IP：8008，就会看到效果： 默认的gateone是https访问，如果要改成http访问。那么就要修改容器里的/etc/gateone/conf.d文件夹下的10server.conf，修改如下两处： 12"disable_ssl": true, #改成http方式"origins": ["localhost:8000", "127.0.0.1:8000", "594f279c70b0:8000", "121.41.37.251:33664"], #添加django的地址和端口 然后重启容器，改用http://IP：8008方式去访问，发现已经改成HTTP协议了。 gateone的配置现在这个gateone容器需要已经指定准许django来访问，但是还要生成一个api，让django通过api来访问。在容器里执行gateone --new_api_key，发现在/etc/gateone/conf.d文件夹下多了一个30api_keys.conf： 然后修改60docker.conf，把&quot;auth&quot;: &quot;none&quot;,改成&quot;auth&quot;: &quot;api&quot;,保存之后，此时如果重启容器，发现web界面已经不能访问了，会出现unauthenticated的提示，如图： gateone集成到djangogateone部分暂时告于段落，现在配置Django，首先是views.py，注意！python2与python3有些地方不同，我这里是python3版本： 12345678910111213141516171819202122232425262728293031323334import time,hmac,hashlib,json#web交互界面gateonedef gateone(request): id = 1 #这里暂时写死只要id为1的服务器 svr = server.objects.get(id = id) ip = svr.outIP port = svr.port username = svr.username #写死端口和用户名 return render(request,'aggateone.html',locals()) #返回aggateone.html页面#gateone认证def create_signature(secret,*parts): hash = hmac.new(secret, digestmod=hashlib.sha1) for part in parts: hash.update(str(part).encode("utf-8")) return hash.hexdigest()def get_auth_obj(request): # 安装gateone的服务器以及端口. gateone_server = 'http://121.41.37.251:8008' #本地gateone的访问地址，注意http格式 # 生成的api_key 和secret api_key = 'OGQxZGM5OGM1MGNlNDZkNmEwMTNmM2IyY2NlMGZlNjA3Z' #这里是30api_keys.conf文件里的key secret = b'MDIzOWQyN2Y2MmU0NDdhMWIwN2Q3MjIzODU1MGFjYWVkY' #这里是30api_keys.conf文件里的secret authobj = &#123; 'api_key':api_key, 'upn':'gateone', 'timestamp':str(int(time.time() * 1000)), 'signature_method':'HMAC-SHA1', 'api_version':'1.2' &#125; authobj['signature'] = create_signature(secret,authobj['api_key'],authobj['upn'],authobj['timestamp']) auth_info_and_server = &#123;'url':gateone_server,'auth':authobj&#125; return JsonResponse(auth_info_and_server) 然后新增两条路由到urls.py： 12path(r'gateone.html', views.gateone),path(r'get_auth_obj.html',views.get_auth_obj,name="get_auth_obj"), 最后就是编写前端页面aggateone.html： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253&#123;% extends 'agbase.html' %&#125;&#123;% load staticfiles %&#125;&#123;% block title %&#125;Gateone远程连接&#123;% endblock %&#125;&#123;% block css %&#125;&lt;script src = "/static/jquery-3.3.1.min.js"&gt;&lt;/script&gt;&lt;script src = "/static/gateone/gateone.js"&gt;&lt;/script&gt; &lt;!-- 这里需要手动复制一下gateone.js文件到django的静态文件夹里 --&gt;&#123;% endblock %&#125;&#123;% block content %&#125;&lt;script&gt;$(function () &#123; &lt;!--添加参数--&gt; var ip = '&#123;&#123; ip &#125;&#125;'; var user = '&#123;&#123; username &#125;&#125;'; var port = '&#123;&#123; port &#125;&#125;'; var ssh_url = 'ssh://'+user+'@'+ip+':'+port; //请求认证信息 &lt;!--发起认证请求--&gt; $.ajax(&#123; url:'&#123;% url 'get_auth_obj' %&#125;', type:'GET', dataType:'json', success:function (data) &#123; var auth_message = data.auth; var auth_url = data.url; GateOne.init(&#123; auth:auth_message, url:auth_url, theme:'solarized', goDiv:'#gateone', disableTermTransitions:'true', autoConnectURL:ssh_url &#125;); &#125; &#125;); &lt;!--状态记录--&gt; GateOne.Base.superSandbox("GateOne.SomePlugin", ["GateOne", "GateOne.Net", "GateOne.Terminal.Input", "GateOne.Terminal"], function(window, undefined) &#123; var location = ip; GateOne.prefs.autoConnectURL=ssh_url; GateOne.prefs.fontSize="100%"; GateOne.prefs.scrollback = 10000; // scrollback buffer up to 10,000 lines GateOne.Terminal.loadFont("Source Code Pro", "150%"); GateOne.Net.setLocation(location); &lt;!--记录登录状态--&gt; &#125;);&#125;)&lt;/script&gt;&lt;div id = "gateone_container" style = "position:relative; width: 110em; height: 55em;"&gt; &lt;div id = "gateone"&gt; &lt;/div&gt;&lt;/div&gt;&#123;% endblock %&#125; 重启django进程，浏览器打开gateone.html页面看一下效果： 可见我们已经成功的把gateone嵌入到django里了，而且自动就链接”id=1”这台服务器。大功告成，剩下的就是修改一下细节，给所有服务器一个按钮，只要点击这个按钮就会打开对应的远程链接界面。 参考资料http://blog.codecp.org/2018/03/23/Django%E5%9F%BA%E7%A1%80Gateone%E5%AE%9E%E7%8E%B0Web%E7%BB%88%E7%AB%AFSSH%E5%8A%9F%E8%83%BD/https://github.com/liftoff/GateOne/issues/257https://www.jianshu.com/p/b8123a8178de]]></content>
@@ -20,8 +32,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>atlas</tag>
         <tag>mysql</tag>
+        <tag>atlas</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -130,8 +142,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>mysql</tag>
+        <tag>zabbix</tag>
       </tags>
   </entry>
   <entry>
@@ -888,8 +900,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -913,8 +925,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -926,8 +938,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1302,18 +1314,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root用户启动tomcat进程]]></title>
-    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>centos</tag>
-        <tag>运维安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root启动进程以及启动docker]]></title>
     <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
     <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
@@ -1323,6 +1323,18 @@
       <tags>
         <tag>docker</tag>
         <tag>安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root用户启动tomcat进程]]></title>
+    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>centos</tag>
+        <tag>运维安全</tag>
       </tags>
   </entry>
   <entry>
@@ -1537,8 +1549,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维技术</tag>
         <tag>mysql</tag>
+        <tag>运维技术</tag>
       </tags>
   </entry>
   <entry>
@@ -1734,8 +1746,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>atlas</tag>
         <tag>mysql</tag>
+        <tag>atlas</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -1793,8 +1805,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维技术</tag>
         <tag>linux</tag>
+        <tag>运维技术</tag>
       </tags>
   </entry>
   <entry>
@@ -1853,8 +1865,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>crontab</tag>
         <tag>linux</tag>
+        <tag>crontab</tag>
       </tags>
   </entry>
   <entry>
@@ -2459,8 +2471,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>redis</tag>
+        <tag>zabbix</tag>
       </tags>
   </entry>
   <entry>
