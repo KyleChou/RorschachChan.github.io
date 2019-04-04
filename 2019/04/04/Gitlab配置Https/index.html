@@ -88,19 +88,19 @@
 
 
 
-<meta name="description" content="Httpd配置https事前说明，我的Httpd版本是：Server version: Apache/2.4.6 (CentOS) 首先先准备https证书文件，把他们传递到apache服务器的/etc/httpd/ssl文件夹里，然后安装yum install -y mod_ssl openssl，安装完毕之后，发现/etc/httpd/conf.d文件夹下多了一个ssl.conf，出于安全先">
+<meta name="description" content="如果gitlab项目太多并发太高触发了IP屏蔽，需要将Rack Attack的IP白名单对应开放">
 <meta name="keywords" content="Gitlab,httpd,白名单">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Apache配置Https">
 <meta property="og:url" content="http://yoursite.com/2019/04/04/Gitlab配置Https/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="Httpd配置https事前说明，我的Httpd版本是：Server version: Apache/2.4.6 (CentOS) 首先先准备https证书文件，把他们传递到apache服务器的/etc/httpd/ssl文件夹里，然后安装yum install -y mod_ssl openssl，安装完毕之后，发现/etc/httpd/conf.d文件夹下多了一个ssl.conf，出于安全先">
+<meta property="og:description" content="如果gitlab项目太多并发太高触发了IP屏蔽，需要将Rack Attack的IP白名单对应开放">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/https1.png">
-<meta property="og:updated_time" content="2019-04-04T08:15:06.045Z">
+<meta property="og:updated_time" content="2019-04-04T08:29:43.142Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Apache配置Https">
-<meta name="twitter:description" content="Httpd配置https事前说明，我的Httpd版本是：Server version: Apache/2.4.6 (CentOS) 首先先准备https证书文件，把他们传递到apache服务器的/etc/httpd/ssl文件夹里，然后安装yum install -y mod_ssl openssl，安装完毕之后，发现/etc/httpd/conf.d文件夹下多了一个ssl.conf，出于安全先">
+<meta name="twitter:description" content="如果gitlab项目太多并发太高触发了IP屏蔽，需要将Rack Attack的IP白名单对应开放">
 <meta name="twitter:image" content="http://yoursite.com/images/https1.png">
 
 
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  816
+                  835
                 </span>
               
 
@@ -438,6 +438,10 @@
           
 
           
+              <div class="post-description">
+                  如果gitlab项目太多并发太高触发了IP屏蔽，需要将Rack Attack的IP白名单对应开放
+              </div>
+          
 
         </div>
       </header>
@@ -458,23 +462,14 @@
 <h2><span id="httpd配置http跳转https">Httpd配置http跳转https</span></h2><p>如果想要达到http跳转https的话，还是在ssl文件里的最下面追加这段内容：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;VirtualHost  *:<span class="number">80</span>&gt;</span><br><span class="line">        RewriteEngine on</span><br><span class="line">        RewriteCond %&#123;SERVER_PORT&#125; !^<span class="number">443</span>$</span><br><span class="line">        RewriteRule ^/?(.*)$ https://%&#123;SERVER_NAME&#125;%&#123;REQUEST_URI&#125; [L,R]</span><br><span class="line">&lt;/VirtualHost&gt;</span><br></pre></td></tr></table></figure></p>
 <p>如果只是单url跳转，比如<code>http://test.imoulife.com/login</code>跳转到<code>https://test.imoulife.com/login</code>，其他的域名依旧是http。那么就把最后一句改成:<code>RewriteRule ^/logon.do$ https://%{SERVER_NAME}%{REQUEST_URI} [L,R]</code>，重启httpd就生效。</p>
 <h2><span id="httpd配置ip白名单">httpd配置ip白名单</span></h2><p>设置了https不能说很安全，我们还需要设置IP白名单才能让WEB界面更加放心。由于我这个httpd主要是给zabbix使用的，所以就拿访问zabbix的IP白名单为例。</p>
-<p>首先打开<code>/etc/httpd/conf.d/zabbix.conf</code>，修改如下地方：<br>    Alias /zabbix /usr/share/zabbix</p>
-<pre><code>&lt;Directory &quot;/usr/share/zabbix&quot;&gt;
-Options FollowSymLinks
-AllowOverride None
-#Require all granted    #这句话是任何人都可以访问的意思
-&lt;RequireAll&gt;
-    Require ip 192.168.1    #准许192.168.1开头的IP地址的访问
-    Require ip 192.168.1.104 192.168.1.205    #准许固定IP地址访问
-    Require ip 10.1.0.0/16    #网络/子网掩码的访问
-&lt;/RequireAll&gt;
-</code></pre><p>保存退出，重启httpd即可。</p>
+<p>首先打开<code>/etc/httpd/conf.d/zabbix.conf</code>，修改如下地方：<br>    <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Alias /zabbix /usr/share/zabbix</span><br><span class="line"></span><br><span class="line">&lt;Directory <span class="string">"/usr/share/zabbix"</span>&gt;</span><br><span class="line">   Options FollowSymLinks</span><br><span class="line">   AllowOverride <span class="keyword">None</span></span><br><span class="line">   <span class="comment">#Require all granted	#这句话是任何人都可以访问的意思</span></span><br><span class="line">&lt;RequireAll&gt;</span><br><span class="line">       Require ip <span class="number">192.168</span><span class="number">.1</span>	<span class="comment">#准许192.168.1开头的IP地址的访问</span></span><br><span class="line">	Require ip <span class="number">192.168</span><span class="number">.1</span><span class="number">.104</span> <span class="number">192.168</span><span class="number">.1</span><span class="number">.205</span>	<span class="comment">#准许固定IP地址访问</span></span><br><span class="line">	Require ip <span class="number">10.1</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">16</span>	<span class="comment">#网络/子网掩码的访问</span></span><br><span class="line">   &lt;/RequireAll&gt;</span><br></pre></td></tr></table></figure></p>
+<p>保存退出，重启httpd即可。</p>
 <h2><span id="gitlab配置https">Gitlab配置Https</span></h2><p>我的gitlab是容器做的，其实无论容器还是非容器其实配置都是一样的。</p>
 <p>首先先开放443端口给相应的IP，然后进入容器，在<code>/etc/gitlab/</code>下先创建一个ssl文件夹，里面放入https证书，如图：<br><img src="/images/https1.png" alt="akb48"></p>
 <p>放好证书文件之后，返回上一级目录，修改一下<code>gitlab.rb</code>文件：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">external_url <span class="string">'https的域名'</span></span><br><span class="line">nginx[<span class="string">'redirect_http_to_https'</span>] = true</span><br><span class="line">nginx[<span class="string">'redirect_http_to_https_port'</span>] = <span class="number">80</span></span><br><span class="line">nginx[<span class="string">'ssl_certificate'</span>] = <span class="string">"上面https证书的路径/crt文件名称"</span></span><br><span class="line">nginx[<span class="string">'ssl_certificate_key'</span>] = <span class="string">"上面https证书的路径/key文件名称"</span></span><br></pre></td></tr></table></figure></p>
 <p>然后执行<code>gitlab-ctl reconfigure</code>更新配置，完事之后找到nginx的gitlab配置文件<code>gitlab-http.conf</code>，发现由于更新了配置，所以里面已经生成好了一份新的配置文件，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">  listen *:<span class="number">443</span> ssl http2;</span><br><span class="line">  server_name https的域名;</span><br><span class="line">  server_tokens off; </span><br><span class="line">  client_max_body_size <span class="number">0</span>;</span><br><span class="line">  ssl on;</span><br><span class="line">  ssl_certificate 上面https证书的路径/crt文件名称;</span><br><span class="line">  ssl_certificate_key 上面https证书的路径/key文件名称;</span><br><span class="line">  .............................  <span class="comment">#剩余的信息省略了</span></span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line">server&#123;</span><br><span class="line">listen*:<span class="number">80</span>;</span><br><span class="line">server_name https的域名;</span><br><span class="line">rewrite^(.*)$https://$host$<span class="number">1</span>permanent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>确认各个信息无误之后，退出执行<code>gitlab-ctl restart</code>即可。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="http://tonylit.me/2016/02/29/apache_http%E8%B7%B3%E8%BD%AC/" target="_blank" rel="noopener">http://tonylit.me/2016/02/29/apache_http%E8%B7%B3%E8%BD%AC/</a><br><a href="http://zhizhi.tangliangdong.me/2017/10/12/2017-10-12-http-to-https/" target="_blank" rel="noopener">http://zhizhi.tangliangdong.me/2017/10/12/2017-10-12-http-to-https/</a><br><a href="https://blog.mallux.me/2017/02/27/gitlab/" target="_blank" rel="noopener">https://blog.mallux.me/2017/02/27/gitlab/</a></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="http://tonylit.me/2016/02/29/apache_http%E8%B7%B3%E8%BD%AC/" target="_blank" rel="noopener">http://tonylit.me/2016/02/29/apache_http%E8%B7%B3%E8%BD%AC/</a><br><a href="http://zhizhi.tangliangdong.me/2017/10/12/2017-10-12-http-to-https/" target="_blank" rel="noopener">http://zhizhi.tangliangdong.me/2017/10/12/2017-10-12-http-to-https/</a><br><a href="https://blog.mallux.me/2017/02/27/gitlab/" target="_blank" rel="noopener">https://blog.mallux.me/2017/02/27/gitlab/</a><br><a href="https://blog.csdn.net/leshami/article/details/78521031" target="_blank" rel="noopener">https://blog.csdn.net/leshami/article/details/78521031</a></p>
 
       
     </div>
