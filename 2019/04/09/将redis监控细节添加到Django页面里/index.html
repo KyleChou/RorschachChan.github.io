@@ -99,7 +99,8 @@
 <meta property="og:image" content="http://yoursite.com/images/gateone12.png">
 <meta property="og:image" content="http://yoursite.com/images/gateone13.png">
 <meta property="og:image" content="http://yoursite.com/images/gateone14.png">
-<meta property="og:updated_time" content="2019-04-10T08:20:54.888Z">
+<meta property="og:image" content="http://yoursite.com/images/gateone15.gif">
+<meta property="og:updated_time" content="2019-04-10T14:25:34.404Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="将Redis监控细节添加到Django页面里">
 <meta name="twitter:description" content="明天再来一个Mysql的...">
@@ -417,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,143
+                  1,205
                 </span>
               
 
@@ -471,8 +472,10 @@
 <p>获取缓存命中率的shell脚本如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/bin/bash</span></span><br><span class="line"><span class="comment">#获取当前缓存命中率到Mysql</span></span><br><span class="line">hit=$(redis-cli -h redis地址 -p <span class="number">6379</span> -a redis密码 info Stats | grep <span class="string">"keyspace_hits"</span> | cut -d : -f <span class="number">2</span>)	</span><br><span class="line">miss=$(redis-cli -h redis地址 -p <span class="number">6379</span> -a redis密码 info Stats | grep <span class="string">"keyspace_misses"</span> | cut -d : -f <span class="number">2</span>)</span><br><span class="line">HIT=$(echo $hit | tr -d <span class="string">'\r'</span>)</span><br><span class="line">MISS=$(echo $miss | tr -d <span class="string">'\r'</span>)</span><br><span class="line">total=$(expr $HIT + $MISS)</span><br><span class="line">percent=$(awk <span class="string">'BEGIN&#123;printf "%.2f\n",'</span>$HIT<span class="string">'/'</span>$total<span class="string">'&#125;'</span>)</span><br><span class="line">MYSQL=<span class="string">"mysql -h数据库地址 -u数据库账号 -p数据库密码 --default-character-set=utf8 -A -N"</span></span><br><span class="line">sql=<span class="string">"insert into databases.table(num,date,time) values('$&#123;percent&#125;',curdate(),now());"</span></span><br><span class="line">$MYSQL -e <span class="string">"$sql"</span></span><br></pre></td></tr></table></figure></p>
 <p>这里要注意！<code>hit</code>和<code>miss</code>结果是自带”\r”的，所以要去掉。不然的话就会有<code>expr: non-numeric argument</code>。而且如果用bc命令获取除法结果的话，低于1的值是不会出现整数0，即如果得到的结果是0.97，那么只会显示.97，至于如何出现这个0，可以去看 <a href="http://www.361way.com/linux-bc-point-zero/4960.html" target="_blank" rel="noopener">http://www.361way.com/linux-bc-point-zero/4960.html</a> 。</p>
 <p>现在已经通过脚本取到了值，那么剩下的内容就是django去弄一个model，之后在<code>views.py</code>里拿值然后通过<code>render</code>反馈到前端页面，这里不说了。执行效果如下：<br><img src="/images/gateone14.png" alt="akb48"></p>
-<h2><span id="其他项目">其他项目</span></h2><p>redis的慢日志操作也是我们比较关注的一点。一般来说我们使用<code>slowlog len</code>来获取当前慢日志的总条数，而是用<code>slowlog reset</code>对其进行清理工作。获取它的shell脚本跟上面两个大同小异，这里也略过不表了。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://segmentfault.com/a/1190000009915519" target="_blank" rel="noopener">https://segmentfault.com/a/1190000009915519</a><br><a href="https://blog.csdn.net/secretx/article/details/73498148" target="_blank" rel="noopener">https://blog.csdn.net/secretx/article/details/73498148</a><br><a href="http://www.cnblogs.com/iforever/p/4459857.html" target="_blank" rel="noopener">http://www.cnblogs.com/iforever/p/4459857.html</a></p>
+<h2><span id="其他补充">其他补充</span></h2><p>redis的慢日志操作也是我们比较关注的一点。一般来说我们使用<code>slowlog len</code>来获取当前慢日志的总条数，而是用<code>slowlog reset</code>对其进行清理工作。获取它的shell脚本跟上面两个大同小异，这里也略过不表了。</p>
+<p>如果要是想获取redis的cpu和内存，最好的方法通过zabbix拿值，CPU使用率的item是：<code>system.cpu.util[]</code>，内存使用率的item是：<code>vm.memory.size[pavailable]</code>。</p>
+<p>整个页面做完的效果如下：<br><img src="/images/gateone15.gif" alt="akb48"></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://segmentfault.com/a/1190000009915519" target="_blank" rel="noopener">https://segmentfault.com/a/1190000009915519</a><br><a href="https://blog.csdn.net/secretx/article/details/73498148" target="_blank" rel="noopener">https://blog.csdn.net/secretx/article/details/73498148</a><br><a href="http://www.cnblogs.com/iforever/p/4459857.html" target="_blank" rel="noopener">http://www.cnblogs.com/iforever/p/4459857.html</a><br><a href="https://morrisjs.github.io/morris.js/lines.html" target="_blank" rel="noopener">https://morrisjs.github.io/morris.js/lines.html</a></p>
 
       
     </div>
@@ -869,7 +872,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x83B7;&#x53D6;&#x8FDE;&#x63A5;&#x7EC6;&#x8282;&#x60C5;&#x51B5;">&#x83B7;&#x53D6;&#x8FDE;&#x63A5;&#x7EC6;&#x8282;&#x60C5;&#x51B5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x83B7;&#x53D6;&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;">&#x83B7;&#x53D6;&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x5176;&#x4ED6;&#x9879;&#x76EE;">&#x5176;&#x4ED6;&#x9879;&#x76EE;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x83B7;&#x53D6;&#x8FDE;&#x63A5;&#x7EC6;&#x8282;&#x60C5;&#x51B5;">&#x83B7;&#x53D6;&#x8FDE;&#x63A5;&#x7EC6;&#x8282;&#x60C5;&#x51B5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x83B7;&#x53D6;&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;">&#x83B7;&#x53D6;&#x7F13;&#x5B58;&#x547D;&#x4E2D;&#x7387;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x5176;&#x4ED6;&#x8865;&#x5145;">&#x5176;&#x4ED6;&#x8865;&#x5145;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
