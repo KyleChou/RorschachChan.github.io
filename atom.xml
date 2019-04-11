@@ -34,9 +34,9 @@
       <category term="监控与技术" scheme="http://yoursite.com/categories/%E7%9B%91%E6%8E%A7%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="redis" scheme="http://yoursite.com/tags/redis/"/>
-    
       <category term="django" scheme="http://yoursite.com/tags/django/"/>
+    
+      <category term="redis" scheme="http://yoursite.com/tags/redis/"/>
     
       <category term="shell" scheme="http://yoursite.com/tags/shell/"/>
     
