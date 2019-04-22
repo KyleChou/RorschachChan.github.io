@@ -88,18 +88,18 @@
 
 
 
-<meta name="description" content="前言我这里使用的channels版本是1.1.8，安装方法是pip3 install channels==1.1.8，同时也会自动安装asgi_redis。注意！pip默认安装的channels已经是2.0版本的了，这个2.0版本就需要用channels-redis来辅助了，asgi_redis不支持channels2.0+。 实现zabbix信息到django页面的思路如下：    1在zab">
+<meta name="description" content="市面上关于Channels2的讲解太少了，多数都是Channels1的。">
 <meta name="keywords" content="Django,channels">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用Channels将Zabbix告警信息实时传递到页面">
+<meta property="og:title" content="使用Channels2将Zabbix告警信息实时传递到页面">
 <meta property="og:url" content="http://yoursite.com/2019/04/18/使用Channels将Zabbix告警信息实时传递到页面/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="前言我这里使用的channels版本是1.1.8，安装方法是pip3 install channels==1.1.8，同时也会自动安装asgi_redis。注意！pip默认安装的channels已经是2.0版本的了，这个2.0版本就需要用channels-redis来辅助了，asgi_redis不支持channels2.0+。 实现zabbix信息到django页面的思路如下：    1在zab">
+<meta property="og:description" content="市面上关于Channels2的讲解太少了，多数都是Channels1的。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-04-18T09:12:24.755Z">
+<meta property="og:updated_time" content="2019-04-22T02:41:26.169Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="使用Channels将Zabbix告警信息实时传递到页面">
-<meta name="twitter:description" content="前言我这里使用的channels版本是1.1.8，安装方法是pip3 install channels==1.1.8，同时也会自动安装asgi_redis。注意！pip默认安装的channels已经是2.0版本的了，这个2.0版本就需要用channels-redis来辅助了，asgi_redis不支持channels2.0+。 实现zabbix信息到django页面的思路如下：    1在zab">
+<meta name="twitter:title" content="使用Channels2将Zabbix告警信息实时传递到页面">
+<meta name="twitter:description" content="市面上关于Channels2的讲解太少了，多数都是Channels1的。">
 
 
 
@@ -135,7 +135,7 @@
 
 
 
-  <title>使用Channels将Zabbix告警信息实时传递到页面 | Chris Chan's BLOG</title>
+  <title>使用Channels2将Zabbix告警信息实时传递到页面 | Chris Chan's BLOG</title>
   
 
 
@@ -335,7 +335,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">使用Channels将Zabbix告警信息实时传递到页面</h1>
+          <h1 class="post-title" itemprop="name headline">使用Channels2将Zabbix告警信息实时传递到页面</h1>
         
 
         <div class="post-meta">
@@ -387,7 +387,7 @@
 
           
           
-             <span id="/2019/04/18/使用Channels将Zabbix告警信息实时传递到页面/" class="leancloud_visitors" data-flag-title="使用Channels将Zabbix告警信息实时传递到页面">
+             <span id="/2019/04/18/使用Channels将Zabbix告警信息实时传递到页面/" class="leancloud_visitors" data-flag-title="使用Channels2将Zabbix告警信息实时传递到页面">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  806
+                  1,041
                 </span>
               
 
@@ -429,12 +429,16 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4
+                  5
                 </span>
               
             </div>
           
 
+          
+              <div class="post-description">
+                  市面上关于Channels2的讲解太少了，多数都是Channels1的。
+              </div>
           
 
         </div>
@@ -450,14 +454,17 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="前言">前言</span></h2><p>我这里使用的channels版本是1.1.8，安装方法是<code>pip3 install channels==1.1.8</code>，同时也会自动安装<code>asgi_redis</code>。注意！pip默认安装的channels已经是2.0版本的了，这个2.0版本就需要用<code>channels-redis</code>来辅助了，<code>asgi_redis</code>不支持<code>channels2.0+</code>。</p>
-<p>实现zabbix信息到django页面的思路如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">在zabbix的trigger触发时，根据Action设置通过脚本报警，并将报警信息发布到Redis里的alarm频道，同时让Django Commands alert去订阅Redis的ALARM频道，此时调用channels的send方法，通过websocket实时推送到Client</span><br></pre></td></tr></table></figure></p>
-<p>Channels将WebSocket连接映射到三个不同到频道：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">当一个新的客户端通过 WebSocket 连接时，websocket.connect 频道将收到一条消息，在本例中，将在此频道将新用户添加到实时博客订阅组里。</span><br><span class="line">当一个客户端断开连接，websocket.disconnect 频道将收到一条消息。</span><br><span class="line">每一条消息都将被发往 websocket.receive 频道，在这个频道里。</span><br></pre></td></tr></table></figure></p>
-<h2><span id="创建websocket">创建websocket</span></h2><p>首先现在app的<code>settings.py</code>里添加如下信息：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">INSTALLED_APPS = (</span><br><span class="line">    ...</span><br><span class="line">    <span class="string">'channels'</span>,</span><br><span class="line">)</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">USE_REDIS = <span class="keyword">True</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#使用Redis作为消息存储，需安装asgi_redis</span></span><br><span class="line">CHANNEL_LAYERS = &#123;</span><br><span class="line">    <span class="string">'default'</span>: &#123;</span><br><span class="line">        <span class="string">'BACKEND'</span>: <span class="string">'asgi_redis.RedisChannelLayer'</span>,</span><br><span class="line">        <span class="string">'CONFIG'</span>: &#123;</span><br><span class="line">            <span class="string">'hosts'</span>: [<span class="string">'redis://:redis密码@redis地址:6379/23'</span>],	<span class="comment">#这里放到第23号库</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">'ROUTING'</span>: <span class="string">'Kubernetes.routing.channel_routing'</span>,	<span class="comment">#这里的Kubernetes是app的名称</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">#Redis频道和Channels群组名</span></span><br><span class="line">GROUP_NAME = <span class="string">'zabbix'</span></span><br></pre></td></tr></table></figure></p>
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="前言">前言</span></h2><p>Channels是django的一个支持websocket的工具，它目前的版本是2.2，用法已经与1.x的版本有了较大的不同，但是中心思想没变化，Channels将WebSocket连接映射到三个不同到频道：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">当一个新的客户端通过 WebSocket 连接时，websocket.connect 频道将收到一条消息，在本例中，将在此频道将新用户添加到实时博客订阅组里。</span><br><span class="line">当一个客户端断开连接，websocket.disconnect 频道将收到一条消息。</span><br><span class="line">每一条消息都将被发往 websocket.receive 频道，在这个频道里。</span><br></pre></td></tr></table></figure></p>
+<p>更多关于Channels的基础知识可以看文末的参考资料。</p>
+<p>本文中实现zabbix信息到django页面的思路如下：在zabbix的trigger触发时，根据Action设置通过脚本报警，并将报警信息发布到Redis里的zabbix频道，同时让Django Commands alert去订阅Redis的zabbix频道，此时调用channels的send方法，通过websocket实时推送到Client，然后前端页面与Client勾结，将内容反馈出来。</p>
+<h2><span id="准备工作">准备工作</span></h2><p>pip install asgiref==3.1.2 (低于2.0版本的话，会爆<code>ModuleNotFoundError: No module named &#39;asgiref.sync&#39;</code>)<br>pip install channels（2.2.0）<br>pip install channels-redis（2.4.0）</p>
+<p>如果启动django的时候，出现了<code>CommandError: You have not set ASGI_APPLICATION, which is needed to run the server.</code>这个错误，需要在setting.py里添加如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ASGI_APPLICATION = Django的project的名称.routing.application</span><br></pre></td></tr></table></figure></p>
+<p>保存之后，发现目前的django还是无法启动的，因为ASGI_APPLICATION这里需要搭配一个routing.py文件使用，所以就要在setting.py的同级文件夹里新建一个routing.py，内容如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> channels.auth <span class="keyword">import</span> AuthMiddlewareStack</span><br><span class="line"><span class="keyword">from</span> channels.routing <span class="keyword">import</span> ProtocolTypeRouter, URLRouter</span><br><span class="line"><span class="keyword">import</span> accessgateway.routing</span><br><span class="line"></span><br><span class="line">application = ProtocolTypeRouter(&#123;</span><br><span class="line">    <span class="comment"># (http-&gt;django views is added by default) </span></span><br><span class="line">    <span class="comment"># 普通的HTTP请求不需要我们手动在这里添加，框架会自动加载过来</span></span><br><span class="line">    <span class="string">'websocket'</span>: AuthMiddlewareStack(</span><br><span class="line">        URLRouter(</span><br><span class="line">            accessgateway.routing.websocket_urlpatterns</span><br><span class="line">        )</span><br><span class="line">    ),</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure></p>
+<h2><span id="创建websocket">创建websocket</span></h2><p>首先现在app的<code>settings.py</code>里添加如下信息：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">INSTALLED_APPS = (</span><br><span class="line">    ...</span><br><span class="line">    <span class="string">'channels'</span>,</span><br><span class="line">)</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">USE_REDIS = <span class="keyword">True</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#使用Redis作为消息存储，需安装asgi_redis</span></span><br><span class="line">CHANNEL_LAYERS = &#123;</span><br><span class="line">    <span class="string">'default'</span>: &#123;</span><br><span class="line">        <span class="string">'BACKEND'</span>: <span class="string">'asgi_redis.RedisChannelLayer'</span>,</span><br><span class="line">        <span class="string">'CONFIG'</span>: &#123;</span><br><span class="line">            <span class="string">'hosts'</span>: [<span class="string">'redis://:redis密码@redis地址:6379/23'</span>],	<span class="comment">#这里放到第23号库</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">'ROUTING'</span>: <span class="string">'Kubernetes.routing.channel_routing'</span>,	<span class="comment">#这里的Kubernetes是project的名称</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">#Redis频道和Channels群组名</span></span><br><span class="line">GROUP_NAME = <span class="string">'zabbix'</span></span><br></pre></td></tr></table></figure></p>
 <p>在同级目录下创建一个comsumers.py，内容如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> channels <span class="keyword">import</span> Group</span><br><span class="line"><span class="keyword">from</span> channels.handler <span class="keyword">import</span> AsgiHandler</span><br><span class="line"><span class="keyword">from</span> django.conf <span class="keyword">import</span> settings</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ws_connect</span><span class="params">(message)</span>:</span></span><br><span class="line">    message.reply_channel.send(&#123;<span class="string">'accept'</span>: <span class="keyword">True</span>&#125;)		<span class="comment">#建立WebSocket 连接</span></span><br><span class="line">    Group(settings.GROUP_NAME).add(message.reply_channel)	<span class="comment">#settings.GROUP_NAME就是zabbix，对这个zabbix群组添加新的消息</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ws_disconnect</span><span class="params">(message)</span>:</span></span><br><span class="line">    Group(settings.GROUP_NAME).discard(message.reply_channel)	<span class="comment">#将断开连接的用户移出群组</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">ws_receive</span><span class="params">(message)</span>:</span></span><br><span class="line">    <span class="keyword">pass</span>	<span class="comment">#暂时什么都不做，可以这里设定被动接受新消息后刷新界面</span></span><br></pre></td></tr></table></figure></p>
 <p>还是在同级目录下创建一个routing.py，内容如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> channels.routing <span class="keyword">import</span> route</span><br><span class="line"><span class="keyword">from</span> .consumers <span class="keyword">import</span> ws_connect, ws_disconnect,ws_receive</span><br><span class="line"></span><br><span class="line">channel_routing = [</span><br><span class="line">    route(<span class="string">'websocket.connect'</span>, ws_connect),</span><br><span class="line">    route(<span class="string">'websocket.receive'</span>, ws_receive),</span><br><span class="line">    route(<span class="string">'websocket.disconnect'</span>, ws_disconnect),</span><br><span class="line">    ]</span><br></pre></td></tr></table></figure></p>
 <h2><span id="自定义命令">自定义命令</span></h2><p>Django有一个很屌的功能，就是自定义命令，具体用法可以见：<a href="https://docs.djangoproject.com/en/2.1/howto/custom-management-commands/" target="_blank" rel="noopener">https://docs.djangoproject.com/en/2.1/howto/custom-management-commands/</a> 。这里我们也要一个自己的后台进程，暂且起名叫zabbix，而这个zabbix.py的代码如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> json,logging,redis</span><br><span class="line"><span class="keyword">from</span> channels <span class="keyword">import</span> Group</span><br><span class="line"><span class="keyword">from</span> django.core.management <span class="keyword">import</span> BaseCommand</span><br><span class="line"><span class="keyword">from</span> django.conf <span class="keyword">import</span> settings</span><br><span class="line"></span><br><span class="line">logger = logging.getLogger(__name__)</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Command</span><span class="params">(BaseCommand)</span>:</span></span><br><span class="line">    <span class="string">"""</span></span><br><span class="line"><span class="string">    Command to start zabbix alert worker from command line.</span></span><br><span class="line"><span class="string">    """</span></span><br><span class="line">    help = <span class="string">'Subscribe the zabbix alerts channel'</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handle</span><span class="params">(self, *args, **options)</span>:</span></span><br><span class="line">        rc = redis.Redis(host=redis的地址,password=redis的密码,port=<span class="number">6379</span>,db=<span class="number">23</span>)	<span class="comment">#这里填写的redis与setting.py一致</span></span><br><span class="line">        rc.delete(settings.GROUP_NAME)	<span class="comment">#flush一下频道</span></span><br><span class="line">        pubsub = rc.pubsub()</span><br><span class="line">        pubsub.subscribe(settings.GROUP_NAME)</span><br><span class="line">        <span class="keyword">for</span> item <span class="keyword">in</span> pubsub.listen():</span><br><span class="line">            <span class="keyword">if</span> item[<span class="string">'type'</span>] == <span class="string">'message'</span>:</span><br><span class="line">                Group(settings.GROUP_NAME).send(&#123;<span class="string">'text'</span>: bytes.decode(item[<span class="string">'data'</span>])&#125;)	<span class="comment">#群组进行新消息的发送</span></span><br><span class="line">                logger.debug(<span class="string">'send a message %s '</span> % item)</span><br></pre></td></tr></table></figure></p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://blog.ernest.me/post/asgi-demonstration-realtime-blogging" target="_blank" rel="noopener">https://blog.ernest.me/post/asgi-demonstration-realtime-blogging</a><br><a href="https://zhuanlan.zhihu.com/p/43102770" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/43102770</a><br><a href="https://www.jianshu.com/p/3f4eac744f9c" target="_blank" rel="noopener">https://www.jianshu.com/p/3f4eac744f9c</a><br><a href="http://www.simlinux.com/2018/01/09/devops-django-channels.html" target="_blank" rel="noopener">http://www.simlinux.com/2018/01/09/devops-django-channels.html</a> （这个文章代码有错误，而且部分代码不全，但是思路是主要的）</p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://blog.ernest.me/post/asgi-demonstration-realtime-blogging" target="_blank" rel="noopener">https://blog.ernest.me/post/asgi-demonstration-realtime-blogging</a><br><a href="https://zhuanlan.zhihu.com/p/43102770" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/43102770</a><br><a href="https://www.jianshu.com/p/3f4eac744f9c" target="_blank" rel="noopener">https://www.jianshu.com/p/3f4eac744f9c</a><br><a href="http://www.simlinux.com/2018/01/09/devops-django-channels.html" target="_blank" rel="noopener">http://www.simlinux.com/2018/01/09/devops-django-channels.html</a> （这个文章代码有错误，而且部分代码不全，但是思路是主要的）<br><a href="https://devarea.com/django-simple-channels-example/#.XLlu1zAzaiM" target="_blank" rel="noopener">https://devarea.com/django-simple-channels-example/#.XLlu1zAzaiM</a></p>
 
       
     </div>
@@ -522,7 +529,7 @@
 
 				<li class="post-copyright-link">
 					<strong>本文标题：</strong>
-					<a href="http://yoursite.com/2019/04/18/使用Channels将Zabbix告警信息实时传递到页面/" title="使用Channels将Zabbix告警信息实时传递到页面">使用Channels将Zabbix告警信息实时传递到页面</a>
+					<a href="http://yoursite.com/2019/04/18/使用Channels将Zabbix告警信息实时传递到页面/" title="使用Channels2将Zabbix告警信息实时传递到页面">使用Channels2将Zabbix告警信息实时传递到页面</a>
 				</li>
 
 				<li class="post-copyright-date">
@@ -577,6 +584,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/22/Awk获取最大值、最小值、平均值和求和/" rel="prev" title="Awk获取最大值、最小值、平均值和求和">
+                Awk获取最大值、最小值、平均值和求和 <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -690,7 +701,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">226</span>
+                  <span class="site-state-item-count">227</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -712,7 +723,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">188</span>
+                  <span class="site-state-item-count">189</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -852,7 +863,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x524D;&#x8A00;">&#x524D;&#x8A00;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x521B;&#x5EFA;websocket">&#x521B;&#x5EFA;websocket</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x81EA;&#x5B9A;&#x4E49;&#x547D;&#x4EE4;">&#x81EA;&#x5B9A;&#x4E49;&#x547D;&#x4EE4;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x524D;&#x8A00;">&#x524D;&#x8A00;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x51C6;&#x5907;&#x5DE5;&#x4F5C;">&#x51C6;&#x5907;&#x5DE5;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x521B;&#x5EFA;websocket">&#x521B;&#x5EFA;websocket</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x81EA;&#x5B9A;&#x4E49;&#x547D;&#x4EE4;">&#x81EA;&#x5B9A;&#x4E49;&#x547D;&#x4EE4;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -906,7 +917,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共232.1k字</span>
+  <span class="post-count">博客全站共232.8k字</span>
 </div>
         
 

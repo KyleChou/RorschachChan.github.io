@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[使用Channels将Zabbix告警信息实时传递到页面]]></title>
+    <title><![CDATA[Awk获取最大值、最小值、平均值和求和]]></title>
+    <url>%2F2019%2F04%2F22%2FAwk%E8%8E%B7%E5%8F%96%E6%9C%80%E5%A4%A7%E5%80%BC%E3%80%81%E6%9C%80%E5%B0%8F%E5%80%BC%E3%80%81%E5%B9%B3%E5%9D%87%E5%80%BC%E5%92%8C%E6%B1%82%E5%92%8C%2F</url>
+    <content type="text"><![CDATA[背景交代在zabbix的监控中，很多场合需要监控到日志里的一些数字，比如下面这个日志： 12342019-04-22 10:43:53.231 [pool-12-thread-2] INFO com.hswx.css.ads.pojo.M3uFile [221] cloud upload index success, CloudfileName=/4J0463CPAG1FEDD_record/cloud_1/20190422104242898_0_c3237911422543f8a66816d043eabb50.m3udeviceId4J0463CPAG1FEDD cost:72019-04-22 10:43:52.795 [pool-9-thread-13] INFO com.hswx.css.ads.pojo.M3uFile [333] cloud upload record success, CloudFileName=/4G00B65PAG1C125_record/cloud_1/20190422103141454_0_9d3ccc60d3f6429c8b5d79aa3222991f_365b2bc872ed42d59de82f0af9b1016d-68237400_1047356.dav deviceId=4G00B65PAG1C125 cost:122019-04-22 10:43:52.888 [pool-9-thread-19] INFO com.hswx.css.ads.pojo.M3uFile [333] cloud upload record success, CloudFileName=/4G00B65PAG7A8B1_record/cloud_1/20190422104014516_0_76184831e6e0400994cf6baf45952368_fdbe495eee81458a8e55ec0bfdebecd5-8385407_1045239.dav deviceId=4G00B65PAG7A8B1 cost:162019-04-22 10:43:52.939 [pool-9-thread-7] INFO com.hswx.css.ads.pojo.M3uFile [333] cloud upload record success, CloudFileName=/5A00D4EPBZE212D_record/cloud_1/20190422104228493_0_2165fd85c6064b43abf0398bdf9c0916_fd279fa8809f45279ae76577629d27f5-43910516_1058372.dav deviceId=5A00D4EPBZE212D cost:12 这段日志主要记录m3u录像文件上传到云存储的情况，后面”cost:”那部分就是记录耗时的时间，我们现在要监控这个时间，如果这个时间大于100，我们就认为线路出了问题。 但是这里有一个问题，因为日志量比较大，一秒钟会刷出来很多的值，比如使用tail 日志文件路径|grep &quot;cost:&quot; | cut -d &quot;:&quot; -f 4： 那么我们就要从这里面取出最大值，这样的场景用awk是最方便的。 具体语句求最大值：awk &#39;BEGIN {max = 0} {if ($1+0 &gt; max+0) max=$1} END {print &quot;&quot;, max}&#39;求最小值：awk &#39;BEGIN {min = 65536} {if ($1+0 &lt; min+0) min=$1} END {print &quot;Min=&quot;, min}&#39;求和：awk &#39;{sum+=$1} END {print &quot;Sum= &quot;, sum}&#39;求平均值：awk &#39;{sum+=$1} END {print &quot;Avg= &quot;, sum/NR}&#39; 把上面的语句用于本次案例中，效果如下： 然后就是配置到zabbix-agent.conf里即可。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>zabbix</tag>
+        <tag>Awk</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[使用Channels2将Zabbix告警信息实时传递到页面]]></title>
     <url>%2F2019%2F04%2F18%2F%E4%BD%BF%E7%94%A8Channels%E5%B0%86Zabbix%E5%91%8A%E8%AD%A6%E4%BF%A1%E6%81%AF%E5%AE%9E%E6%97%B6%E4%BC%A0%E9%80%92%E5%88%B0%E9%A1%B5%E9%9D%A2%2F</url>
-    <content type="text"><![CDATA[前言我这里使用的channels版本是1.1.8，安装方法是pip3 install channels==1.1.8，同时也会自动安装asgi_redis。注意！pip默认安装的channels已经是2.0版本的了，这个2.0版本就需要用channels-redis来辅助了，asgi_redis不支持channels2.0+。 实现zabbix信息到django页面的思路如下： 1在zabbix的trigger触发时，根据Action设置通过脚本报警，并将报警信息发布到Redis里的alarm频道，同时让Django Commands alert去订阅Redis的ALARM频道，此时调用channels的send方法，通过websocket实时推送到Client Channels将WebSocket连接映射到三个不同到频道： 123当一个新的客户端通过 WebSocket 连接时，websocket.connect 频道将收到一条消息，在本例中，将在此频道将新用户添加到实时博客订阅组里。当一个客户端断开连接，websocket.disconnect 频道将收到一条消息。每一条消息都将被发往 websocket.receive 频道，在这个频道里。 创建websocket首先现在app的settings.py里添加如下信息： 12345678910111213141516171819202122...INSTALLED_APPS = ( ... 'channels',)...USE_REDIS = True#使用Redis作为消息存储，需安装asgi_redisCHANNEL_LAYERS = &#123; 'default': &#123; 'BACKEND': 'asgi_redis.RedisChannelLayer', 'CONFIG': &#123; 'hosts': ['redis://:redis密码@redis地址:6379/23'], #这里放到第23号库 &#125;, 'ROUTING': 'Kubernetes.routing.channel_routing', #这里的Kubernetes是app的名称 &#125;&#125;#Redis频道和Channels群组名GROUP_NAME = 'zabbix' 在同级目录下创建一个comsumers.py，内容如下： 12345678910111213from channels import Groupfrom channels.handler import AsgiHandlerfrom django.conf import settingsdef ws_connect(message): message.reply_channel.send(&#123;'accept': True&#125;) #建立WebSocket 连接 Group(settings.GROUP_NAME).add(message.reply_channel) #settings.GROUP_NAME就是zabbix，对这个zabbix群组添加新的消息def ws_disconnect(message): Group(settings.GROUP_NAME).discard(message.reply_channel) #将断开连接的用户移出群组def ws_receive(message): pass #暂时什么都不做，可以这里设定被动接受新消息后刷新界面 还是在同级目录下创建一个routing.py，内容如下： 12345678from channels.routing import routefrom .consumers import ws_connect, ws_disconnect,ws_receivechannel_routing = [ route('websocket.connect', ws_connect), route('websocket.receive', ws_receive), route('websocket.disconnect', ws_disconnect), ] 自定义命令Django有一个很屌的功能，就是自定义命令，具体用法可以见：https://docs.djangoproject.com/en/2.1/howto/custom-management-commands/ 。这里我们也要一个自己的后台进程，暂且起名叫zabbix，而这个zabbix.py的代码如下： 12345678910111213141516171819202122import json,logging,redisfrom channels import Groupfrom django.core.management import BaseCommandfrom django.conf import settingslogger = logging.getLogger(__name__)class Command(BaseCommand): """ Command to start zabbix alert worker from command line. """ help = 'Subscribe the zabbix alerts channel' def handle(self, *args, **options): rc = redis.Redis(host=redis的地址,password=redis的密码,port=6379,db=23) #这里填写的redis与setting.py一致 rc.delete(settings.GROUP_NAME) #flush一下频道 pubsub = rc.pubsub() pubsub.subscribe(settings.GROUP_NAME) for item in pubsub.listen(): if item['type'] == 'message': Group(settings.GROUP_NAME).send(&#123;'text': bytes.decode(item['data'])&#125;) #群组进行新消息的发送 logger.debug('send a message %s ' % item) 参考资料https://blog.ernest.me/post/asgi-demonstration-realtime-blogginghttps://zhuanlan.zhihu.com/p/43102770https://www.jianshu.com/p/3f4eac744f9chttp://www.simlinux.com/2018/01/09/devops-django-channels.html （这个文章代码有错误，而且部分代码不全，但是思路是主要的）]]></content>
+    <content type="text"><![CDATA[前言Channels是django的一个支持websocket的工具，它目前的版本是2.2，用法已经与1.x的版本有了较大的不同，但是中心思想没变化，Channels将WebSocket连接映射到三个不同到频道： 123当一个新的客户端通过 WebSocket 连接时，websocket.connect 频道将收到一条消息，在本例中，将在此频道将新用户添加到实时博客订阅组里。当一个客户端断开连接，websocket.disconnect 频道将收到一条消息。每一条消息都将被发往 websocket.receive 频道，在这个频道里。 更多关于Channels的基础知识可以看文末的参考资料。 本文中实现zabbix信息到django页面的思路如下：在zabbix的trigger触发时，根据Action设置通过脚本报警，并将报警信息发布到Redis里的zabbix频道，同时让Django Commands alert去订阅Redis的zabbix频道，此时调用channels的send方法，通过websocket实时推送到Client，然后前端页面与Client勾结，将内容反馈出来。 准备工作pip install asgiref==3.1.2 (低于2.0版本的话，会爆ModuleNotFoundError: No module named &#39;asgiref.sync&#39;)pip install channels（2.2.0）pip install channels-redis（2.4.0） 如果启动django的时候，出现了CommandError: You have not set ASGI_APPLICATION, which is needed to run the server.这个错误，需要在setting.py里添加如下： 1ASGI_APPLICATION = Django的project的名称.routing.application 保存之后，发现目前的django还是无法启动的，因为ASGI_APPLICATION这里需要搭配一个routing.py文件使用，所以就要在setting.py的同级文件夹里新建一个routing.py，内容如下： 12345678910111213from channels.auth import AuthMiddlewareStackfrom channels.routing import ProtocolTypeRouter, URLRouterimport accessgateway.routingapplication = ProtocolTypeRouter(&#123; # (http-&gt;django views is added by default) # 普通的HTTP请求不需要我们手动在这里添加，框架会自动加载过来 'websocket': AuthMiddlewareStack( URLRouter( accessgateway.routing.websocket_urlpatterns ) ),&#125;) 创建websocket首先现在app的settings.py里添加如下信息： 12345678910111213141516171819202122...INSTALLED_APPS = ( ... 'channels',)...USE_REDIS = True#使用Redis作为消息存储，需安装asgi_redisCHANNEL_LAYERS = &#123; 'default': &#123; 'BACKEND': 'asgi_redis.RedisChannelLayer', 'CONFIG': &#123; 'hosts': ['redis://:redis密码@redis地址:6379/23'], #这里放到第23号库 &#125;, 'ROUTING': 'Kubernetes.routing.channel_routing', #这里的Kubernetes是project的名称 &#125;&#125;#Redis频道和Channels群组名GROUP_NAME = 'zabbix' 在同级目录下创建一个comsumers.py，内容如下： 12345678910111213from channels import Groupfrom channels.handler import AsgiHandlerfrom django.conf import settingsdef ws_connect(message): message.reply_channel.send(&#123;'accept': True&#125;) #建立WebSocket 连接 Group(settings.GROUP_NAME).add(message.reply_channel) #settings.GROUP_NAME就是zabbix，对这个zabbix群组添加新的消息def ws_disconnect(message): Group(settings.GROUP_NAME).discard(message.reply_channel) #将断开连接的用户移出群组def ws_receive(message): pass #暂时什么都不做，可以这里设定被动接受新消息后刷新界面 还是在同级目录下创建一个routing.py，内容如下： 12345678from channels.routing import routefrom .consumers import ws_connect, ws_disconnect,ws_receivechannel_routing = [ route('websocket.connect', ws_connect), route('websocket.receive', ws_receive), route('websocket.disconnect', ws_disconnect), ] 自定义命令Django有一个很屌的功能，就是自定义命令，具体用法可以见：https://docs.djangoproject.com/en/2.1/howto/custom-management-commands/ 。这里我们也要一个自己的后台进程，暂且起名叫zabbix，而这个zabbix.py的代码如下： 12345678910111213141516171819202122import json,logging,redisfrom channels import Groupfrom django.core.management import BaseCommandfrom django.conf import settingslogger = logging.getLogger(__name__)class Command(BaseCommand): """ Command to start zabbix alert worker from command line. """ help = 'Subscribe the zabbix alerts channel' def handle(self, *args, **options): rc = redis.Redis(host=redis的地址,password=redis的密码,port=6379,db=23) #这里填写的redis与setting.py一致 rc.delete(settings.GROUP_NAME) #flush一下频道 pubsub = rc.pubsub() pubsub.subscribe(settings.GROUP_NAME) for item in pubsub.listen(): if item['type'] == 'message': Group(settings.GROUP_NAME).send(&#123;'text': bytes.decode(item['data'])&#125;) #群组进行新消息的发送 logger.debug('send a message %s ' % item) 参考资料https://blog.ernest.me/post/asgi-demonstration-realtime-blogginghttps://zhuanlan.zhihu.com/p/43102770https://www.jianshu.com/p/3f4eac744f9chttp://www.simlinux.com/2018/01/09/devops-django-channels.html （这个文章代码有错误，而且部分代码不全，但是思路是主要的）https://devarea.com/django-simple-channels-example/#.XLlu1zAzaiM]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -89,7 +101,7 @@
   <entry>
     <title><![CDATA[Atlas出了一个很诡异的bug]]></title>
     <url>%2F2019%2F03%2F26%2FAtlas%E5%87%BA%E4%BA%86%E4%B8%80%E4%B8%AA%E5%BE%88%E8%AF%A1%E5%BC%82%E7%9A%84bug%2F</url>
-    <content type="text"><![CDATA[这几天数据库更换密码，就在原有的atlas文件基础上拷贝出来一个新文件，修改了密码，然后启动进程。但是启动之后，发现虽然端口起来了，但是atlas没有连接数据库成功，如图: 登录到atlas后台一看，竟然是双down: 可是在atlas服务器上单独直连阿里云数据库是没任何问题的，而且数据库的监控也没有任何异常。我怀疑是密码含有了atlas不识别的特殊符号，改成了纯数字和字母的组合，重新启动还是不行，这就很尴尬了，明明原来的配置文件可以启动，我就更改了密码和端口，怎么新的进程就不好使？ 于是我尝试抓包，使用tcpdump -s 0 -i any -v port 3318 and src host mysql的ip -w test.pcap，结果发现3318的包少的可怜，于是我就改用tcpdump -s 0 -i any -v host mysql的ip -w test2.pcap扩大了范围，然后发现包有这样的字样： 可见atlas一直以root去请求数据库，但是我这个是阿里云的RDS服务（Mysql 5.6.7)，本身是没有root的，所以就爆“User not exist”。 这就很尴尬了，为什么会突然以root身份请求数据库？莫非这是atlas的BUG？先把问题记录下来，然后慢慢解决… PS.这个BUG后来修复了，新的安装包地址见：https://github.com/RorschachChan/noroot-atlas]]></content>
+    <content type="text"><![CDATA[这几天数据库更换密码，就在原有的atlas文件基础上拷贝出来一个新文件，修改了密码，然后启动进程。但是启动之后，发现虽然端口起来了，但是atlas没有连接数据库成功，如图: 登录到atlas后台一看，竟然是双down: 可是在atlas服务器上单独直连阿里云数据库是没任何问题的，而且数据库的监控也没有任何异常。我怀疑是密码含有了atlas不识别的特殊符号，改成了纯数字和字母的组合，重新启动还是不行，这就很尴尬了，明明原来的配置文件可以启动，我就更改了密码和端口，怎么新的进程就不好使？ 于是我尝试抓包，使用tcpdump -s 0 -i any -v port 3318 and src host mysql的ip -w test.pcap，结果发现3318的包少的可怜，于是我就改用tcpdump -s 0 -i any -v host mysql的ip -w test2.pcap扩大了范围，然后发现包有这样的字样： 可见atlas一直以root去请求数据库，但是我这个是阿里云的RDS服务（Mysql 5.6.7)，本身是没有root的，所以就爆“User not exist”。 这就很尴尬了，为什么会突然以root身份请求数据库？莫非这是atlas的BUG？先把问题记录下来，然后慢慢解决… PS.这个BUG后来修复了，需要重新编译安装，新的安装包地址见：https://github.com/RorschachChan/noroot-atlas]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -962,8 +974,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -987,8 +999,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1000,8 +1012,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1376,18 +1388,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root用户启动tomcat进程]]></title>
-    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>centos</tag>
-        <tag>运维安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root启动进程以及启动docker]]></title>
     <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
     <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
@@ -1397,6 +1397,18 @@
       <tags>
         <tag>docker</tag>
         <tag>安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root用户启动tomcat进程]]></title>
+    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>centos</tag>
+        <tag>运维安全</tag>
       </tags>
   </entry>
   <entry>
@@ -2533,8 +2545,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>zabbix</tag>
+        <tag>redis</tag>
       </tags>
   </entry>
   <entry>
@@ -2606,8 +2618,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Nginx</tag>
         <tag>运维</tag>
+        <tag>Nginx</tag>
       </tags>
   </entry>
   <entry>
@@ -2618,8 +2630,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Nginx</tag>
         <tag>运维</tag>
+        <tag>Nginx</tag>
       </tags>
   </entry>
   <entry>
