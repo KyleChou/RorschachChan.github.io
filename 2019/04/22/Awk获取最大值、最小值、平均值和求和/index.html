@@ -99,7 +99,7 @@
 <meta property="og:image" content="http://yoursite.com/images/mrs5.png">
 <meta property="og:image" content="http://yoursite.com/images/mrs6.png">
 <meta property="og:image" content="http://yoursite.com/images/durant3+1.gif">
-<meta property="og:updated_time" content="2019-04-22T03:06:37.257Z">
+<meta property="og:updated_time" content="2019-04-22T03:37:13.525Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Awk获取最大值、最小值、平均值和求和">
 <meta name="twitter:description" content="Awk是一个神器，要是真的好好把玩能写一本书。">
@@ -417,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  400
+                  418
                 </span>
               
 
@@ -464,8 +464,7 @@
 <p>那么我们就要从这里面取出最大值，这样的场景用awk是最方便的。</p>
 <h2><span id="具体语句">具体语句</span></h2><p>求最大值：<code>awk &#39;BEGIN {max = 0} {if ($1+0 &gt; max+0) max=$1} END {print &quot;&quot;, max}&#39;</code><br>求最小值：<code>awk &#39;BEGIN {min = 65536} {if ($1+0 &lt; min+0) min=$1} END {print &quot;Min=&quot;, min}&#39;</code><br>求和：<code>awk &#39;{sum+=$1} END {print &quot;Sum= &quot;, sum}&#39;</code><br>求平均值：<code>awk &#39;{sum+=$1} END {print &quot;Avg= &quot;, sum/NR}&#39;</code></p>
 <p>把上面的语句用于本次案例中，效果如下：<br><img src="/images/mrs6.png" alt="akb48"></p>
-<p>然后就是配置到<code>zabbix-agent.conf</code>里即可。</p>
-<p><img src="/images/durant3+1.gif" alt="akb48"></p>
+<p>然后就是配置到<code>zabbix-agent.conf</code>里即可。如果要用zabbix用户登录bash，使用命令：<code>su -s /bin/bash zabbix</code>。<br><img src="/images/durant3+1.gif" alt="akb48"></p>
 
       
     </div>
