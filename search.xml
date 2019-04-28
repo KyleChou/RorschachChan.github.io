@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[获取阿里云RDS磁盘容量的脚本]]></title>
+    <url>%2F2019%2F04%2F28%2F%E8%8E%B7%E5%8F%96%E9%98%BF%E9%87%8C%E4%BA%91RDS%E7%A3%81%E7%9B%98%E5%AE%B9%E9%87%8F%E7%9A%84%E8%84%9A%E6%9C%AC%2F</url>
+    <content type="text"><![CDATA[需求以及脚本正文开发人员提出一个需求，想要每天从企业微信号里获取一下阿里云几个RDS的今天和昨天的磁盘容量，对比一下结果来判断删除模块是否正常运行，由于阿里云的API不支持查询历史数据，所以我们要建立一个数据表，把磁盘容量按照日期保存在数据表里，这个table的结构如下： 123456789#以下是创建databases的语句CREATE TABLE IF NOT EXISTS `onlinerds`(`id` INT UNSIGNED AUTO_INCREMENT,`rds_id` VARCHAR(100) NOT NULL,`rds_name` VARCHAR(100) NOT NULL,`rds_diskused` VARCHAR(40) NOT NULL,`date` VARCHAR(40) NOT NULL,PRIMARY KEY ( `id` ))ENGINE=InnoDB DEFAULT CHARSET=utf8; 有了这个table，于是就写了一个py3的脚本，内容如下： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137138139140141142143144145146147148149150151152153154#!/usr/bin/env python#coding=utf-8#这个py3脚本是用来获取阿里云线上数据库的磁盘容量#pip install pymysql &amp; pip install aliyun-python-sdk-rds &amp; pip install aliyun-python-sdk-corefrom aliyunsdkcore.client import AcsClientfrom aliyunsdkcore.acs_exception.exceptions import ClientExceptionfrom aliyunsdkcore.acs_exception.exceptions import ServerExceptionfrom aliyunsdkrds.request.v20140815.DescribeDBInstanceAttributeRequest import DescribeDBInstanceAttributeRequestimport math,pymysql,urllib.request,json,datetime#字典确定kv对应关系，这样可以取到服务器姓名dict = &#123;'第一台RDSid': "对应数据库名称",'第2台RDSid': "对应数据库名称"，'第3台RDSid': "对应数据库名称"，'4台RDSid': "对应数据库名称"，'第5台RDSid': "对应数据库名称"&#125;usedcap=[] #今天磁盘量usedcap_yes=[] #昨天磁盘量pro = [] #比例#创建获取磁盘容量的类class getRDS(object): def __init__(self,ak,sk,domain): self.ak = ak self.sk = sk self.domain = domain client = AcsClient(ak,sk,domain) #自动换算单位 def convertBytes(self,bytes,lst=None): if lst is None: lst = ['Bytes', 'KB', 'MB', 'GB'] # 这里是单位，如果需要TB，PB，在后面添加进去即可 i = int(math.floor( # 舍弃小数点，取小 math.log(bytes, 1024) # 求对数(对数：若 a**b = N 则 b 叫做以 a 为底 N 的对数) )) if i &gt;= len(lst): i = len(lst) - 1 return ('%.2f' + " " + lst[i]) % (bytes / math.pow(1024, i)) def DiskUsed(self,rdsid): lst = ['Bytes', 'KB', 'MB', 'GB'] client = AcsClient(self.ak,self.sk,self.domain) request = DescribeDBInstanceAttributeRequest() request.set_accept_format('json') request.set_DBInstanceId(rdsid) response = client.do_action_with_exception(request) result = str(response, encoding='utf-8') data = json.loads(result) DiskUsed = ((data)['Items']['DBInstanceAttribute'][0]['DBInstanceDiskUsed']) #获取当前使用磁盘 DiskTotal = ((data)['Items']['DBInstanceAttribute'][0]['DBInstanceStorage']) #获取总磁盘 DiskUsed_GB = getRDS.convertBytes(self,DiskUsed,lst=lst) #使用“自动换算单位”的函数 DiskUsed_num = float(getRDS.convertBytes(self,DiskUsed,lst=lst).split(' ', 1)[0]) #提取纯数字 Proportion = "%.2f%%" % ((DiskUsed_num / DiskTotal) * 100) #转化成百分比 return DiskUsed_GB,Proportion #返回两个值#获取昨天的日期def getYesterday(): today = datetime.date.today() oneday = datetime.timedelta(days=1) yesterday = today-oneday return yesterday#MYSQL录入def mysql(i,usedcapacity): db = pymysql.connect("数据库地址", "数据库用户", "密码", "databases",charset='utf8') cursor = db.cursor() sql = "INSERT INTO onlinerds (rds_id,rds_name,rds_diskused,date) VALUES ('%s','%s','%s',now())" % (i,dict[i],usedcapacity) try: cursor.execute(sql) # 执行sql语句 db.commit() # 执行sql语句 except: db.rollback() # 发生错误时回滚 db.close() #关闭数据库连接#获取昨天的数据def yes_mysql(): db = pymysql.connect("数据库地址", "数据库用户", "密码", "databases",charset='utf8') cursor = db.cursor() yes_sql = "select rds_diskused from onlinerds where date like '%s" % (getYesterday()) + " 20:%';" try: cursor.execute(yes_sql) results = cursor.fetchall() for GB in results: aaa = GB[0] #增加一个aaa变量来调整格式 usedcap_yes.append(aaa) #获取的数据添加到列表里 except: print("Error: unable to fecth data") db.close() #关闭数据库连接#将类实例化gethzRDS = getRDS("杭州区ak","杭州区sk","cn-hangzhou")getszRDS = getRDS("深圳区ak","深圳区sk","cn-shenzhen")# 获取企业微信token，用来发送微信企业号def get_token(url, corpid, corpsecret): token_url = '%s/cgi-bin/gettoken?corpid=%s&amp;corpsecret=%s' % (url, corpid, corpsecret) token = json.loads(urllib.request.urlopen(token_url).read().decode())['access_token'] return token# 构建告警信息json，用来发送微信企业号def messages(msg): values = &#123; "touser": '@all', "msgtype": 'text', "agentid": 微信企业号应用号码, "text": &#123;'content': msg&#125;, "safe": 0 &#125; msges=(bytes(json.dumps(values), 'utf-8')) return msges# 发送告警信息，用来发送微信企业号def send_message(url, token, data): send_url = '%s/cgi-bin/message/send?access_token=%s' % (url, token) respone = urllib.request.urlopen(urllib.request.Request(url=send_url, data=data)).read() x = json.loads(respone.decode())['errcode'] # print(x) if x == 0: print('Success!') else: print('Failed')if __name__ == '__main__': list = ['第一台RDSid','第2台RDSid','第3台RDSid','第4台RDSid','第5台RDSid'] for i in list: mysql(i,gethzRDS.DiskUsed(i)) x,y = gethzRDS.DiskUsed(i) #函数return多个值，就这样拆开，一一添加到list里 usedcap.append(x) #添加到列表 pro.append(y) #添加到列表 print (i+" OKok!") #证明已经录入到数据库里了 list = ['第一台RDSid','第2台RDSid','第3台RDSid','第4台RDSid','第5台RDSid'] for i in list: mysql(i,getszRDS.DiskUsed(i)) x, y = getszRDS.DiskUsed(i) usedcap.append(x) pro.append(y) print (i+" OKok!") yes_mysql() print(usedcap) print(usedcap_yes) corpid = '微信企业号corpid' corpsecret = '微信企业号应用的秘钥' url = 'https://qyapi.weixin.qq.com' msg = '''【第一台数据库】此时的容量是%s，昨天的容量是%s，当前的比例是：%s； 【第2台数据库】此时的容量是%s，昨天的容量是%s，当前的比例是：%s； 【第3台数据库】此时的容量是%s，昨天的容量是%s，当前的比例是：%s； 【第4台数据库】此时此时的容量是%s，昨天的容量是%s，当前的比例是：%s； 【第5台数据库】此时的容量是%s，昨天的容量是%s，当前的比例是：%s； ''' % (usedcap[0],usedcap_yes[0],pro[0],usedcap[1],usedcap_yes[1],pro[1],usedcap[2],usedcap_yes[2],pro[2],usedcap[3],usedcap_yes[3],pro[3],usedcap[4],usedcap_yes[4],pro[4],usedcap[5],usedcap_yes[5],pro[5]) #发送微信告警 test_token = get_token(url, corpid, corpsecret) msg_data = messages(msg) send_message(url, test_token, msg_data) 小数和百分数的相互转换百分比转换位小数的代码如下： 1234s = '20%' # 默认要转换的百分比是字符串aa = float(s.strip('%')) # 去掉s 字符串中的 %bb = aa/100.0 #运行环境是Python2.7 其中Python2.X 与 python 3X中的除法是有区别print bb # 输出结果是 0.2 小数转换位百分比的代码如下： 123a = 0.3214323bb = "%.2f%%" % (a * 100)print bb # 输出结果是32.14% 如果函数返回了多个值如果函数一次性return了多个值，如何单独获取到这些值？其实这个函数返回的是一个元组。把元组解包，返回结果也可以赋值给单个变量，这时候这个变量值就是函数返回的那个元组本身了。如下： 12345678&gt;&gt;&gt; def myfun():... return 1, 2, 3...&gt;&gt;&gt; a, c = myfun()&gt;&gt;&gt; a1&gt;&gt;&gt; c3 智能转换存储单位智能转换 bytes 为 kb/mb/gb/tb/pb的代码如下： 1234567891011121314151617181920import mathdef convertBytes(bytes, lst=None): if lst is None: lst=['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'] i = int(math.floor( # 舍弃小数点，取小 math.log(bytes, 1024) # 求对数(对数：若 a**b = N 则 b 叫做以 a 为底 N 的对数) )) if i &gt;= len(lst): i = len(lst) - 1 return ('%.2f' + " " + lst[i]) % (bytes/math.pow(1024, i))def main(): lst = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB'] bytes = input('Bytes: ') print convertBytes(bytes, lst=lst)if __name__ == '__main__': main() 但是要注意！bytes不能为负数，所以如果是负数想要转换单位，先要用abs取绝对值再计算。 参考资料https://www.cnblogs.com/xuchunlin/p/6305720.htmlhttps://python3-cookbook.readthedocs.io/zh_CN/latest/c07/p04_return_multiple_values_from_function.htmlhttps://my.oschina.net/guoenzhou/blog/2989650]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>python3</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Awk获取最大值、最小值、平均值和求和]]></title>
     <url>%2F2019%2F04%2F22%2FAwk%E8%8E%B7%E5%8F%96%E6%9C%80%E5%A4%A7%E5%80%BC%E3%80%81%E6%9C%80%E5%B0%8F%E5%80%BC%E3%80%81%E5%B9%B3%E5%9D%87%E5%80%BC%E5%92%8C%E6%B1%82%E5%92%8C%2F</url>
     <content type="text"><![CDATA[背景交代在zabbix的监控中，很多场合需要监控到日志里的一些数字，比如下面这个日志： 12342019-04-22 10:43:53.231 [pool-12-thread-2] INFO com.hswx.css.ads.pojo.M3uFile [221] cloud upload index success, CloudfileName=/4J0463CPAG1FEDD_record/cloud_1/20190422104242898_0_c3237911422543f8a66816d043eabb50.m3udeviceId4J0463CPAG1FEDD cost:72019-04-22 10:43:52.795 [pool-9-thread-13] INFO com.hswx.css.ads.pojo.M3uFile [333] cloud upload record success, CloudFileName=/4G00B65PAG1C125_record/cloud_1/20190422103141454_0_9d3ccc60d3f6429c8b5d79aa3222991f_365b2bc872ed42d59de82f0af9b1016d-68237400_1047356.dav deviceId=4G00B65PAG1C125 cost:122019-04-22 10:43:52.888 [pool-9-thread-19] INFO com.hswx.css.ads.pojo.M3uFile [333] cloud upload record success, CloudFileName=/4G00B65PAG7A8B1_record/cloud_1/20190422104014516_0_76184831e6e0400994cf6baf45952368_fdbe495eee81458a8e55ec0bfdebecd5-8385407_1045239.dav deviceId=4G00B65PAG7A8B1 cost:162019-04-22 10:43:52.939 [pool-9-thread-7] INFO com.hswx.css.ads.pojo.M3uFile [333] cloud upload record success, CloudFileName=/5A00D4EPBZE212D_record/cloud_1/20190422104228493_0_2165fd85c6064b43abf0398bdf9c0916_fd279fa8809f45279ae76577629d27f5-43910516_1058372.dav deviceId=5A00D4EPBZE212D cost:12 这段日志主要记录m3u录像文件上传到云存储的情况，后面”cost:”那部分就是记录本次上传操作耗时的时间，我们现在要监控这个时间，如果这个时间大于100，我们就认为线路出了问题。 但是这里有一个问题，因为日志量比较大，一秒钟会刷出来很多的值，比如使用tail 日志文件路径|grep &quot;cost:&quot; | cut -d &quot;:&quot; -f 4： 那么我们就要从这里面取出最大值，这样的场景用awk是最方便的。 具体语句求最大值：awk &#39;BEGIN {max = 0} {if ($1+0 &gt; max+0) max=$1} END {print &quot;&quot;, max}&#39;求最小值：awk &#39;BEGIN {min = 65536} {if ($1+0 &lt; min+0) min=$1} END {print &quot;Min=&quot;, min}&#39;求和：awk &#39;{sum+=$1} END {print &quot;Sum= &quot;, sum}&#39;求平均值：awk &#39;{sum+=$1} END {print &quot;Avg= &quot;, sum/NR}&#39; 把上面的语句用于本次案例中，效果如下： 然后就是配置到zabbix-agent.conf里即可。如果要用zabbix用户登录bash，使用命令：su -s /bin/bash zabbix。]]></content>
@@ -27,7 +38,7 @@
   <entry>
     <title><![CDATA[一个批量部署脚本（未完成）]]></title>
     <url>%2F2019%2F04%2F12%2F%E4%B8%80%E4%B8%AA%E6%89%B9%E9%87%8F%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC%2F</url>
-    <content type="text"><![CDATA[脚本设计首先安装ansible，并且用group1,group2…对相同模块的服务器进行分组，注意！group1只能是一台服务器，剩下的服务器均摊。 按模块依赖顺序输入，模块名称用逗号分隔。进行for循环，先使用ansible对group1进行部署工作，部署模块并且启动之后，暂停600秒，让开发利用这10分钟检查日志和配置项是否有问题，如果有问题就ctrl+c，在暂停600秒的同时，脚本新开一个进程A，paramiko到第一台服务器里，检查日志是否出现ERROR等关键字样，如果有就输出，600秒结束之后，关闭线程A，继续部署group2，直至名单里所有的模块都部署完毕。 作画的意思如下： 用python去实现tailf功能在shell下执行tail -f就是一句话的事，但是用python实现则需要一个脚本了，内容如下： 1234567891011121314151617181920#!/usr/bin/env python#coding=utf-8import timedef watch(fn, words): fp = open(fn, 'r') while True: new = fp.readline() if new: for word in words: if word in new: yield (word, new) else: time.sleep(1)fn = '文件路径'words = ['关键词']for hit_word, hit_sentence in watch(fn, words): print "发现关键词 %r 在日志里: %r" % (hit_word, hit_sentence) python实现线程通信按行读取文件取各种集合python对于两个字典求交集（&amp;），差集（-），全集（|）比较简单，而对于两个文件按行取集合的方法如下： 12345678# -*- coding: utf-8 -*-s1 = set(open(r'C:\Users\33664\Desktop\aaa.txt','r').readlines())s2 = set(open(r'C:\Users\33664\Desktop\bbb.txt','r').readlines())print ('交集是: %s' % (s1.intersection(s2)))print ('并集是: %s' % (s1.union(s2)))print ('差集是: %s'%(s1.difference(s2)))print ('dif: %s'%(s1.difference(s2).union(s2.difference(s1)))) 额外补充1.tailf命令主动停止命令：tail -f 目标日志|sed &#39;/启动成功/Q&#39;，此语句会在”启动成功”打印时退出，但log只能打印到”启动成功”的上一行；2.subprocess.call(&quot;命令1&quot;)，命令1是按顺序执行的，效果等同于subprocess.Popen(&quot;命令1&quot;).wait()；subprocess.Popen(&quot;命令2&quot;)，命令2是与前一个命令并发进行的； 参考资料https://stackoverflow.com/questions/1703640/how-to-implement-a-pythonic-equivalent-of-tail-fhttps://python3-cookbook.readthedocs.io/zh_CN/latest/c12/p03_communicating_between_threads.htmlhttps://stackoverflow.com/questions/22698754/subprocess-calls-are-they-done-in-parallel/22698825#22698825]]></content>
+    <content type="text"><![CDATA[脚本设计首先安装ansible，并且用group1,group2…对相同模块的服务器进行分组，注意！group1只能是一台服务器，剩下的服务器均摊。 按模块依赖顺序输入，模块名称用逗号分隔。进行for循环，先使用ansible对group1进行部署工作，部署模块并且启动之后，暂停600秒，让开发利用这10分钟检查日志和配置项是否有问题，如果有问题就ctrl+c，在暂停600秒的同时，脚本新开一个进程A，paramiko到第一台服务器里，检查日志是否出现ERROR等关键字样，如果有就输出，600秒结束之后，关闭线程A，继续部署group2，直至名单里所有的模块都部署完毕。 作画的意思如下： 用python去实现tailf功能在shell下执行tail -f就是一句话的事，但是用python实现则需要一个脚本了，内容如下： 1234567891011121314151617181920#!/usr/bin/env python#coding=utf-8import timedef watch(fn, words): fp = open(fn, 'r') while True: new = fp.readline() if new: for word in words: if word in new: yield (word, new) else: time.sleep(1)fn = '文件路径'words = ['关键词']for hit_word, hit_sentence in watch(fn, words): print "发现关键词 %r 在日志里: %r" % (hit_word, hit_sentence) python实现线程通信假设我们有一个函数叫AAA，希望脚本能开两个线程，线程A是等待5秒，线程B是不断的执行AAA（），直到5秒结束，线程B也停止线程AAA（）。那么脚本如下： 按行读取文件取各种集合python对于两个字典求交集（&amp;），差集（-），全集（|）比较简单，而对于两个文件按行取集合的方法如下： 12345678# -*- coding: utf-8 -*-s1 = set(open(r'C:\Users\33664\Desktop\aaa.txt','r').readlines())s2 = set(open(r'C:\Users\33664\Desktop\bbb.txt','r').readlines())print ('交集是: %s' % (s1.intersection(s2)))print ('并集是: %s' % (s1.union(s2)))print ('差集是: %s'%(s1.difference(s2)))print ('dif: %s'%(s1.difference(s2).union(s2.difference(s1)))) 额外补充1.tailf命令主动停止命令：tail -f 目标日志|sed &#39;/启动成功/Q&#39;，此语句会在”启动成功”打印时退出，但log只能打印到”启动成功”的上一行；2.subprocess.call(&quot;命令1&quot;)，命令1是按顺序执行的，效果等同于subprocess.Popen(&quot;命令1&quot;).wait()；subprocess.Popen(&quot;命令2&quot;)，命令2是与前一个命令并发进行的； 参考资料https://stackoverflow.com/questions/1703640/how-to-implement-a-pythonic-equivalent-of-tail-fhttps://python3-cookbook.readthedocs.io/zh_CN/latest/c12/p03_communicating_between_threads.htmlhttps://stackoverflow.com/questions/22698754/subprocess-calls-are-they-done-in-parallel/22698825#22698825]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -962,8 +973,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -987,8 +998,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -1000,8 +1011,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -1376,18 +1387,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root启动进程以及启动docker]]></title>
-    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root用户启动tomcat进程]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
     <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
@@ -1397,6 +1396,18 @@
       <tags>
         <tag>centos</tag>
         <tag>运维安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root启动进程以及启动docker]]></title>
+    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>安全</tag>
       </tags>
   </entry>
   <entry>
@@ -2533,8 +2544,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>redis</tag>
+        <tag>zabbix</tag>
       </tags>
   </entry>
   <entry>
@@ -2606,8 +2617,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维</tag>
         <tag>Nginx</tag>
+        <tag>运维</tag>
       </tags>
   </entry>
   <entry>
@@ -2618,8 +2629,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>运维</tag>
         <tag>Nginx</tag>
+        <tag>运维</tag>
       </tags>
   </entry>
   <entry>
