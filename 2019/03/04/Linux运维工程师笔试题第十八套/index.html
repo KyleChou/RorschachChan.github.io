@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是跟docker相关的题">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-03-08T09:54:37.841Z">
+<meta property="og:updated_time" content="2019-05-07T02:16:18.798Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十八套">
 <meta name="twitter:description" content="这次是跟docker相关的题">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  515
+                  537
                 </span>
               
 
@@ -462,7 +462,7 @@
 <p>4.linux里删除某个用户的所有进程的语句？<br>ps -u username | grep -v PID | awk ‘{print$1}’| xargs kill -9<br>或者killall -u username</p>
 <p>5.linux如何彻底删除一个用户？<br>userdel -r zhidao（前提是这个用户下已经没有程序运行了）</p>
 <p>6.ps -ef |grep 进程名|awk “{print $2}”|xargs kill -9 </p>
-<p>未完待续</p>
+<p>7.普通用户如何访问docker?<br>使用<code>gpasswd -a lcshop docker</code>把该用户添加到docker组即可。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec" target="_blank" rel="noopener">https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec</a><br><a href="http://dockone.io/question/469" target="_blank" rel="noopener">http://dockone.io/question/469</a></p>
 
       
