@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-05-07T09:36:35.852Z</updated>
+  <updated>2019-05-13T12:43:57.488Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>使用Python GUI去将本地文件上传阿里云OSS</title>
+    <link href="http://yoursite.com/2019/05/13/%E4%BD%BF%E7%94%A8Python-GUI%E5%8E%BB%E5%B0%86%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E9%98%BF%E9%87%8C%E4%BA%91OSS/"/>
+    <id>http://yoursite.com/2019/05/13/使用Python-GUI去将本地文件上传阿里云OSS/</id>
+    <published>2019-05-13T11:51:31.000Z</published>
+    <updated>2019-05-13T12:43:57.488Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>前端同事会甩过来一个zip包，然后我们需要将其解压，然后上传到阿里云OSS里对应的目录，为了提高效率，就用python 3写了一个GUI，如图：<br><img src="/images/tkinter3.png" alt="akb48" title="选择对应的zip包，然后选择目录"></p><p>具体代码如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python </span></span><br><span class="line"><span class="comment"># -*- coding:utf-8 -*-</span></span><br><span class="line"><span class="comment"># 作者：ChrisChan</span></span><br><span class="line"><span class="comment"># 用途：使用GUI上传阿里云OSS</span></span><br><span class="line"><span class="keyword">import</span> tkinter <span class="keyword">as</span> tk</span><br><span class="line"><span class="keyword">import</span> tkinter.ttk <span class="keyword">as</span> ttk</span><br><span class="line"><span class="keyword">from</span> tkinter <span class="keyword">import</span> messagebox  <span class="comment"># 弹窗</span></span><br><span class="line"><span class="comment"># from tkinter import filedialog  # 选择单独文件</span></span><br><span class="line"><span class="keyword">from</span> tkinter.filedialog <span class="keyword">import</span> askdirectory <span class="comment"># 选择文件夹</span></span><br><span class="line"><span class="keyword">import</span> oss2,os,sys,zipfile,time  <span class="comment">#引入zipfile解压</span></span><br><span class="line"></span><br><span class="line">window = tk.Tk()</span><br><span class="line">window.title(<span class="string">"将桌面文件上传到阿里云国内线上OSS"</span>)   <span class="comment"># 窗体的标题</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">confirm</span><span class="params">()</span>:</span></span><br><span class="line">    result = messagebox.askokcancel(<span class="string">"请确认"</span>, <span class="string">'''本地文件是：%s,对应OSS路径是：%s'''</span> % (filename,region1.get())) <span class="comment"># 前面是弹窗主题，后面是弹窗内容</span></span><br><span class="line">    Des_path = region1.get()</span><br><span class="line">    fileroot = filename.split(<span class="string">'.zip'</span>)[<span class="number">0</span>]    <span class="comment">#获取文件路径，不含.zip后缀</span></span><br><span class="line">    print(<span class="string">"上传zip包路径是:%s"</span> % fileroot)  <span class="comment"># 获取要上传的文件路径</span></span><br><span class="line">    print(<span class="string">"要解压的zip包名是:%s"</span> % filename)</span><br><span class="line">    print(<span class="string">"目标路径是:%s"</span> % Des_path)   <span class="comment"># 获取目的完整路径</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> result <span class="keyword">is</span> <span class="keyword">True</span>:</span><br><span class="line">        ak = <span class="string">"账号ak"</span></span><br><span class="line">        sk = <span class="string">"账号sk"</span>   <span class="comment"># 秘钥</span></span><br><span class="line">        auth = oss2.Auth(ak, sk)   <span class="comment"># 鉴权</span></span><br><span class="line">        ossBucket = oss2.Bucket(auth, <span class="string">'http://oss-cn-hangzhou.aliyuncs.com'</span>,Des_path)   <span class="comment"># 定义ossBucket</span></span><br><span class="line">        date = time.strftime(<span class="string">"%Y-%m-%d"</span>, time.localtime())  <span class="comment">#获取今天日期</span></span><br><span class="line">        <span class="comment">#解压缩zip包</span></span><br><span class="line">        zFile = zipfile.ZipFile(filename, <span class="string">"r"</span>)</span><br><span class="line">        <span class="keyword">for</span> fileM <span class="keyword">in</span> zFile.namelist():</span><br><span class="line">            zFile.extract(fileM, <span class="string">"D:\OSSback"</span>)</span><br><span class="line">        zFile.close()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 文件夹上传</span></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">uploadFile</span><span class="params">(file)</span>:</span></span><br><span class="line">            remoteName = file.replace(fileroot,<span class="string">''</span>).replace(<span class="string">'\\'</span>,<span class="string">'/'</span>)[<span class="number">1</span>:]     <span class="comment"># 将“/”去掉</span></span><br><span class="line">            print(<span class="string">'uploading...'</span>, file, <span class="string">'remoteName:'</span>, remoteName)</span><br><span class="line">            result = ossBucket.put_object_from_file(remoteName, file)</span><br><span class="line">            print(<span class="string">'http status: &#123;0&#125;'</span>.format(result.status))</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">def</span> <span class="title">list</span><span class="params">(dir)</span>:</span></span><br><span class="line">            fs = os.listdir(dir)</span><br><span class="line">            <span class="keyword">for</span> f <span class="keyword">in</span> fs:</span><br><span class="line">                file = dir+<span class="string">"\\"</span>+f</span><br><span class="line">                <span class="keyword">if</span> os.path.isdir(file):</span><br><span class="line">                    list(file)</span><br><span class="line">                <span class="keyword">else</span>:</span><br><span class="line">                    uploadFile(file)</span><br><span class="line">        list(fileroot)   <span class="comment"># 开始上传</span></span><br><span class="line">        print(<span class="string">"目标文件夹里所有文件上传完毕！"</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment">#zip包改名</span></span><br><span class="line">        os.rename(filename,filename + date) <span class="comment">#按日期重命名</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">chooseZip</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="keyword">global</span> filename</span><br><span class="line">    filename = tk.filedialog.askopenfilename()    <span class="comment"># 选择单独的文件</span></span><br><span class="line">    <span class="keyword">if</span> filename != <span class="string">''</span>:</span><br><span class="line">        lb.config(text=<span class="string">"您选择的文件是："</span> + filename)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        lb.config(text=<span class="string">"您没有选择任何文件"</span>)</span><br><span class="line"></span><br><span class="line">lb = tk.Label(window, text=<span class="string">''</span>)</span><br><span class="line">lb.grid(row=<span class="number">0</span>, column=<span class="number">1</span>, sticky=tk.W, padx=<span class="number">10</span>, pady=<span class="number">5</span>)</span><br><span class="line">btn = tk.Button(window, text=<span class="string">"选择要上传的文件"</span>, command=chooseZip)</span><br><span class="line">btn.grid(row=<span class="number">0</span>, column=<span class="number">0</span>, sticky=tk.E, padx=<span class="number">10</span>, pady=<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">lb2 = tk.Label(window, text=<span class="string">'请选择上传地址'</span>)</span><br><span class="line">lb2.grid(row=<span class="number">2</span>, column=<span class="number">0</span>, sticky=tk.W, padx=<span class="number">10</span>, pady=<span class="number">5</span>)</span><br><span class="line">number = tk.StringVar()</span><br><span class="line">region1 = ttk.Combobox(window,width=<span class="number">35</span>,textvariable=number,state=<span class="string">'readonly'</span>)    <span class="comment">#下拉列表设置成为只读模式</span></span><br><span class="line">region1[<span class="string">'values'</span>] = (<span class="string">'resource-public/lccms'</span>,<span class="string">'resource-public/phoneAlarm'</span>,<span class="string">'resource-public/lcview'</span>,<span class="string">'resource-public/webFront/annualReport'</span>,<span class="string">'resource-public/webFront/cancellation'</span>,<span class="string">'resource-public/webFront/deviceShare'</span>,<span class="string">'resource-public/webFront/discoverNews'</span>,<span class="string">'resource-public/webFront/timeAlbum'</span>,<span class="string">'resource-public/chenchenchen'</span>)   <span class="comment">#下拉列表里面具体的元素</span></span><br><span class="line">region1.grid(row=<span class="number">2</span>,column=<span class="number">1</span>)</span><br><span class="line">region1.current(<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line">tk.Button(window, text=<span class="string">'上传'</span>, width=<span class="number">10</span>, command=confirm).grid(row=<span class="number">3</span>, column=<span class="number">0</span>, sticky=tk.W, padx=<span class="number">10</span>, pady=<span class="number">5</span>)</span><br><span class="line">tk.Button(window, text=<span class="string">'退出'</span>, width=<span class="number">10</span>, command=window.quit).grid(row=<span class="number">3</span>, column=<span class="number">1</span>, sticky=tk.E, padx=<span class="number">10</span>, pady=<span class="number">5</span>)</span><br><span class="line"></span><br><span class="line">tk.mainloop()</span><br></pre></td></tr></table></figure></p><p>整个过程还是出现一个gui界面，然后传入zip包，然后将其在源目录下解压缩，并且上传到选择的OSS路径里，上传成功后将原zip改名已做备份。</p><p>最后吐槽一下，阿里云OSS的SDK里是没有文件改名的功能，只能复制一份然后靠上传新的顶替掉原来老的内容，这样很不友善…所以我才选择将zip包保留在本地。</p>]]></content>
+    
+    <summary type="html">
+    
+      亚马逊的sdk看得我头昏脑涨
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="阿里云OSS" scheme="http://yoursite.com/tags/%E9%98%BF%E9%87%8C%E4%BA%91OSS/"/>
+    
+      <category term="python3" scheme="http://yoursite.com/tags/python3/"/>
+    
+      <category term="gui" scheme="http://yoursite.com/tags/gui/"/>
+    
+  </entry>
   
   <entry>
     <title>使用Python GUI去创建阿里云负载均衡</title>
@@ -278,9 +304,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
-    
       <category term="atlas" scheme="http://yoursite.com/tags/atlas/"/>
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
     
       <category term="读写分离" scheme="http://yoursite.com/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
     
@@ -477,30 +503,6 @@
       <category term="大数据" scheme="http://yoursite.com/tags/%E5%A4%A7%E6%95%B0%E6%8D%AE/"/>
     
       <category term="Hadoop" scheme="http://yoursite.com/tags/Hadoop/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Zabbix出现数据库IIllegal mix of collations的报错</title>
-    <link href="http://yoursite.com/2019/03/05/Zabbix%E5%87%BA%E7%8E%B0%E6%95%B0%E6%8D%AE%E5%BA%93IIllegal-mix-of-collations%E7%9A%84%E6%8A%A5%E9%94%99/"/>
-    <id>http://yoursite.com/2019/03/05/Zabbix出现数据库IIllegal-mix-of-collations的报错/</id>
-    <published>2019-03-05T02:07:04.000Z</published>
-    <updated>2019-03-05T02:22:10.338Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>接到新的私有云工作，登录到甲方爸爸的服务器一看是centos6.1，上面安装了zabbix-server但是仅仅做了<code>auto-discovery</code>，于是我就做<code>templates</code>，可见名称是中文的。但是发现在保存的时候，出现了这样的错误：<br><img src="/images/zabbix4.png" alt="akb48"></p><p>定眼一看，这是数据库的编码问题，整个database都是拉丁编码而不是utf8编码，所以无法输入中文。</p><p>要解决这个问题比较简单，毕竟zabbix刚启动而已，数据库里还没有数据。于是我就干脆把整个zabbix的database干掉，重建一个新的：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql -hlocalhost -uzabbix -p<span class="comment">#登录数据库</span></span><br><span class="line">drop databases zabbix;<span class="comment">#暴力全部删光</span></span><br></pre></td></tr></table></figure></p><p>此时的zabbix-server的web界面是如下的：<br><img src="/images/zabbix5.png" alt="akb48"></p><p>然后返回到mysql里：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">create database zabbix character set utf8;</span><br><span class="line"><span class="comment"># ctrl+c 退出数据库</span></span><br><span class="line">zcat /usr/share/doc/zabbix-server-mysql<span class="number">-3.4</span><span class="number">.15</span>/create.sql.gz  |mysql -uzabbix -p26e9p69r zabbix<span class="comment">#重新导入初始化表</span></span><br></pre></td></tr></table></figure></p><p>然后在web界面点击<code>retry</code>，然后重新登陆一下zabbix-server。再次尝试编辑带有中文的监控项，就能顺利保存了！</p>]]></content>
-    
-    <summary type="html">
-    
-      衷心恳请以后甲方别装centos6了，装7吧...
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
-    
-      <category term="zabbix" scheme="http://yoursite.com/tags/zabbix/"/>
     
   </entry>
   

@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[使用Python GUI去将本地文件上传阿里云OSS]]></title>
+    <url>%2F2019%2F05%2F13%2F%E4%BD%BF%E7%94%A8Python-GUI%E5%8E%BB%E5%B0%86%E6%9C%AC%E5%9C%B0%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E9%98%BF%E9%87%8C%E4%BA%91OSS%2F</url>
+    <content type="text"><![CDATA[前端同事会甩过来一个zip包，然后我们需要将其解压，然后上传到阿里云OSS里对应的目录，为了提高效率，就用python 3写了一个GUI，如图： 具体代码如下： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677787980#!/usr/bin/env python # -*- coding:utf-8 -*-# 作者：ChrisChan# 用途：使用GUI上传阿里云OSSimport tkinter as tkimport tkinter.ttk as ttkfrom tkinter import messagebox # 弹窗# from tkinter import filedialog # 选择单独文件from tkinter.filedialog import askdirectory # 选择文件夹import oss2,os,sys,zipfile,time #引入zipfile解压window = tk.Tk()window.title("将桌面文件上传到阿里云国内线上OSS") # 窗体的标题def confirm(): result = messagebox.askokcancel("请确认", '''本地文件是：%s,对应OSS路径是：%s''' % (filename,region1.get())) # 前面是弹窗主题，后面是弹窗内容 Des_path = region1.get() fileroot = filename.split('.zip')[0] #获取文件路径，不含.zip后缀 print("上传zip包路径是:%s" % fileroot) # 获取要上传的文件路径 print("要解压的zip包名是:%s" % filename) print("目标路径是:%s" % Des_path) # 获取目的完整路径 if result is True: ak = "账号ak" sk = "账号sk" # 秘钥 auth = oss2.Auth(ak, sk) # 鉴权 ossBucket = oss2.Bucket(auth, 'http://oss-cn-hangzhou.aliyuncs.com',Des_path) # 定义ossBucket date = time.strftime("%Y-%m-%d", time.localtime()) #获取今天日期 #解压缩zip包 zFile = zipfile.ZipFile(filename, "r") for fileM in zFile.namelist(): zFile.extract(fileM, "D:\OSSback") zFile.close() # 文件夹上传 def uploadFile(file): remoteName = file.replace(fileroot,'').replace('\\','/')[1:] # 将“/”去掉 print('uploading...', file, 'remoteName:', remoteName) result = ossBucket.put_object_from_file(remoteName, file) print('http status: &#123;0&#125;'.format(result.status)) def list(dir): fs = os.listdir(dir) for f in fs: file = dir+"\\"+f if os.path.isdir(file): list(file) else: uploadFile(file) list(fileroot) # 开始上传 print("目标文件夹里所有文件上传完毕！") #zip包改名 os.rename(filename,filename + date) #按日期重命名def chooseZip(): global filename filename = tk.filedialog.askopenfilename() # 选择单独的文件 if filename != '': lb.config(text="您选择的文件是：" + filename) else: lb.config(text="您没有选择任何文件")lb = tk.Label(window, text='')lb.grid(row=0, column=1, sticky=tk.W, padx=10, pady=5)btn = tk.Button(window, text="选择要上传的文件", command=chooseZip)btn.grid(row=0, column=0, sticky=tk.E, padx=10, pady=5)lb2 = tk.Label(window, text='请选择上传地址')lb2.grid(row=2, column=0, sticky=tk.W, padx=10, pady=5)number = tk.StringVar()region1 = ttk.Combobox(window,width=35,textvariable=number,state='readonly') #下拉列表设置成为只读模式region1['values'] = ('resource-public/lccms','resource-public/phoneAlarm','resource-public/lcview','resource-public/webFront/annualReport','resource-public/webFront/cancellation','resource-public/webFront/deviceShare','resource-public/webFront/discoverNews','resource-public/webFront/timeAlbum','resource-public/chenchenchen') #下拉列表里面具体的元素region1.grid(row=2,column=1)region1.current(0)tk.Button(window, text='上传', width=10, command=confirm).grid(row=3, column=0, sticky=tk.W, padx=10, pady=5)tk.Button(window, text='退出', width=10, command=window.quit).grid(row=3, column=1, sticky=tk.E, padx=10, pady=5)tk.mainloop() 整个过程还是出现一个gui界面，然后传入zip包，然后将其在源目录下解压缩，并且上传到选择的OSS路径里，上传成功后将原zip改名已做备份。 最后吐槽一下，阿里云OSS的SDK里是没有文件改名的功能，只能复制一份然后靠上传新的顶替掉原来老的内容，这样很不友善…所以我才选择将zip包保留在本地。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>阿里云OSS</tag>
+        <tag>python3</tag>
+        <tag>gui</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[使用Python GUI去创建阿里云负载均衡]]></title>
     <url>%2F2019%2F05%2F07%2F%E4%BD%BF%E7%94%A8python-GUI%E5%8E%BB%E5%88%9B%E5%BB%BA%E9%98%BF%E9%87%8C%E4%BA%91%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1%2F</url>
     <content type="text"><![CDATA[前言最近闲来无事研究了一下python3的gui，就用最基础的tkinter去做了一个购买阿里云负载均衡的脚本，先看一下效果： 点击“确认”按钮之后，就会出现这样一个谈话框： 确认参数完毕之后，若点击取消则返回上一层页面修改，如果点击确认则进行购买。 这个脚本需要的基础知识可以去看一下莫烦大大的tkinter教学系列，地址是https://morvanzhou.github.io/tutorials/python-basic/tkinter/ ，B站有全部的视频，不到10分钟一节课，还是很棒的。 脚本正文脚本内容如下： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899100101102103104105106107108109110111112113114115116117118119120121122123124125126127128129130131132133134135136137#!/usr/bin/env python # -*- coding:utf-8 -*-#作者：ChrisChan#用途：py3脚本，使用GUI购买阿里云SLB脚本import tkinter as tkimport tkinter.ttk as ttk #下拉式菜单from tkinter import messagebox #弹窗from aliyunsdkcore.client import AcsClientfrom aliyunsdkcore.acs_exception.exceptions import ClientExceptionfrom aliyunsdkcore.acs_exception.exceptions import ServerExceptionfrom aliyunsdkslb.request.v20140515.CreateLoadBalancerRequest import CreateLoadBalancerRequest#秘钥集合aksk_A = ["第一个账号的ak","第一个账号的sk"]aksk_B = ["第2个账号的ak","第2个账号的sk"]aksk_C = ["第3个账号的ak","第3个账号的sk"]#创建一个类可以建立负载均衡class CreateSlb(object): def __init__(self,ak,sk,domain): self.ak = ak self.sk = sk self.domain = domain def create(self,name,nettype): client = AcsClient(self.ak,self.sk,self.domain) request = CreateLoadBalancerRequest() request.set_accept_format('json') request.set_LoadBalancerSpec("slb.s1.small") #这里是负载均衡的规格， request.set_LoadBalancerName(name) request.set_AddressType(nettype) response = client.do_action_with_exception(request) print(str(response, encoding='utf-8'))window = tk.Tk() #建立一个窗体window.title("购买阿里云负载均衡") #窗体的标题Label1 = tk.Label(window, text='请输入负载均衡名称:').grid(row=0, column=0)v1 = tk.StringVar()e1 = tk.Entry(window, textvariable=v1)e1.grid(row=0,column=1,padx=10,pady=5) # 设置输入框显示的位置，以及长和宽属性l = tk.Label(window,bg="yellow",width=20,text="默认值是1")l.grid(row=1,column=1,padx=10,pady=5)parameter1 = tk.StringVar()l1 = tk.Label(window,bg='pink',width=20,height=5,text="请选择对应的阿里云账号")l1.grid(row=2,column=1,rowspan=3,padx=10,pady=5)parameter2 = tk.StringVar()l2 = tk.Label(window,bg='yellow',width=20,text="请选择实例所在的地域")l2.grid(row=5,column=1,padx=10,pady=5)parameter3 = tk.StringVar()l3 = tk.Label(window,bg='green',width=20,height=3,text="请选择网络类型")l3.grid(row=10,column=1,rowspan=2,padx=10,pady=5)def clickMe(): result = messagebox.askokcancel("请确认", ''' 负载均衡名称是：%s,对应账号是：%s,所在区域是：%s,网络类型是：%s ''' % (v1.get(),parameter1.get(),region1.get(),parameter3.get())) #前面是弹窗主题，后面是弹窗内容 name = v1.get() nettype = parameter3.get() domain = region1.get() account = parameter1.get() print("负载均衡名称是：%s" % name) # 获取用户输入的信息 print("所在区域是：%s" % domain) print("对应账号是：%s" % account) print("网络类型是：%s" % nettype) if result is True: if account == "A": ak = aksk_A[0] sk = aksk_A[1] getSLB = CreateSlb(ak,sk,domain) #将类实例化 getSLB.create(name,nettype) #执行购买函数 elif account == "B": ak = aksk_B[0] sk = aksk_B[1] getSLB = CreateSlb(ak, sk, domain) # 将类实例化 getSLB.create(name,nettype) #执行购买函数 else: ak = aksk_C[0] sk = aksk_C[1] getSLB = CreateSlb(ak, sk, domain) # 将类实例化 getSLB.create(name,nettype) #执行购买函数 print("购买完毕！") else: passdef print_selection(v): l.config(text="当前选择的值是：" + v) #V就是传入值也是获取的长度def get_env(): l1.config(text="你选择了"+parameter1.get()) #使用config功能去改变原有l的参数,把text变成了提取var1里的值 #print(parameter1.get())def get_region(): l2.config(text="你选择了"+region1.get()) #print(parameter2.get())def get_network(): l3.config(text="你选择了"+parameter3.get()) #print(parameter3.get())#选择环境env1 = tk.Radiobutton(window,text="第一个账号",variable=parameter1,value='A',command=get_env)env2 = tk.Radiobutton(window,text="第2个账号",variable=parameter1,value='B',command=get_env)env3 = tk.Radiobutton(window,text="第3个账号",variable=parameter1,value='C',command=get_env)env1.grid(row=2, column=0, padx=10, pady=5)env2.grid(row=3, column=0, padx=10, pady=5)env3.grid(row=4, column=0, padx=10, pady=5)#选择地域，使用下拉列表number = tk.StringVar()region1 = ttk.Combobox(window,width=12,textvariable=number,state='readonly') #加入readonly，使下拉列表设置成为只读模式region1['values'] = ("cn-hangzhou","cn-shenzhen","eu-central-1","ap-southeast-1","cn-hongkong") #下拉列表里面具体的元素region1.grid(row=5,column=0)region1.current(0)#选择内/外网network1 = tk.Radiobutton(window,text="内网",variable=parameter3,value='intranet',command=get_network)network2 = tk.Radiobutton(window,text="外网",variable=parameter3,value='internet',command=get_network)network1.grid(row=10, column=0, padx=10, pady=5)network2.grid(row=11, column=0, padx=10, pady=5)#尺度区间s = tk.Scale(window,label="想要多少台?",from_=1,to=20,orient=tk.HORIZONTAL,resolution=1,command=print_selection) #HORIZONTAL横向,length的单位是像素,resolution单位是取小数还是取整s.grid(row=1, column=0, padx=10, pady=5) #提交按钮action = tk.Button(window, text='确认提交',width=10,command=clickMe)action.grid(row=12, column=0, sticky=tk.W, padx=10, pady=5)tk.Button(window, text='退出程序',width=10,command=window.quit).grid(row=12, column=1, sticky=tk.E, padx=10, pady=5)tk.mainloop() 基本脚本的注释就已经讲明白了整个脚本执行的过程，简单说来就是界面输入对应的选项，再把这些选项传入到阿里云的api里达到购买负载均衡的目的。这里要注意一下，thinker布局只能从pack,grid,place里选择一种。 脚本就到此结束，后期再给这个脚本添加到对应的端口监听功能就完美了！ 参考资料https://www.mierhuo.com/code/106https://www.jianshu.com/p/5dfeb29aed7bhttps://www.cnblogs.com/ruo-li-suo-yi/p/7425307.html]]></content>
@@ -130,8 +143,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -998,8 +1011,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -1023,8 +1036,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -1036,8 +1049,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -1844,8 +1857,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -2448,8 +2461,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Ansible</tag>
         <tag>Linux</tag>
+        <tag>Ansible</tag>
       </tags>
   </entry>
   <entry>
@@ -2496,8 +2509,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
         <tag>运维</tag>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
@@ -2508,8 +2521,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
         <tag>运维</tag>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
@@ -2690,8 +2703,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
         <tag>运维</tag>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
@@ -2714,8 +2727,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
         <tag>其他软件</tag>
+        <tag>Linux</tag>
       </tags>
   </entry>
   <entry>
