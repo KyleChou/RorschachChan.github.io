@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[如何在k8s里对node进行隔离]]></title>
-    <url>%2F2019%2F05%2F15%2F%E5%A6%82%E4%BD%95%E5%9C%A8k8s%E9%87%8C%E5%AF%B9node%E8%BF%9B%E8%A1%8C%E9%9A%94%E7%A6%BB%2F</url>
-    <content type="text"><![CDATA[我的k8s集群是阿里云提供的，3+2模式，具体信息如下： 在《kubernates权威指南》里的第434页里对node的隔离有所介绍，使用kubectl patch node node名称 -p &#39;{&quot;spec&quot;:{&quot;unschedulable&quot;:true}}&#39;是可以成功把node进行成功隔离的，如下： 于是我写一个unschedule_node.yaml，想去尝试隔离一台node： 12345678apiVersion: v1kind: Nodemetadata: name: cn-hangzhou.i-bp1ciwuhsyj0empix4kj labels: kubernetes.io/hostname: cn-hangzhou.i-bp1ciwuhsyj0empix4kjspec: unschedulable: true 可执行之后爆了错误： 使用kubectl describe node/cn-hangzhou.i-bp1ciwuhsyj0empix4kj查看当前的PodCIDR和ProviderID如下： 补充：”kubectl edit node node名称”可以手动修改node信息 使用kubectl config view获得的结果是与${HOME}/.kube/config的内容是一样的，可以手动修改。使用kubectl config set-cluster kubernetes-cluster --server=https://192.168.1.128:8080，达到了给node节点设定clusters节点为https://192.168.1.128:8080的作用，如图： 注意！如果clusters的地址或者certificate-authority-data不对的话，是无法获取到node、pod的资料的，如图：]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>云原生</tag>
-        <tag>k8s</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[配置Intellij IDEA进行高效率运维开发]]></title>
     <url>%2F2019%2F05%2F14%2F%E9%85%8D%E7%BD%AEintellij-IDEA%E8%AE%A9%E8%BF%90%E7%BB%B4%E5%BC%80%E5%8F%91%E6%9B%B4%E9%AB%98%E6%95%88%E7%8E%87%2F</url>
     <content type="text"><![CDATA[以前我写python用的是pycharm2018，但是发现我的pycharm里没有go插件，脱机安装也报错，于是乎我就干脆下载了一个interllij IDEA2019，打算把python、go、yaml文件都用它来编辑和管理。 配置python开发环境首先先去File–Settings–Plugins搜索python，下载对应插件，下载完毕之后需要重启IDE，重启完毕之后，File--New--Module--Python，选择对应的SDK即可。 配置go开发环境首先安装go语言，配置好GOROOT和GOPATH，然后去File–Settings–Plugins搜索go，下载对应插件，下载完毕之后需要重启IDE，重启完毕之后，在File--Settings--Languages &amp; Frameworks里选择Go，配置好GOROOT和GOPATH。注意，GOPATH填的是Go的src文件地址。保存之后，就可以正常启动go文件了。 配置k8s yaml开发环境首先先去File–Settings–Plugins搜索yaml和kubernetes，下载对应的插件之后，直接创建新的project，就会自动补齐，如图： 调节字体大小调节菜单等字体大小：File--Settings--Appearance &amp; Behavior--Appearance--Use custom font(Size)，如图： 调节代码的字体大小：File--Settings--Font--Size，如图： 配置与远程服务器同步写完了代码，总不能lrzsz的去上传到服务器里，我们要用一个优雅的方式去达到这个目的，首先在顶级菜单里选择Tools--Deployment--Configuration，点击+创建一个新的链接： 检查可以成功连接到远程服务器之后，保存此链接。右键点击文件，选择Deployment---Upload to XXX，然后就可以看到上传成功。 最后，分享两个比较柔和的xshell配色方案： 1234567891011121314151617181920212223[Solarized Dark]text(bold)=839496magenta(bold)=6c71c4text=839496white(bold)=fdf6e3green=859900red(bold)=cb4b16green(bold)=586e75black(bold)=073642red=dc322fblue=268bd2black=002b36blue(bold)=839496yellow(bold)=657b83cyan(bold)=93a1a1yellow=b58900magenta=dd3682background=042028white=eee8d5cyan=2aa198[Names]count=1name0=Solarized Dark 将文件命名为solarized-dark.xcs文件，在xshell配色方案中导入该文件即可。颜色对比如下： 第二个方案如下： 1234567891011121314151617181920212223[mycolor]text(bold)=e9e9e9magenta(bold)=ff00fftext=00ff80white(bold)=fdf6e3green=80ff00red(bold)=ff0000green(bold)=3c5a38black(bold)=808080red=ff4500blue=00bfffblack=000000blue(bold)=1e90ffyellow(bold)=ffff00cyan(bold)=00ffffyellow=c0c000magenta=c000c0background=042028white=c0c0c0cyan=00c0c0[Names]count=1name0=mycolor 将此文件保存较mycolor.xcs，然后同上面一样导入即可。如果想要xshell自动加载此配色，需要将上面里所有mycolor改名叫Xterm，并且删除掉原有的Xterm配色方案，重启Xshell即看到效果。]]></content>
@@ -1448,18 +1436,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root用户启动tomcat进程]]></title>
-    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>centos</tag>
-        <tag>运维安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root启动进程以及启动docker]]></title>
     <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
     <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
@@ -1469,6 +1445,18 @@
       <tags>
         <tag>docker</tag>
         <tag>安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root用户启动tomcat进程]]></title>
+    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>centos</tag>
+        <tag>运维安全</tag>
       </tags>
   </entry>
   <entry>

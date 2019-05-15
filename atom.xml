@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-05-15T07:15:33.820Z</updated>
+  <updated>2019-05-15T11:42:13.943Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,30 +15,6 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>如何在k8s里对node进行隔离</title>
-    <link href="http://yoursite.com/2019/05/15/%E5%A6%82%E4%BD%95%E5%9C%A8k8s%E9%87%8C%E5%AF%B9node%E8%BF%9B%E8%A1%8C%E9%9A%94%E7%A6%BB/"/>
-    <id>http://yoursite.com/2019/05/15/如何在k8s里对node进行隔离/</id>
-    <published>2019-05-15T03:08:42.000Z</published>
-    <updated>2019-05-15T07:15:33.820Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>我的k8s集群是阿里云提供的，3+2模式，具体信息如下：<br><img src="/images/k8s35.png" alt="akb48"></p><p>在《kubernates权威指南》里的第434页里对node的隔离有所介绍，使用<code>kubectl patch node node名称 -p &#39;{&quot;spec&quot;:{&quot;unschedulable&quot;:true}}&#39;</code>是可以成功把node进行成功隔离的，如下：<br><img src="/images/k8s38.png" alt="akb48"></p><p>于是我写一个unschedule_node.yaml，想去尝试隔离一台node：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">apiVersion: v1</span><br><span class="line">kind: Node</span><br><span class="line">metadata:</span><br><span class="line">  name: cn-hangzhou.i-bp1ciwuhsyj0empix4kj</span><br><span class="line">  labels:</span><br><span class="line">    kubernetes.io/hostname: cn-hangzhou.i-bp1ciwuhsyj0empix4kj</span><br><span class="line">spec:</span><br><span class="line">  unschedulable: true</span><br></pre></td></tr></table></figure></p><p>可执行之后爆了错误：<br><img src="/images/k8s36.png" alt="akb48"></p><p>使用<code>kubectl describe node/cn-hangzhou.i-bp1ciwuhsyj0empix4kj</code>查看当前的PodCIDR和ProviderID如下：<br><img src="/images/k8s37.png" alt="akb48"></p><p>补充：”kubectl edit node node名称”可以手动修改node信息</p><p>使用<code>kubectl config view</code>获得的结果是与<code>${HOME}/.kube/config</code>的内容是一样的，可以手动修改。使用<code>kubectl config set-cluster kubernetes-cluster --server=https://192.168.1.128:8080</code>，达到了给node节点设定clusters节点为<a href="https://192.168.1.128:8080的作用，如图：" target="_blank" rel="noopener">https://192.168.1.128:8080的作用，如图：</a><br><img src="/images/k8s39.png" alt="akb48"></p><p>注意！如果clusters的地址或者certificate-authority-data不对的话，是无法获取到node、pod的资料的，如图：<br><img src="/images/k8s40.png" alt="akb48"></p>]]></content>
-    
-    <summary type="html">
-    
-      node的扩容很简单，在node节点上新建docker、kubelet和kube-proxy，把master的url指定成master的地址即可，k8s就会自动发现该node。
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="云原生" scheme="http://yoursite.com/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
-    
-      <category term="k8s" scheme="http://yoursite.com/tags/k8s/"/>
-    
-  </entry>
   
   <entry>
     <title>配置Intellij IDEA进行高效率运维开发</title>
@@ -503,6 +479,28 @@
       <category term="云原生" scheme="http://yoursite.com/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
     
       <category term="k8s" scheme="http://yoursite.com/tags/k8s/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>使用gdb去进入Too many connections的Mysql</title>
+    <link href="http://yoursite.com/2019/03/11/%E4%BD%BF%E7%94%A8gdb%E5%8E%BB%E8%BF%9B%E5%85%A5Too-many-connections%E7%9A%84Mysql/"/>
+    <id>http://yoursite.com/2019/03/11/使用gdb去进入Too-many-connections的Mysql/</id>
+    <published>2019-03-11T06:17:36.000Z</published>
+    <updated>2019-03-11T07:05:17.599Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>今天在登录mysql的时候，发现Too many connections的错误，如图：<br><img src="/images/mysql.png" alt="akb48"></p><p>很明显，连接数不够用了，在<code>my.cnf</code>里看到当前的最大链接是500。一般来说很多人就会修改<code>my.cnf</code>将<code>max_connections</code>改大然后重启mysql生效。但是我这个mysql是生产环境的，如果重启势必产生不小的影响，于是就需要不重启mysql还要能达到修改<code>max_connections</code>的目的。</p><p>那就用gdb，语句如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@db<span class="number">-02</span> data]<span class="comment"># gdb -p $(cat /opt/mysql/data/Storage.pid) -ex  "set max_connections=1024" -batch</span></span><br></pre></td></tr></table></figure></p><p>执行完毕之后，就可以正常登录到mysql的交互页面了：<br><img src="/images/mysql2.png" alt="akb48"></p><p>此时查询一下最大连接数：<br><img src="/images/mysql3.png" alt="akb48"></p><p>可见已经生效了，但是如果这个时候mysql有重启的话，还是会读取<code>my.cnf</code>里的<code>max_connections</code>配置，所以再手动改下<code>max_connections</code>即可。</p>]]></content>
+    
+    <summary type="html">
+    
+      一直都找不到一个好的识图网站，苦恼啊
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
     
   </entry>
   
