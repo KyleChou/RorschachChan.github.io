@@ -97,8 +97,9 @@
 <meta property="og:description" content="摆弄iptables的同时，小心别把自己锁在服务器外面。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/docker18.png">
-<meta property="og:image" content="http://yoursite.com/images/docker18.png">
-<meta property="og:updated_time" content="2019-05-20T13:20:58.963Z">
+<meta property="og:image" content="http://yoursite.com/images/docker19.png">
+<meta property="og:image" content="http://yoursite.com/images/docker20.png">
+<meta property="og:updated_time" content="2019-05-20T13:38:59.666Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="摆弄摆弄iptables">
 <meta name="twitter:description" content="摆弄iptables的同时，小心别把自己锁在服务器外面。">
@@ -416,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  853
+                  1,048
                 </span>
               
 
@@ -465,8 +466,10 @@
 <p>会不会达不到预期的要求？答曰不一定，在我这个例子里结果就是任何人都可以访问容器的3306端口。因为return退出的是当前CHIAN：如果当前CHIAN是别的CHAIN调用的子CHIAN（从一个CHAIN里可以jump到另一个CHAIN, jump到的那个CHAIN是子CHAIN），那么返回到调用点下一条规则处开始执行，如果当前CHIAN不是子CHAIN，那么就以默认策略执行。<code>iptables -nvL</code>看一下当前iptables的情况：<br><img src="/images/docker18.png" alt="akb48" title="图中我先把RETURN规则删掉了"></p>
 <p>可以看出DOCKER-USER这个链是1 references，即它被一个默认链引用，被哪个默认链呢？FORWARD，当DOCKER-USER RETURN的时候回返回到FORWARD链里然后走下一个规则，而下一个规则是什么呢？是<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">7893</span>K <span class="number">5610</span>M ACCEPT     all  --  *      docker0  <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">0</span>            <span class="number">0.0</span><span class="number">.0</span><span class="number">.0</span>/<span class="number">0</span>            ctstate RELATED,ESTABLISHED</span><br></pre></td></tr></table></figure></p>
 <p>所以所有人都可以访问这个3306了。</p>
-<h2><span id="没有docker-user">没有DOCKER-USER？</span></h2><p>DOCKER-USER这个链是Docker比较新的版本加上的，例子里的docker版本是version 18.06.1-ce, build e68fc7a。但是如果docker比较老的话，是不会默认生成这个链的，比如：<br><img src="/images/docker18.png" alt="akb48"></p>
-<p>这种情况要么乖乖的升级docker，要么就</p>
+<h2><span id="没有docker-user">没有DOCKER-USER？</span></h2><p>DOCKER-USER这个链是Docker比较新的版本加上的，例子里的docker版本是version 18.06.1-ce, build e68fc7a。但是如果docker比较老的话，是不会默认生成这个链的，比如：<br><img src="/images/docker19.png" alt="akb48"></p>
+<p>这种情况要么乖乖的升级docker，要么可以自定义创建iptables链，比如我们创建一个链，链名叫GITLAB，只让公司内部网络（115.200.239.106）访问GITLAB。</p>
+<p>首先先<code>iptables -N GITLAB</code>，创建该链。然后<code>iptables -I GITLAB -p tcp --dport 443 -j DROP</code>和<code>iptables -I GITLAB -s 115.200.239.106 -j ACCEPT</code>创建给GITLAB链里添加两个访问规则达到只有指定IP访问443端口的目的。但是此时这个GITLAB链没有被任何任何默认链引用，所以即使配了规则也是无法匹配到任何报文的，所以我们要把它与FORWARD链链接起来，准许443端口可以转发，命令是<code>iptables -I FORWARD -p https --dport 443 -j GITLAB</code>，如图：<br><img src="/images/docker20.png" alt="akb48"></p>
+<p>去浏览器里或者curl一下验证，的确只能指定IP才能访问GITLAB主页。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://docs.docker.com/network/iptables/" target="_blank" rel="noopener">https://docs.docker.com/network/iptables/</a><br><a href="https://www.frozentux.net/iptables-tutorial/cn/iptables-tutorial-cn-1.1.19.html" target="_blank" rel="noopener">https://www.frozentux.net/iptables-tutorial/cn/iptables-tutorial-cn-1.1.19.html</a><br><a href="http://kuntsung.blogspot.com/2012/10/iptables.html" target="_blank" rel="noopener">http://kuntsung.blogspot.com/2012/10/iptables.html</a></p>
 
       
@@ -916,7 +919,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共238.4k字</span>
+  <span class="post-count">博客全站共238.6k字</span>
 </div>
         
 
