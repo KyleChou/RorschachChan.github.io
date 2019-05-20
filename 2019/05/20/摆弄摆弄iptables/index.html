@@ -99,7 +99,7 @@
 <meta property="og:image" content="http://yoursite.com/images/docker18.png">
 <meta property="og:image" content="http://yoursite.com/images/docker19.png">
 <meta property="og:image" content="http://yoursite.com/images/docker20.png">
-<meta property="og:updated_time" content="2019-05-20T13:38:59.666Z">
+<meta property="og:updated_time" content="2019-05-20T13:48:36.713Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="摆弄摆弄iptables">
 <meta name="twitter:description" content="摆弄iptables的同时，小心别把自己锁在服务器外面。">
@@ -417,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,048
+                  1,151
                 </span>
               
 
@@ -433,7 +433,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4
+                  5
                 </span>
               
             </div>
@@ -458,8 +458,9 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><p>作为一名运维人员，安全是第一任务，那么某些高机密web网页限制IP访问是必做的环节，当然如果使用阿里云的“安全组”可以让这一切变的简单，不过有的时候，一个安全组里面有多个服务，不同的服务使用同一个端口（比如都是443），有些443要对所有人开放，有的443只能对公司的IP开放，那么如果不想重新收拾安全组的话，就干脆用iptables。</p>
-<h2><span id="普通的iptables">普通的iptables</span></h2><p>普通的iptables规则如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">iptables -nvL	<span class="comment">#查看当前iptables情况</span></span><br><span class="line">iptables -I INPUT -p tcp --dport <span class="number">8701</span> -j DROP	<span class="comment">#所有来访问8701端口的请求都作废</span></span><br><span class="line">iptables -I INPUT -s <span class="number">60.191</span><span class="number">.94</span><span class="number">.118</span> -p tcp --dport <span class="number">8070</span> -j ACCEPT	<span class="comment">#只准许60.191.94.118这个IP访问8070端口</span></span><br><span class="line">iptables -D INPUT <span class="number">1</span>		<span class="comment">#删除INPUT表里的第一规则</span></span><br><span class="line">iptables -L FORWARD --line-numbers 		<span class="comment">#展现规则序号，-D删除的行号就是这里的序号</span></span><br></pre></td></tr></table></figure></p>
+        <script src="\assets\js\APlayer.min.js"> </script><p>作为一名运维人员，安全是第一任务，那么某些高机密web网页限制IP访问是必做的环节，当然如果使用阿里云的“安全组”可以让这一切变的简单和直观。不过有时候，一个安全组里面有多个服务，不同的服务使用同一个端口（比如都是443），有些443要对所有人开放，有的443只能对公司的IP开放，那么如果不想重新收拾安全组的话，就干脆用iptables。</p>
+<h2><span id="普通的iptables">普通的iptables</span></h2><p>常用的iptables规则如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">iptables -nvL	<span class="comment">#详细查看当前iptables情况</span></span><br><span class="line">iptables -I INPUT -p tcp --dport <span class="number">8701</span> -j DROP	<span class="comment">#所有来访问8701端口的请求都作废</span></span><br><span class="line">iptables -I INPUT -s <span class="number">60.191</span><span class="number">.94</span><span class="number">.118</span> -p tcp --dport <span class="number">8070</span> -j ACCEPT	<span class="comment">#只准许60.191.94.118这个IP访问8070端口</span></span><br><span class="line">iptables -t nat -I PREROUTING <span class="number">1</span> -s <span class="number">120.92</span><span class="number">.136</span><span class="number">.159</span>/<span class="number">32</span> -p tcp -m tcp --dport <span class="number">6379</span> -j DNAT --to-destination <span class="number">100.99</span><span class="number">.231</span><span class="number">.81</span>:<span class="number">6379</span>	<span class="comment">#准许120.92.136.159的6379信息转发到100.99.231.81的6379里</span></span><br><span class="line">iptables -A OUTPUT -p tcp -m tcp --dport <span class="number">61616</span> -j DROP	<span class="comment">#将61616端口的报文抛弃</span></span><br><span class="line">iptables -D INPUT <span class="number">1</span>		<span class="comment">#删除INPUT表里的第一规则</span></span><br><span class="line">iptables -L FORWARD --line-numbers 		<span class="comment">#展现规则序号，-D删除的行号就是这里的序号</span></span><br></pre></td></tr></table></figure></p>
+<p>如果不小心配错的比较多，不愿意一个一个删除规则，可以执行<code>service iptables restart</code>直接恢复。</p>
 <h2><span id="容器的iptables">容器的iptables</span></h2><p>现在容器化横行，但是我们也要限制IP来访问容器的端口，但是如果像上面那样的话，是无法成功的。对于容器，为了避免您的规则被docker破坏,请使用DOCKER-USER链，比如容器已经做了3306端口与宿主机的3306端口互通：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">iptables -A DOCKER-USER -i eth0 -s <span class="number">1.1</span><span class="number">.1</span><span class="number">.1</span> -p tcp -m conntrack --ctorigdstport <span class="number">3306</span> -j ACCEPT</span><br><span class="line">iptables -A DOCKER-USER -i eth0 -s <span class="number">2.2</span><span class="number">.2</span><span class="number">.2</span> -p tcp -m conntrack --ctorigdstport <span class="number">3306</span> -j ACCEPT</span><br><span class="line">iptables -A DOCKER-USER -i eth0 -p tcp -m conntrack --ctorigdstport <span class="number">3306</span> -j DROP</span><br></pre></td></tr></table></figure></p>
 <p>上面的规则的意思就是只能1.1.1.1和2.2.2.2来访问该服务器的3306端口，其余IP一律drop掉。这里也要注意输入的顺序，因为iptables执行是从上往下的。</p>
 <h2><span id="return的问题">RETURN的问题</span></h2><p>如果上面的规则如果变成了这样：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">iptables -A DOCKER-USER -p all -j RETURN</span><br><span class="line">iptables -A DOCKER-USER -i eth0 -s <span class="number">1.1</span><span class="number">.1</span><span class="number">.1</span> -p tcp -m conntrack --ctorigdstport <span class="number">3306</span> -j ACCEPT</span><br><span class="line">iptables -A DOCKER-USER -i eth0 -s <span class="number">2.2</span><span class="number">.2</span><span class="number">.2</span> -p tcp -m conntrack --ctorigdstport <span class="number">3306</span> -j ACCEPT</span><br><span class="line">iptables -A DOCKER-USER -i eth0 -p tcp -m conntrack --ctorigdstport <span class="number">3306</span> -j DROP</span><br></pre></td></tr></table></figure></p>
@@ -919,7 +920,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共238.6k字</span>
+  <span class="post-count">博客全站共238.7k字</span>
 </div>
         
 
