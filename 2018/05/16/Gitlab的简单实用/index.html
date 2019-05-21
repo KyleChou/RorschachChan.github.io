@@ -102,7 +102,7 @@
 <meta property="og:image" content="http://yoursite.com/images/gitlab17.png">
 <meta property="og:image" content="http://yoursite.com/images/gitlab18.png">
 <meta property="og:image" content="http://yoursite.com/images/gitlab30.png">
-<meta property="og:updated_time" content="2019-04-09T12:01:07.029Z">
+<meta property="og:updated_time" content="2019-05-21T07:34:30.557Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Gitlab的简单应用">
 <meta name="twitter:description" content="docker + gitlab，这才是未来部署的方向">
@@ -420,7 +420,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,392
+                  1,428
                 </span>
               
 
@@ -473,6 +473,7 @@
 <p>然后就是<code>create project</code>，就创建了这个jjfjj。如图:<br><img src="/images/gitlab15.png" alt="paradin"></p>
 <h2><span id="将本地代码上传">将本地代码上传</span></h2><p>建立好了gitlab，就要把开发的代码传进去，我在另外一个机器里，创建一个目录code，这个目录就是专门用来放置代码的，假设现在里面有一个文件叫<code>testcode.py</code>，如图：<br><img src="/images/gitlab16.png" alt="paradin"></p>
 <p>具体操作如下：<br><img src="/images/gitlab17.png" alt="paradin"></p>
+<p>注意！如果在创建project的时候勾选同时创建README.md的话，第一次提交本地代码需要是<code>git pull origin master</code>。</p>
 <p>如果在两个不同的文件夹里执行上面的过程，会传输到两个不同的project里。说明一下上面几个命令的意思：<br><code>git init</code>：初始化git仓库<br><code>git add .</code>：添加整个目录里的所有文件到仓库<br><code>git rm --cached 某个文件名</code>：将某个文件从gitlab上撤除，如果想当前文件夹恢复成一个普通的文件夹，那就把文件夹路径下的.git文件删除掉即可<br><code>git commit -m &#39;这里是要写的注释&#39;</code>：提交代码到仓库<br><code>git remote add origin +gitlab的地址(上上图里红色框的内容)</code>：链接到gitlab服务器<br><code>git push origin master</code>：push代码到服务器<br><code>git remote -v</code>：查看当前文件夹的目标project</p>
 <p>此时刷新一下gitlab的project页面，就看到刚刚的那个<code>testcode.py</code>已经传上来了。如图：<br><img src="/images/gitlab18.png" alt="paradin"></p>
 <p>如果代码有所更改或者出现<code>Everything up-to-date</code>，那么就按顺序执行<code>git add .</code>，<code>git commit -m &#39;这里是要写的注释&#39;</code>，<code>git push origin master</code>即可。</p>
@@ -722,7 +723,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">232</span>
+                  <span class="site-state-item-count">233</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -744,7 +745,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">195</span>
+                  <span class="site-state-item-count">196</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -938,7 +939,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共238.5k字</span>
+  <span class="post-count">博客全站共239.0k字</span>
 </div>
         
 

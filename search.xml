@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Gitlab配置ssh，实现秘钥上传下载代码]]></title>
+    <url>%2F2019%2F05%2F21%2FGitlab%E9%85%8D%E7%BD%AEssh%EF%BC%8C%E5%AE%9E%E7%8E%B0%E7%A7%98%E9%92%A5%E4%B8%8A%E4%BC%A0%E4%B8%8B%E8%BD%BD%E4%BB%A3%E7%A0%81%2F</url>
+    <content type="text"><![CDATA[常规配置gitlab配置ssh比较简单，在代码机上使用ssh-keygen -t rsa -C &quot;你的邮箱&quot;制作id_rsa和id_rsa.pub，然后来到gitlab的web页面，settings—ssh keys,把id_rsa.pub拷贝进去，然后点击Add key: 然后返回到代码机器上，再对应的代码目录里使用git remote -v查看一下当前的方式，如果不是git的话，通过git remote set-url origin git@你的project地址修改，然后再试一下 ssh -T git@&quot;你的gitlab服务器地址&quot;是否会出现welcome，如果可以的话，那么就可以通过ssh的方式下载上传代码以及git clone 对应的project了。 容器配置但是现在很多人都用容器部署gitlab，而且在部署的时候除了指定80，443端口的映射，还制定了22端口的映射。比如我的这个gitlab容器的启动命令就是： 1docker run --detach --hostname 外网IP --publish 443:443 --publish 80:80 --publish 2222:22 --name gitlab --restart always gitlab/gitlab-ce:latest 可见我把宿主机的2222端口对应给了gitlab容器。那么像上面的方法肯定不会成功，这里就需要我们修改一处地方。 首先进入容器，然后修改gitlab.rb文件，这个文件在容器里有很多，我这个镜像里的gitlab.rb是/etc/gitlab/gitlab.rb，然后把gitlab_rails[&#39;gitlab_shell_ssh_port&#39;]改成2222并且去掉注释，如图： 然后gitlab-ctl restart重启之，重启完毕之后，在代码机上测试一下ssh： 可以已经连通，修改一下remote master地址之后，就可以直接上传了：]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>容器</tag>
+        <tag>gitlab</tag>
+        <tag>ssh keys</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[摆弄摆弄iptables]]></title>
     <url>%2F2019%2F05%2F20%2F%E6%91%86%E5%BC%84%E6%91%86%E5%BC%84iptables%2F</url>
     <content type="text"><![CDATA[作为一名运维人员，安全是第一任务，那么某些高机密web网页限制IP访问是必做的环节，当然如果使用阿里云的“安全组”可以让这一切变的简单和直观。不过有时候，一个安全组里面有多个服务，不同的服务使用同一个端口（比如都是443），有些443要对所有人开放，有的443只能对公司的IP开放，那么如果不想重新收拾安全组的话，就干脆用iptables。 普通的iptables常用的iptables规则如下： 1234567iptables -nvL #详细查看当前iptables情况iptables -I INPUT -p tcp --dport 8701 -j DROP #所有来访问8701端口的请求都作废iptables -I INPUT -s 60.191.94.118 -p tcp --dport 8070 -j ACCEPT #只准许60.191.94.118这个IP访问8070端口iptables -t nat -I PREROUTING 1 -s 120.92.136.159/32 -p tcp -m tcp --dport 6379 -j DNAT --to-destination 100.99.231.81:6379 #准许120.92.136.159的6379信息转发到100.99.231.81的6379里iptables -A OUTPUT -p tcp -m tcp --dport 61616 -j DROP #将61616端口的报文抛弃iptables -D INPUT 1 #删除INPUT表里的第一规则iptables -L FORWARD --line-numbers #展现规则序号，-D删除的行号就是这里的序号 如果不小心配错的规则比较多，不愿意一个一个删除，可以执行service iptables restart直接恢复。 容器的iptables现在容器化横行，但是我们也要限制IP来访问容器的端口，但是如果像上面那样的话，是无法成功的。对于容器，为了避免您的规则被docker破坏,请使用DOCKER-USER链，比如有个容器已经做了3306端口与宿主机的3306端口互通，那么配置如下规则： 123iptables -A DOCKER-USER -i eth0 -s 1.1.1.1 -p tcp -m conntrack --ctorigdstport 3306 -j ACCEPTiptables -A DOCKER-USER -i eth0 -s 2.2.2.2 -p tcp -m conntrack --ctorigdstport 3306 -j ACCEPTiptables -A DOCKER-USER -i eth0 -p tcp -m conntrack --ctorigdstport 3306 -j DROP 执行的效果就是只能1.1.1.1和2.2.2.2来访问该服务器的3306端口，其余IP一律drop掉。这里也要注意输入的顺序，因为iptables执行是从上往下的。 RETURN的问题如果上面的规则如果变成了这样： 1234iptables -A DOCKER-USER -p all -j RETURNiptables -A DOCKER-USER -i eth0 -s 1.1.1.1 -p tcp -m conntrack --ctorigdstport 3306 -j ACCEPTiptables -A DOCKER-USER -i eth0 -s 2.2.2.2 -p tcp -m conntrack --ctorigdstport 3306 -j ACCEPTiptables -A DOCKER-USER -i eth0 -p tcp -m conntrack --ctorigdstport 3306 -j DROP 会不会达不到预期的要求？答曰不一定，在我这个例子里结果就是任何人都可以访问容器的3306端口。因为return退出的是当前CHIAN：如果当前CHIAN是别的CHAIN调用的子CHIAN（从一个CHAIN里可以jump到另一个CHAIN, jump到的那个CHAIN是子CHAIN），那么返回到调用点下一条规则处开始执行，如果当前CHIAN不是子CHAIN，那么就以默认策略执行。iptables -nvL看一下当前iptables的情况： 可以看出DOCKER-USER这个链是1 references，即它被一个默认链调用，被哪个默认链呢？FORWARD，当DOCKER-USER RETURN的时候回返回到FORWARD链里然后走下一个规则，而下一个规则是什么呢？是 17893K 5610M ACCEPT all -- * docker0 0.0.0.0/0 0.0.0.0/0 ctstate RELATED,ESTABLISHED 所以所有人都可以访问这个3306了。 没有DOCKER-USER？DOCKER-USER这个链是Docker比较新的版本加上的，例子里的docker版本是version 18.06.1-ce, build e68fc7a。但是如果docker比较老的话，是不会默认生成这个链的，比如： 这种情况要么乖乖的升级docker，要么可以自定义创建iptables链。比如我们创建一个链，链名叫GITLAB，只让公司内部网络（115.200.239.106）访问GITLAB。 首先先iptables -N GITLAB，创建该链。然后iptables -I GITLAB -p tcp --dport 443 -j DROP和iptables -I GITLAB -s 115.200.239.106 -j ACCEPT创建给GITLAB链里添加两个访问规则达到只有指定IP访问443端口的目的。但是此时这个GITLAB链没有被任何任何默认链引用，所以即使配了规则也是无法匹配到任何报文的，所以我们要把它与FORWARD链链接起来，准许443端口可以转发，命令是iptables -I FORWARD -p https --dport 443 -j GITLAB，如图： 去浏览器里或者curl一下验证，的确只能指定IP才能访问GITLAB主页。不过，你以为现在就完事了么？非也，因为gitlab默认是通过https的形式拉取代码的，所以你还要把所有的代码服务器IP也要写进iptables里。 参考资料https://docs.docker.com/network/iptables/https://www.frozentux.net/iptables-tutorial/cn/iptables-tutorial-cn-1.1.19.htmlhttp://kuntsung.blogspot.com/2012/10/iptables.htmlhttps://www.zsythink.net/archives/1625]]></content>
@@ -166,8 +179,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -228,8 +241,8 @@
         <category>工作与原理</category>
       </categories>
       <tags>
-        <tag>CDN</tag>
         <tag>nginx</tag>
+        <tag>CDN</tag>
         <tag>HTTP</tag>
       </tags>
   </entry>
@@ -871,8 +884,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>钉钉</tag>
         <tag>Jenkins</tag>
+        <tag>钉钉</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -1034,8 +1047,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1059,8 +1072,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1072,8 +1085,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1289,7 +1302,7 @@
   <entry>
     <title><![CDATA[Gitlab的简单应用]]></title>
     <url>%2F2018%2F05%2F16%2FGitlab%E7%9A%84%E7%AE%80%E5%8D%95%E5%AE%9E%E7%94%A8%2F</url>
-    <content type="text"><![CDATA[gitlab跟svn的区别我就不多说了，这里直接说具体应用。 建立一个project先登陆到gitlab的网页，我这里使用了root用户，选择create a project，然后就是填写project的名称以及它所属的用户，这里由于只有root用户，所以这个叫jjfjj的project就是root自己的，如果建立了一个组的话，那么这里就填写那个组，如下： 下面这个Visibility Level ，就是权限等级，它分三种： Private：私有的，只有你自己或者组内的成员能访问 Internal：所有登录的用户 Public：公开的，所有人都可以访问 这个东西和project的名称都是可以后期更改的。 然后就是create project，就创建了这个jjfjj。如图: 将本地代码上传建立好了gitlab，就要把开发的代码传进去，我在另外一个机器里，创建一个目录code，这个目录就是专门用来放置代码的，假设现在里面有一个文件叫testcode.py，如图： 具体操作如下： 如果在两个不同的文件夹里执行上面的过程，会传输到两个不同的project里。说明一下上面几个命令的意思：git init：初始化git仓库git add .：添加整个目录里的所有文件到仓库git rm --cached 某个文件名：将某个文件从gitlab上撤除，如果想当前文件夹恢复成一个普通的文件夹，那就把文件夹路径下的.git文件删除掉即可git commit -m &#39;这里是要写的注释&#39;：提交代码到仓库git remote add origin +gitlab的地址(上上图里红色框的内容)：链接到gitlab服务器git push origin master：push代码到服务器git remote -v：查看当前文件夹的目标project 此时刷新一下gitlab的project页面，就看到刚刚的那个testcode.py已经传上来了。如图： 如果代码有所更改或者出现Everything up-to-date，那么就按顺序执行git add .，git commit -m &#39;这里是要写的注释&#39;，git push origin master即可。 免密码push代码在上面的git push origin master的时候需要输入gitlab的用户密码，如要需要免密码push，有两种方法。 第一种方法是ssh，请看 https://blog.whsir.com/post-1749.html/comment-page-1#comment-3425 。 第二种方法是用http的方式传送，先打开.git/config这个配置文件，修改url = http://账号:密码@以.git结尾的项目地址,保存之后重新去执行git add .，git commit -m &#39;这里是注释&#39;，git push origin master，就不再需要输入密码了。 从gitlab上垃取代码在要部署的机器上找到要部署的文件夹，我这里用/gitlab为例，操作如下： 12345678910[root@pass-mixnumbus-001 /GITLAB] # git init #将这个文件夹进行初始化 Initialized empty Git repository in /GITLAB/.git/ #提示现在已经安装了.git文件[root@pass-mixnumbus-001 /GITLAB(master)] # git remote add origin http://114.55.224.158/root/JJFJJ.git #确定库[root@pass-mixnumbus-001 /GITLAB(master)] # git pull origin master #制定要把master分支的代码全拉取到这个文件夹里Username for 'http://114.55.224.158': root #输入账号和密码Password for 'http://root@114.55.224.158': From http://114.55.224.158/root/JJFJJ * branch master -&gt; FETCH_HEAD[root@pass-mixnumbus-001 /GITLAB(master)] # ls #看一下效果admin.py looksql.py models.py syncECS.py testsyncECS.py 再与gitlab界面的代码比较一下，果然都过来了！如图： 在gitlab上建立分支gitlab上有很多个分支，主要的分支是master，它也是默认的分支，但是实际工作中是需要其他的开发去新建一些测试的分支，到时候可以先把这些测试的分支拿来部署，如果有问题就回滚回master分支。 分支相关的语句如下： 123456git branch #查看本地分支git branch -r #查看远程分支git branch -a #查看所有分支git branch develop #本地创建新的分支，此时刷新gitlab的页面的话就会有这个叫develop的分支建立了git checkout develop #切换到新的develop分支git checkout -b develop #上面两步可以合成一个命令，这个的意思就是：创建+切换分支 这个时候在代码机上新增或者改变文件，然后执行git add .，git commit -m &#39;这里是要写的注释&#39;，git push origin develop，就把新增的变化上传到了develop分支，如图： 1234567891011[root@iZ23pg8sy5bZ ~/GITLAB(develop)] # git push origin developCounting objects: 4, done.Compressing objects: 100% (2/2), done.Writing objects: 100% (3/3), 325 bytes | 0 bytes/s, done.Total 3 (delta 1), reused 0 (delta 0)remote: remote: To create a merge request for develop, visit:remote: http://114.55.224.158/root/JJFJJ/merge_requests/new?merge_request%5Bsource_branch%5D=developremote: To http://114.55.224.158/root/JJFJJ.git fc8d456..8a97b58 develop -&gt; develop 而在部署的机器上，直接执行git pull origin develop，输入账号密码之后，就会把develop分支的内容全部垃取下来了。 如果不想要这个develop分支了，就git branch -d develop，如果要删除远程的分支，就是git push origin :develop，注意这个冒号。 如果gitlab的地址发生了改变，那么在git pull之前需要git remote set-url origin 新的git地址，不过设定完毕之后，免输账号密码的效果会消失。 参考资料https://blog.cnbluebox.com/blog/2014/04/15/gitlabde-shi-yong/https://zhang759740844.github.io/2016/08/27/git%E6%8A%80%E5%B7%A7/https://www.restran.net/2016/02/23/git-and-gitlab-guide/https://www.jianshu.com/p/f54053afecf2]]></content>
+    <content type="text"><![CDATA[gitlab跟svn的区别我就不多说了，这里直接说具体应用。 建立一个project先登陆到gitlab的网页，我这里使用了root用户，选择create a project，然后就是填写project的名称以及它所属的用户，这里由于只有root用户，所以这个叫jjfjj的project就是root自己的，如果建立了一个组的话，那么这里就填写那个组，如下： 下面这个Visibility Level ，就是权限等级，它分三种： Private：私有的，只有你自己或者组内的成员能访问 Internal：所有登录的用户 Public：公开的，所有人都可以访问 这个东西和project的名称都是可以后期更改的。 然后就是create project，就创建了这个jjfjj。如图: 将本地代码上传建立好了gitlab，就要把开发的代码传进去，我在另外一个机器里，创建一个目录code，这个目录就是专门用来放置代码的，假设现在里面有一个文件叫testcode.py，如图： 具体操作如下： 注意！如果在创建project的时候勾选同时创建README.md的话，第一次提交本地代码需要是git pull origin master。 如果在两个不同的文件夹里执行上面的过程，会传输到两个不同的project里。说明一下上面几个命令的意思：git init：初始化git仓库git add .：添加整个目录里的所有文件到仓库git rm --cached 某个文件名：将某个文件从gitlab上撤除，如果想当前文件夹恢复成一个普通的文件夹，那就把文件夹路径下的.git文件删除掉即可git commit -m &#39;这里是要写的注释&#39;：提交代码到仓库git remote add origin +gitlab的地址(上上图里红色框的内容)：链接到gitlab服务器git push origin master：push代码到服务器git remote -v：查看当前文件夹的目标project 此时刷新一下gitlab的project页面，就看到刚刚的那个testcode.py已经传上来了。如图： 如果代码有所更改或者出现Everything up-to-date，那么就按顺序执行git add .，git commit -m &#39;这里是要写的注释&#39;，git push origin master即可。 免密码push代码在上面的git push origin master的时候需要输入gitlab的用户密码，如要需要免密码push，有两种方法。 第一种方法是ssh，请看 https://blog.whsir.com/post-1749.html/comment-page-1#comment-3425 。 第二种方法是用http的方式传送，先打开.git/config这个配置文件，修改url = http://账号:密码@以.git结尾的项目地址,保存之后重新去执行git add .，git commit -m &#39;这里是注释&#39;，git push origin master，就不再需要输入密码了。 从gitlab上垃取代码在要部署的机器上找到要部署的文件夹，我这里用/gitlab为例，操作如下： 12345678910[root@pass-mixnumbus-001 /GITLAB] # git init #将这个文件夹进行初始化 Initialized empty Git repository in /GITLAB/.git/ #提示现在已经安装了.git文件[root@pass-mixnumbus-001 /GITLAB(master)] # git remote add origin http://114.55.224.158/root/JJFJJ.git #确定库[root@pass-mixnumbus-001 /GITLAB(master)] # git pull origin master #制定要把master分支的代码全拉取到这个文件夹里Username for 'http://114.55.224.158': root #输入账号和密码Password for 'http://root@114.55.224.158': From http://114.55.224.158/root/JJFJJ * branch master -&gt; FETCH_HEAD[root@pass-mixnumbus-001 /GITLAB(master)] # ls #看一下效果admin.py looksql.py models.py syncECS.py testsyncECS.py 再与gitlab界面的代码比较一下，果然都过来了！如图： 在gitlab上建立分支gitlab上有很多个分支，主要的分支是master，它也是默认的分支，但是实际工作中是需要其他的开发去新建一些测试的分支，到时候可以先把这些测试的分支拿来部署，如果有问题就回滚回master分支。 分支相关的语句如下： 123456git branch #查看本地分支git branch -r #查看远程分支git branch -a #查看所有分支git branch develop #本地创建新的分支，此时刷新gitlab的页面的话就会有这个叫develop的分支建立了git checkout develop #切换到新的develop分支git checkout -b develop #上面两步可以合成一个命令，这个的意思就是：创建+切换分支 这个时候在代码机上新增或者改变文件，然后执行git add .，git commit -m &#39;这里是要写的注释&#39;，git push origin develop，就把新增的变化上传到了develop分支，如图： 1234567891011[root@iZ23pg8sy5bZ ~/GITLAB(develop)] # git push origin developCounting objects: 4, done.Compressing objects: 100% (2/2), done.Writing objects: 100% (3/3), 325 bytes | 0 bytes/s, done.Total 3 (delta 1), reused 0 (delta 0)remote: remote: To create a merge request for develop, visit:remote: http://114.55.224.158/root/JJFJJ/merge_requests/new?merge_request%5Bsource_branch%5D=developremote: To http://114.55.224.158/root/JJFJJ.git fc8d456..8a97b58 develop -&gt; develop 而在部署的机器上，直接执行git pull origin develop，输入账号密码之后，就会把develop分支的内容全部垃取下来了。 如果不想要这个develop分支了，就git branch -d develop，如果要删除远程的分支，就是git push origin :develop，注意这个冒号。 如果gitlab的地址发生了改变，那么在git pull之前需要git remote set-url origin 新的git地址，不过设定完毕之后，免输账号密码的效果会消失。 参考资料https://blog.cnbluebox.com/blog/2014/04/15/gitlabde-shi-yong/https://zhang759740844.github.io/2016/08/27/git%E6%8A%80%E5%B7%A7/https://www.restran.net/2016/02/23/git-and-gitlab-guide/https://www.jianshu.com/p/f54053afecf2]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -1300,7 +1313,7 @@
   <entry>
     <title><![CDATA[Gitlab的汉化过程]]></title>
     <url>%2F2018%2F05%2F15%2FGitlab%E7%9A%84%E6%B1%89%E5%8C%96%E8%BF%87%E7%A8%8B%2F</url>
-    <content type="text"><![CDATA[gitlab的容器安装方法部署前的第一句话，gitlab是不支持32位系统的！ gitlab用容器部署的话非常的简单，首先docker pull gitlab/gitlab-ce:latest下载镜像，然后docker run --detach --hostname 本机外网IP --publish 443:443 --publish 80:80 --publish 2222:22 --name gitlab --restart always gitlab/gitlab-ce:latest建立一个容器，如图： 然后在浏览器的地址栏里输入服务器的外网IP地址，就到了一个更换密码的页面，这个密码就是root的密码，如图： 设定密码之后，就可以通过root账号登陆gitlab了，如图： 至于“使用ldsp方式登录”、“配置域名”和“关闭注册功能”请移步去看：https://rorschachchan.github.io/2018/05/10/在已经运行的docker容器里面使用中文/ 。 gitlab的汉化方法汉化之前，要确定gitlab的版本，先docker exec -it 容器ID env LANG=C.UTF-8 /bin/bash登陆到容器里，执行cat /opt/gitlab/embedded/service/gitlab-rails/VERSION，由于当时镜像是最新的，所以gitlab的版本是10.7.3。 还是在容器里，执行git clone https://gitlab.com/xhang/gitlab.git，克隆获取汉化版本库(这里要感谢辛苦的汉化工作者，向你们致敬！)，默认是获取最新的。如果需要下载老版本的汉化包，则要加上老版本的分支，如：git clone https://gitlab.com/xhang/gitlab.git -b v10.2.5-zh。 然后gitlab-ctl stop先停止gitlab服务，cd gitlab/进入到刚刚下载的那个git包里，执行如下代码： 123456root@10 gitlab]# git fetchroot@10 gitlab]# git diff v10.7.3 v10.7.3-zh &gt; ../10.7.3-zh.diffroot@10 gitlab]# cd ..root@10 ~]# patch -d /opt/gitlab/embedded/service/gitlab-rails -p1 &lt; 10.7.3-zh.diffroot@10 ~]# #如果提示没有patch，请执行apt-get update &amp;&amp; apt-get install patchroot@10 ~]# gitlab-ctl start 重新返回到浏览器里，就能看到汉化后的gitlab了，大功告成！ 参考资料https://xuanwo.org/2016/04/13/gitlab-install-intro/https://www.jianshu.com/p/6606aed59a56http://adairjun.github.io/2016/12/20/gitlab/https://github.com/marbleqi/gitlab-ce-zh/blob/v10.5.1-zh-patch/Nginx.md]]></content>
+    <content type="text"><![CDATA[gitlab的容器安装方法部署前的第一句话，gitlab是不支持32位系统的！ gitlab用容器部署的话非常的简单，首先docker pull gitlab/gitlab-ce:latest下载镜像，然后docker run --detach --hostname 本机外网IP --publish 443:443 --publish 80:80 --publish 2222:22 --name gitlab --restart always gitlab/gitlab-ce:latest建立一个容器，如图： 然后在浏览器的地址栏里输入服务器的外网IP地址，就到了一个更换密码的页面(如果打开页面是Whoops, GitLab is taking too much time to respond.请检查内存时候小于2G)，这个密码就是root的密码，如图： 设定密码之后，就可以通过root账号登陆gitlab了，如图： 至于“使用ldsp方式登录”、“配置域名”和“关闭注册功能”请移步去看：https://rorschachchan.github.io/2018/05/10/在已经运行的docker容器里面使用中文/ 。 gitlab的汉化方法汉化之前，要确定gitlab的版本，先docker exec -it 容器ID env LANG=C.UTF-8 /bin/bash登陆到容器里，执行cat /opt/gitlab/embedded/service/gitlab-rails/VERSION，由于当时镜像是最新的，所以gitlab的版本是10.7.3。 还是在容器里，执行git clone https://gitlab.com/xhang/gitlab.git，克隆获取汉化版本库(这里要感谢辛苦的汉化工作者，向你们致敬！)，默认是获取最新的。如果需要下载老版本的汉化包，则要加上老版本的分支，如：git clone https://gitlab.com/xhang/gitlab.git -b v10.2.5-zh。 然后gitlab-ctl stop先停止gitlab服务，cd gitlab/进入到刚刚下载的那个git包里，执行如下代码： 123456root@10 gitlab]# git fetchroot@10 gitlab]# git diff v10.7.3 v10.7.3-zh &gt; ../10.7.3-zh.diffroot@10 gitlab]# cd ..root@10 ~]# patch -d /opt/gitlab/embedded/service/gitlab-rails -p1 &lt; 10.7.3-zh.diffroot@10 ~]# #如果提示没有patch，请执行apt-get update &amp;&amp; apt-get install patchroot@10 ~]# gitlab-ctl start 重新返回到浏览器里，就能看到汉化后的gitlab了，大功告成！ 参考资料https://xuanwo.org/2016/04/13/gitlab-install-intro/https://www.jianshu.com/p/6606aed59a56http://adairjun.github.io/2016/12/20/gitlab/https://github.com/marbleqi/gitlab-ce-zh/blob/v10.5.1-zh-patch/Nginx.md]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -1880,8 +1893,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
