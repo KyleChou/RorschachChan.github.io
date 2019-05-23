@@ -179,8 +179,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -241,8 +241,8 @@
         <category>工作与原理</category>
       </categories>
       <tags>
-        <tag>nginx</tag>
         <tag>CDN</tag>
+        <tag>nginx</tag>
         <tag>HTTP</tag>
       </tags>
   </entry>
@@ -289,8 +289,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>mysql</tag>
+        <tag>zabbix</tag>
       </tags>
   </entry>
   <entry>
@@ -444,7 +444,7 @@
   <entry>
     <title><![CDATA[搭建Kakfa2.11为ELK服务]]></title>
     <url>%2F2019%2F01%2F16%2F%E6%90%AD%E5%BB%BAKakfa2-11%E4%B8%BAELK%E6%9C%8D%E5%8A%A1%2F</url>
-    <content type="text"><![CDATA[准备工作试验机器：阿里云centos 7.5，IP地址是172.31.0.84。 本文是单台kafka+zookeeper架构，如果土豪可以尝试3台zookeeper+3台kafka。 12345yum install java-1.8.0-openjdk* -ywget http://apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgztar -zxvf kafka_2.11-2.1.0.tgz -C /optwget http://apache.website-solution.net/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gztar -zxvf zookeeper-3.4.10.tar.gz -C /usr/local 其实最新的kafka里面已经包括zookeeper了，不过我习惯了单独启动zookeeper，还是单独下载单独配置单独启动。 启动zookeeper首先先去zookeeper下的conf文件夹里编写配置文件： 12/usr/local/zookeeper-3.4.10/confcp zoo_sample.cfg zoo.cfg 然后编辑zoo.cfg，把最下面几行改成这样： 12345autopurge.snapRetainCount=3 #保留3个文件# Purge task interval in hours# Set to "0" to disable auto purge featureautopurge.purgeInterval=1 #保留一小时以内的日志server.1=172.31.0.84:2888:3888 #本机IP地址 2888端口：表示的是这个服务器与集群中的Leader服务器交换信息的端口；3888端口：表示的是万一集群中的Leader服务器挂了，需要一个端口来重新进行选举，选出一个新的Leader，而这个端口就是用来执行选举时服务器相互通信的端口。 然后回到/usr/local/zookeeper-3.4.10/bin里，执行./zkServer.sh start，执行完毕之后，再用./zkServer.sh status检查一下状态，由于是单台，所以状态应该是standalone。 启动kafka同zookeeper一样，先去kafka的conf文件夹/opt/kafka_2.11-2.1.0/config里，在配置文件zookeeper.properties最下面加上如下几句话: 1234tickTime=2000initLimit=20syncLimit=10server.1=172.31.0.84:2888:3888 #zookeeper的地址，也就是本机地址 tickTime:这个时间是作为Zookeeper服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个tickTime时间就会发送一个心跳。 修改好了zookeeper.properties之后，才是正式的kafka配置文件server.properties： 12345678broker.id=1port=9092 #broker监听的端口host.name=172.31.0.84 #填服务器 IPlog.dir = / data / kafka - logs # 该目录可以不用提前创建，在启动时自己会创建zookeeper.connect = 172.31.0.84:2181 # 这个就是zookeeper的ip及端口num.partitions = 16 # 需要配置较大 分片影响读写速度log.dirs = /data/kafka-logs # 数据目录也要单独配置磁盘较大的地方log.retention.hours = 168 # 时间按需求保留过期时间,避免磁盘满 确认zookeeper状态是启动之后，./bin/kafka-server-start.sh ./config/server.properties &amp;来启动Kafka服务，然后检查一下端口9092是否正常打开(9092端口不会立即启动，需要等待一会时间)。 kafka简单操作语句一些常用的操作语句如下： 12345678#创建topic./kafka-topics.sh --create --zookeeper 172.31.0.84:2181 --replication-factor 1 --partitions 1 --topic chenshuotest #factor大小不能超过broker的个数#查看topic./kafka-topics.sh --list --zookeeper 172.31.0.84:2181#在topic里增加信息./kafka-console-producer.sh --broker-list 172.31.0.84:9092 --topic chenshuotest#消费掉topic里的信息，需要在另外一个xshell窗口界面操作./kafka-console-consumer.sh --bootstrap-server 172.31.0.84:9092 --topic chenshuotest --from-beginning 参考文档http://www.cnblogs.com/JetpropelledSnake/p/10057545.html （zookeeper+kafka集群的配置，请看这里）]]></content>
+    <content type="text"><![CDATA[准备工作试验机器：阿里云centos 7.5，IP地址是172.31.0.84。 本文是单台kafka+zookeeper架构，如果土豪可以尝试3台zookeeper+3台kafka。 12345yum install java-1.8.0-openjdk* -ywget http://apache.website-solution.net/kafka/2.1.0/kafka_2.11-2.1.0.tgztar -zxvf kafka_2.11-2.1.0.tgz -C /optwget http://apache.website-solution.net/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gztar -zxvf zookeeper-3.4.10.tar.gz -C /usr/local 其实最新的kafka里面已经包括zookeeper了，不过我习惯了单独启动zookeeper，还是单独下载单独配置单独启动。 启动zookeeper首先先去zookeeper下的conf文件夹里编写配置文件： 12/usr/local/zookeeper-3.4.10/confcp zoo_sample.cfg zoo.cfg 然后编辑zoo.cfg，把最下面几行改成这样： 12345autopurge.snapRetainCount=3 #保留3个文件# Purge task interval in hours# Set to "0" to disable auto purge featureautopurge.purgeInterval=1 #保留一小时以内的日志server.1=172.31.0.84:2888:3888 #本机IP地址 2888端口：表示的是这个服务器与集群中的Leader服务器交换信息的端口；3888端口：表示的是万一集群中的Leader服务器挂了，需要一个端口来重新进行选举，选出一个新的Leader，而这个端口就是用来执行选举时服务器相互通信的端口。 然后回到/usr/local/zookeeper-3.4.10/bin里，执行./zkServer.sh start，执行完毕之后，再用./zkServer.sh status检查一下状态，由于是单台，所以状态应该是standalone。 启动kafka同zookeeper一样，先去kafka的conf文件夹/opt/kafka_2.11-2.1.0/config里，在配置文件zookeeper.properties最下面加上如下几句话: 1234tickTime=2000initLimit=20syncLimit=10server.1=172.31.0.84:2888:3888 #zookeeper的地址，也就是本机地址 tickTime:这个时间是作为Zookeeper服务器之间或客户端与服务器之间维持心跳的时间间隔，也就是每个tickTime时间就会发送一个心跳。 修改好了zookeeper.properties之后，才是正式的kafka配置文件server.properties： 12345678broker.id=1port=9092 #broker监听的端口host.name=172.31.0.84 #填服务器 IPlog.dir = / data / kafka - logs # 该目录可以不用提前创建，在启动时自己会创建zookeeper.connect = 172.31.0.84:2181 # 这个就是zookeeper的ip及端口num.partitions = 16 # 需要配置较大 分片影响读写速度log.dirs = /data/kafka-logs # 数据目录也要单独配置磁盘较大的地方log.retention.hours = 168 # 时间按需求保留过期时间,避免磁盘满 确认zookeeper状态是启动之后，./bin/kafka-server-start.sh ./config/server.properties &amp;来启动Kafka服务，然后检查一下端口9092是否正常打开(9092端口不会立即启动，需要等待一会时间)。 kafka简单操作语句一些常用的操作语句（前提是你在kafka的bin文件夹内）如下： 123456789101112#创建topic./kafka-topics.sh --create --zookeeper zookeeperIP地址:2181 --replication-factor 1 --partitions 1 --topic chenshuotest #factor大小不能超过broker的个数#查看topic./kafka-topics.sh --list --zookeeper zookeeperIP地址:2181#在topic里增加信息./kafka-console-producer.sh --broker-list kafkaIP地址：9092 --topic chenshuotest#消费掉topic里的信息，需要在另外一个xshell窗口界面操作./kafka-console-consumer.sh --bootstrap-server kafkaIP地址9092 --topic chenshuotest --from-beginning#查看group./kafka-consumer-groups.sh --bootstrap-server kafkaIP地址:9092 --list#查看消费情况./kafka-consumer-groups.sh --bootstrap-server kafkaIP地址:9092 --describe --group logstash kafka与mq类似，都有一个“入队”、“出队”、“堆积值”的展示，如下： 简单说一下上面这个图： PARTITION：分区编号，它与server.properties里的num.partitions是一致的，这个值不是越大越好，会增加不可用的风险，而且过多的分区意味要打开过多的句柄，增加点对点的延迟； CURRENT-OFFSET：表示消费者组最新消费的位移值； LOG-END-OFFSET：表示topic所有分区当前的日志终端位移值，即总生产值； LAG：表示有多少条message没有被消费； 参考文档http://www.cnblogs.com/JetpropelledSnake/p/10057545.html （zookeeper+kafka集群的配置，请看这里）]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -884,8 +884,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>钉钉</tag>
         <tag>Jenkins</tag>
+        <tag>钉钉</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -1047,8 +1047,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1072,8 +1072,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1085,8 +1085,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1461,18 +1461,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root启动进程以及启动docker]]></title>
-    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root用户启动tomcat进程]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
     <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
@@ -1482,6 +1470,18 @@
       <tags>
         <tag>centos</tag>
         <tag>运维安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root启动进程以及启动docker]]></title>
+    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>安全</tag>
       </tags>
   </entry>
   <entry>
@@ -1893,8 +1893,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
