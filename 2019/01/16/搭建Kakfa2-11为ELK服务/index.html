@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/elk24.png">
 <meta property="og:image" content="http://yoursite.com/images/企鹅.gif">
-<meta property="og:updated_time" content="2019-05-23T09:15:37.388Z">
+<meta property="og:updated_time" content="2019-05-23T09:26:25.474Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="搭建Kakfa2.11为ELK服务">
 <meta name="twitter:description" content="使用curl http://ip.taobao.com/service/getIpInfo.php?ip=目标IP地址，可以获取到目标地址的地理位置和运营商信息。">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,050
+                  1,081
                 </span>
               
 
@@ -476,8 +476,9 @@
 <li>CURRENT-OFFSET：表示消费者组最新消费的位移值；</li>
 <li>LOG-END-OFFSET：表示topic所有分区当前的日志终端位移值，即总生产值；</li>
 <li>LAG：表示有多少条message没有被消费；</li>
-<li><h2><span id="参考文档">参考文档</span></h2><a href="http://www.cnblogs.com/JetpropelledSnake/p/10057545.html" target="_blank" rel="noopener">http://www.cnblogs.com/JetpropelledSnake/p/10057545.html</a> （zookeeper+kafka集群的配置，请看这里）</li>
 </ol>
+<p>如果想用zabbix监控LAG值，很简单：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./kafka-consumer-groups.sh --bootstrap-server kafkaIP地址:<span class="number">9092</span> --describe --group logstash | grep 目标topic |awk  <span class="string">'&#123;print $5&#125;'</span></span><br></pre></td></tr></table></figure></p>
+<h2><span id="参考文档">参考文档</span></h2><p><a href="http://www.cnblogs.com/JetpropelledSnake/p/10057545.html" target="_blank" rel="noopener">http://www.cnblogs.com/JetpropelledSnake/p/10057545.html</a> （zookeeper+kafka集群的配置，请看这里）</p>
 <p><img src="/images/企鹅.gif" alt="akb48"></p>
 
       
