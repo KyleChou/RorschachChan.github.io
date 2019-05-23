@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[使用Go语言结合阿里云API解绑绑定弹性公网IP]]></title>
-    <url>%2F2019%2F05%2F22%2F%E4%BD%BF%E7%94%A8Go%E8%AF%AD%E8%A8%80%E7%BB%93%E5%90%88%E9%98%BF%E9%87%8C%E4%BA%91API%E8%A7%A3%E7%BB%91%E7%BB%91%E5%AE%9A%E5%BC%B9%E6%80%A7%E5%85%AC%E7%BD%91IP%2F</url>
-    <content type="text"><![CDATA[]]></content>
-  </entry>
-  <entry>
     <title><![CDATA[Gitlab配置ssh，实现秘钥上传下载代码]]></title>
     <url>%2F2019%2F05%2F21%2FGitlab%E9%85%8D%E7%BD%AEssh%EF%BC%8C%E5%AE%9E%E7%8E%B0%E7%A7%98%E9%92%A5%E4%B8%8A%E4%BC%A0%E4%B8%8B%E8%BD%BD%E4%BB%A3%E7%A0%81%2F</url>
     <content type="text"><![CDATA[常规配置gitlab配置ssh比较简单，在代码机上使用ssh-keygen -t rsa -C &quot;你的邮箱&quot;制作id_rsa和id_rsa.pub，然后来到gitlab的web页面，settings—ssh keys,把id_rsa.pub拷贝进去，然后点击Add key: 然后返回到代码机器上，再对应的代码目录里使用git remote -v查看一下当前的方式，如果不是git的话，通过git remote set-url origin git@你的project地址修改，然后再试一下 ssh -T git@&quot;你的gitlab服务器地址&quot;是否会出现welcome，如果可以的话，那么就可以通过ssh的方式下载上传代码以及git clone 对应的project了。 容器配置但是现在很多人都用容器部署gitlab，而且在部署的时候除了指定80，443端口的映射，还制定了22端口的映射。比如我的这个gitlab容器的启动命令就是： 1docker run --detach --hostname 外网IP --publish 443:443 --publish 80:80 --publish 2222:22 --name gitlab --restart always gitlab/gitlab-ce:latest 可见我把宿主机的2222端口对应给了gitlab容器。那么像上面的方法肯定不会成功，这里就需要我们修改一处地方。 首先进入容器，然后修改gitlab.rb文件，这个文件在容器里有很多，我这个镜像里的gitlab.rb是/etc/gitlab/gitlab.rb，然后把gitlab_rails[&#39;gitlab_shell_ssh_port&#39;]改成2222并且去掉注释，如图： 然后gitlab-ctl restart重启之，重启完毕之后，在代码机上测试一下ssh： 可以已经连通，修改一下remote master地址之后，就可以直接上传了：]]></content>
