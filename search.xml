@@ -179,8 +179,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -308,7 +308,7 @@
   <entry>
     <title><![CDATA[Linux运维工程师笔试题第十八套]]></title>
     <url>%2F2019%2F03%2F04%2FLinux%E8%BF%90%E7%BB%B4%E5%B7%A5%E7%A8%8B%E5%B8%88%E7%AC%94%E8%AF%95%E9%A2%98%E7%AC%AC%E5%8D%81%E5%85%AB%E5%A5%97%2F</url>
-    <content type="text"><![CDATA[试题内容1.docker的exec与attach命令有啥区别？attach开启一个和正在运行的进程交互的终端，如果该进程结束，原docker container的进程也会结束。exec可以开启多个终端实例，exec -i /bin/bash，由此可见exec其实是在运行中的容器中执行一个命令。 2.docker的CMD与ENTRYPOINT命令有啥区别？CMD的命令会被docker run里的命令覆盖，而ENTRYPOINT命令不会。如果要覆盖ENTRYPOINT，则在docker run里添加--entrypoint标签来覆盖即可。如果dockerfile里指定了WORKDIR，那么无论是CMD还是ENTRYPOINT命令都是在这个WORKDIR目录里执行。 3.docker的kill和stop命令有啥区别？stop是“优雅退出”，先发送SIGTERM信号，在一段时间之后（10s）再发送SIGKILL信号。Docker内部的应用程序可以接收SIGTERM信号，然后做一些“退出前工作”，比如保存状态、处理当前请求等。kill是“暴力退出”，即发送SIGKILL信号，应用程序直接退出。 4.假设有一个AAA的容器，现在需要备份它的挂载卷/DATA里的数据，请问如何操作？ 1docker run --volumes-form A -v /tmp:/backup --name BACKUP ubuntu tar cvf /backup/A.tar /DATA 上面这个语句新建立一个叫BACKUP的容器，它与A容器挂载情况相同（即都是挂载/DATA），同时将本地的/tmp挂载到容器的/backup，在容器生成的时候，执行了tar cvf /backup/A.tar /DATA将DATA文件夹的内容进行了打包，又由于/tmp已经与/backup挂载，所以就可以直接从宿主机上的/tmp里得到A.tar了。 4.linux里删除某个用户的所有进程的语句？ps -u username | grep -v PID | awk ‘{print$1}’| xargs kill -9或者killall -u username 5.linux如何彻底删除一个用户？userdel -r zhidao（前提是这个用户下已经没有程序运行了） 6.ps -ef |grep 进程名|awk “{print $2}”|xargs kill -9 7.普通用户如何访问docker?使用gpasswd -a lcshop docker把该用户添加到docker组即可。 8.输入ping IP后敲回车，发包前会发生什么？首先要知道，ICMP协议是三层（网络层协议），因为不带端口所以肯定不是四层，又因为依赖IP地址所以肯定比2层高。 其次ping可以帮我们了解到是否能够与对方连通，但是ping如果能不开就不开，因为网络上会有无聊的人给你发大量的ping包把你的带宽占满。 回到题目中，假设是下图中的A在ping B: 回车之后，主机A就要封装二层报文，它会先查自己的MAC地址表，如果没有B的MAC地址，就会向外发送一个ARP广播包。交换机会收到这个报文后，由于交换机有学习MAC地址的功能，所以他会检索自己有没有保存主机B的MAC，如果有，就直接返回给主机A；如果没有，就会向所有端口发送ARP广播，其它主机收到后，发现不是在找自己，就纷纷丢弃了该报文，不去理会。直到主机B收到了报文后，就立即响应，我的MAC地址是多少，同时它也学到主机A的MAC地址，并按同样的ARP报文格式返回给主机A，这时候主机A学到了主机B的MAC，就把B的MAC地址封装到ICMP包中，向主机B发送一个回显请求，主机B收到该报文后，知道是主机A的一个回显请求，就会返回一个相同格式的报文。这样就完成了同一个网段的Ping的过程。 如果主机A要ping主机C，那么主机A发现主机C的IP和自己不是同一网段，它就去找网关转发，但是它也不知道网关的MAC情况下呢?就会像之前那个步骤一样：先发送一个ARP广播，学到网关的MAC，再发封装ICMP报文给网关路由器。当路由器收到主机A发过来的ICMP报文，发现自己的目的地址是其本身MAC地址，根据目的的IP2.1.1.1查路由表，发现2.1.1.1/24的路由表项，得到一个出口指针，去掉原来的MAC头部加上自己的MAC地址向主机C转发。如果网关也没有主机C的MAC地址,还是要向前面一个步骤一样,ARP广播一下即可相互学到。路由器2端口能学到主机D的MAC,主机D也能学到路由器2端口的MAC。最后，在主机C已学到路由器2端口MAC，路由器2端口转发给路由器1端口，路由1端口学到主机A的MAC的情况下，他们就不需要再做ARP解析，就将ICMP的回显请求回复过来。 9.MySQL的数据如何恢复到任意时间点？ 参考资料https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exechttp://dockone.io/question/469]]></content>
+    <content type="text"><![CDATA[试题内容1.docker的exec与attach命令有啥区别？attach开启一个和正在运行的进程交互的终端，如果该进程结束，原docker container的进程也会结束。exec可以开启多个终端实例，exec -i /bin/bash，由此可见exec其实是在运行中的容器中执行一个命令。 2.docker的CMD与ENTRYPOINT命令有啥区别？CMD的命令会被docker run里的命令覆盖，而ENTRYPOINT命令不会。如果要覆盖ENTRYPOINT，则在docker run里添加--entrypoint标签来覆盖即可。如果dockerfile里指定了WORKDIR，那么无论是CMD还是ENTRYPOINT命令都是在这个WORKDIR目录里执行。 3.docker的kill和stop命令有啥区别？stop是“优雅退出”，先发送SIGTERM信号，在一段时间之后（10s）再发送SIGKILL信号。Docker内部的应用程序可以接收SIGTERM信号，然后做一些“退出前工作”，比如保存状态、处理当前请求等。kill是“暴力退出”，即发送SIGKILL信号，应用程序直接退出。 4.假设有一个AAA的容器，现在需要备份它的挂载卷/DATA里的数据，请问如何操作？ 1docker run --volumes-form A -v /tmp:/backup --name BACKUP ubuntu tar cvf /backup/A.tar /DATA 上面这个语句新建立一个叫BACKUP的容器，它与A容器挂载情况相同（即都是挂载/DATA），同时将本地的/tmp挂载到容器的/backup，在容器生成的时候，执行了tar cvf /backup/A.tar /DATA将DATA文件夹的内容进行了打包，又由于/tmp已经与/backup挂载，所以就可以直接从宿主机上的/tmp里得到A.tar了。 4.linux里删除某个用户的所有进程的语句？ps -u username | grep -v PID | awk ‘{print$1}’| xargs kill -9或者killall -u username 5.linux如何彻底删除一个用户？userdel -r zhidao（前提是这个用户下已经没有程序运行了） 6.杀死某进程的命令？ps -ef |grep 进程名|awk “{print $2}”|xargs kill -9 7.普通用户如何访问docker?使用gpasswd -a lcshop docker把该用户添加到docker组即可。 8.输入ping IP后敲回车，发包前会发生什么？首先要知道，ICMP协议是三层（网络层协议），因为不带端口所以肯定不是四层，又因为依赖IP地址所以肯定比2层高。 其次ping可以帮我们了解到是否能够与对方连通，但是ping如果能不开就不开，因为网络上会有无聊的人给你发大量的ping包把你的带宽占满。 回到题目中，假设是下图中的A在ping B: 回车之后，主机A就要封装二层报文，它会先查自己的MAC地址表，如果没有B的MAC地址，就会向外发送一个ARP广播包。交换机会收到这个报文后，由于交换机有学习MAC地址的功能，所以他会检索自己有没有保存主机B的MAC，如果有，就直接返回给主机A；如果没有，就会向所有端口发送ARP广播，其它主机收到后，发现不是在找自己，就纷纷丢弃了该报文，不去理会。直到主机B收到了报文后，就立即响应，我的MAC地址是多少，同时它也学到主机A的MAC地址，并按同样的ARP报文格式返回给主机A，这时候主机A学到了主机B的MAC，就把B的MAC地址封装到ICMP包中，向主机B发送一个回显请求，主机B收到该报文后，知道是主机A的一个回显请求，就会返回一个相同格式的报文。这样就完成了同一个网段的Ping的过程。 如果主机A要ping主机C，那么主机A发现主机C的IP和自己不是同一网段，它就去找网关转发，但是它也不知道网关的MAC情况下呢?就会像之前那个步骤一样：先发送一个ARP广播，学到网关的MAC，再发封装ICMP报文给网关路由器。当路由器收到主机A发过来的ICMP报文，发现自己的目的地址是其本身MAC地址，根据目的的IP2.1.1.1查路由表，发现2.1.1.1/24的路由表项，得到一个出口指针，去掉原来的MAC头部加上自己的MAC地址向主机C转发。如果网关也没有主机C的MAC地址,还是要向前面一个步骤一样,ARP广播一下即可相互学到。路由器2端口能学到主机D的MAC,主机D也能学到路由器2端口的MAC。最后，在主机C已学到路由器2端口MAC，路由器2端口转发给路由器1端口，路由1端口学到主机A的MAC的情况下，他们就不需要再做ARP解析，就将ICMP的回显请求回复过来。 9.MySQL的数据如何恢复到任意时间点？ 10.假设有一个dockerfile内容如下： 123FROM ubuntuENTRYPOINT [&quot;top&quot;, &quot;-b&quot;]CMD [&quot;-c&quot;] 然后凭借此dockerfile创建一个镜像，然后docker run -it --rm --name test 镜像名称 -H的实际结果是什么？ 实际执行结果是相当于执行top -b -H，没有-c。因为使用exec格式（只能加双引号），在docker run &lt;image&gt;的所有参数，都会追加到ENTRYPOINT之后，并且会覆盖CMD所指定的参数。CMD与ENTRYPOINT一样，如果dockerfile有多个的话，只有最后一个生效。 11.假设有一个dockerfile A内容如下： 12ENV name Cloud ManENTRYPOINT [&quot;/bin/echo&quot;, &quot;Hello, $name&quot;] 还有一个B dockerfile内容如下： 12ENV name Cloud Man ENTRYPOINT echo &quot;Hello, $name&quot; 请问两者分别运行容器结果是啥？A是Hello, $name，B是Hello, Cloud Man。A的环境变量并没有达到效果，如果想要达到效果，应该改成如下： 12ENV name Cloud Man ENTRYPOINT [&quot;/bin/sh&quot;, &quot;-c&quot;, &quot;echo Hello, $name&quot;] 参考资料https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exechttp://dockone.io/question/469https://www.ibm.com/developerworks/community/blogs/132cfa78-44b0-4376-85d0-d3096cd30d3f/entry/RUN_vs_CMD_vs_ENTRYPOINT_%E6%AF%8F%E5%A4%A95%E5%88%86%E9%92%9F%E7%8E%A9%E8%BD%AC_Docker_%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF_17?lang=en]]></content>
       <categories>
         <category>大牛之路</category>
       </categories>
@@ -1461,18 +1461,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root用户启动tomcat进程]]></title>
-    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>centos</tag>
-        <tag>运维安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root启动进程以及启动docker]]></title>
     <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
     <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
@@ -1482,6 +1470,18 @@
       <tags>
         <tag>docker</tag>
         <tag>安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root用户启动tomcat进程]]></title>
+    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>centos</tag>
+        <tag>运维安全</tag>
       </tags>
   </entry>
   <entry>
@@ -1893,8 +1893,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -2618,8 +2618,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>redis</tag>
+        <tag>zabbix</tag>
       </tags>
   </entry>
   <entry>
@@ -2678,9 +2678,9 @@
         <category>博客搭建</category>
       </categories>
       <tags>
-        <tag>github</tag>
         <tag>hexo</tag>
         <tag>博客搭建</tag>
+        <tag>github</tag>
       </tags>
   </entry>
   <entry>
