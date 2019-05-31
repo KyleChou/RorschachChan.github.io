@@ -414,7 +414,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,076
+                  1,086
                 </span>
               
 
@@ -430,7 +430,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  4
+                  5
                 </span>
               
             </div>
@@ -472,7 +472,7 @@
 <p>要修改表里的内容才算是真正的修改了配置文件！于是想要在admin:admin的基础上添加一个lcshop:lcshop2019这个用户同时把登录端口改成127.0.0.1:6969，那么语句如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">update global_variables set variable_value = <span class="string">'admin:admin;lcshop:lcshop2019'</span> where variable_name = <span class="string">'admin-admin_credentials'</span>;</span><br><span class="line">update global_variables set variable_value = <span class="string">'127.0.0.1:6969'</span> where variable_name = <span class="string">'admin-mysql_ifaces'</span>;</span><br><span class="line">LOAD MYSQL SERVERS TO RUNTIME  <span class="comment">#常用，让修改的配置生效</span></span><br><span class="line">SAVE MYSQL SERVERS TO DISK     <span class="comment">#常用，将修改的配置持久化</span></span><br></pre></td></tr></table></figure></p>
 <p>此时就是使用新账号和新端口访问proxysql了！如图：<br><img src="/images/proxy20.png" alt="akb48"></p>
 <h2><span id="具体配置">具体配置</span></h2><p>假设我有一组阿里云RDS数据库，主库的内网地址是rm-bp1el471x0ltbg402.mysql.rds.aliyuncs.com，从库的内网地址是rr-bp10ki29n7n8z0ex0.mysql.rds.aliyuncs.com，端口皆3306。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://github.com/sysown/ProxySQL" target="_blank" rel="noopener">https://github.com/sysown/ProxySQL</a><br><a href="http://seanlook.com/2017/04/10/mysql-proxysql-install-config/" target="_blank" rel="noopener">http://seanlook.com/2017/04/10/mysql-proxysql-install-config/</a> （具体各表的信息可以看这个）<br><a href="https://www.cnblogs.com/kevingrace/p/10329714.html" target="_blank" rel="noopener">https://www.cnblogs.com/kevingrace/p/10329714.html</a>    （墙裂推荐！）</p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://github.com/sysown/ProxySQL" target="_blank" rel="noopener">https://github.com/sysown/ProxySQL</a><br><a href="http://seanlook.com/2017/04/10/mysql-proxysql-install-config/" target="_blank" rel="noopener">http://seanlook.com/2017/04/10/mysql-proxysql-install-config/</a> （具体各表的信息可以看这个）<br><a href="https://www.cnblogs.com/kevingrace/p/10329714.html" target="_blank" rel="noopener">https://www.cnblogs.com/kevingrace/p/10329714.html</a>    （墙裂推荐！mysql 5.7的主从同步也有）</p>
 
           
         
