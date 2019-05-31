@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-05-21T13:03:27.722Z</updated>
+  <updated>2019-05-31T10:06:51.980Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,35 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>记录部署ProxySql的过程</title>
+    <link href="http://yoursite.com/2019/05/31/%E8%AE%B0%E5%BD%95%E9%83%A8%E7%BD%B2ProxySql%E7%9A%84%E8%BF%87%E7%A8%8B/"/>
+    <id>http://yoursite.com/2019/05/31/记录部署ProxySql的过程/</id>
+    <published>2019-05-31T03:12:05.000Z</published>
+    <updated>2019-05-31T10:06:51.980Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="安装于启动">安装于启动</span></h2><p>先去<code>https://github.com/sysown/proxysql/releases</code> 下载稳定版本 ，我是下载的<code>proxysql-2.0.4-1-centos7.x86_64.rpm</code>，然后<code>rpm -ivh proxysql-2.0.4-1-centos7.x86_64.rpm</code>，如果出现了如下错误：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@dvlshop-proxysql<span class="number">-001</span> ~]<span class="comment"># rpm -ivh proxysql-2.0.4-1-centos7.x86_64.rpm </span></span><br><span class="line">error: Failed dependencies:</span><br><span class="line">perl(DBD::mysql) <span class="keyword">is</span> needed by proxysql<span class="number">-2.0</span><span class="number">.4</span><span class="number">-1.</span>x86_64</span><br><span class="line">perl(DBI) <span class="keyword">is</span> needed by proxysql<span class="number">-2.0</span><span class="number">.4</span><span class="number">-1.</span>x86_64</span><br></pre></td></tr></table></figure></p><p>就执行一下<code>yum install -y perl-IO-Socket-SSL perl-DBD-MySQL</code>就可以了。</p><p>安装成功之后，启动的命令是<code>service proxysql start</code>：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root@dvlshop-proxysql<span class="number">-001</span> ~]<span class="comment"># service proxysql start</span></span><br><span class="line">Starting ProxySQL: <span class="number">2019</span><span class="number">-05</span><span class="number">-31</span> <span class="number">11</span>:<span class="number">23</span>:<span class="number">10</span> [INFO] Using config file /etc/proxysql.cnf</span><br><span class="line"><span class="number">2019</span><span class="number">-05</span><span class="number">-31</span> <span class="number">11</span>:<span class="number">23</span>:<span class="number">10</span> [INFO] No SSL keys/certificates found <span class="keyword">in</span> datadir (/var/lib/proxysql). Generating new keys/certificates.</span><br><span class="line">DONE!</span><br><span class="line">[root@dvlshop-proxysql<span class="number">-001</span> ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p><p>启动完毕就可以使用初始命令<code>mysql -uadmin -padmin -h 127.0.0.1 -P 6032</code>来登录proxysql了，如图：<br><img src="/images/proxy16.png" alt="akb48"></p><p>补充一下：proxysql的默认管理端口是<code>6032</code>，客户端服务端口是<code>6033</code>。默认的用户名密码都是<code>admin</code>，可以在配置文件里看到。<br><img src="/images/proxy18.png" alt="akb48"></p><p>再说一下各个重要文件的位置：proxysql的静态配置文件是<code>/etc/proxysql.cnf</code>，日志文件是<code>/var/lib/proxysql/proxysql.log</code>，SQLITE的数据文件是<code>/var/lib/proxysql/proxysql.db</code>。</p><h2><span id="基本概念">基本概念</span></h2><p>与之前的中间件atlas不同，配置ProxySQL是基于sql命令的方式完成的，而且配置完成之后直接应用无需重启。怎么做到这个的呢？是因为ProxySQL的三层管理配置设计：</p><ol><li>runtime：运行中使用的配置文件，这些表的数据库无法直接修改，只能从其他层级load加载。这一份配置会直接影响到生产环境的，所以要将配置加载进RUNTIME层时需要三思而行；</li><li>memory：提供用户动态修改配置文件，它是我们修改proxysql的唯一正常入口。一般来说在修改一个配置时，首先修改Memory层，确认无误后再接入RUNTIME层，最后持久化到DISK和CONFIG FILE层。也就是说memeory层里面的配置随便改，不影响生产，也不影响磁盘中保存的数据。</li><li>disk：将修改的配置保存到磁盘SQLit表中（即：proxysql.db），DISK/CONFIG FILE层表示持久存储的那份配置，持久层对应的磁盘文件是$(DATADIR)/proxysql.db，在重启ProxySQL的时候，会从proxysql.db文件中加载信息。即如果不持久化下来，重启后，配置都将丢失。</li><li>config：一般不使用它（即：proxysql.cnf）</li></ol><p>再重复一遍：proxysql分为三个级别，RUNTIME是即时生效的，MEMORY是保存在内存中但并不立即生效的，DISK|CONFIG FILE是持久化或写在配置文件中的。修改的配置都是在memory层。可以load到runtime，使配置在不用重启proxysql的情况下也可以生效，也可以save到disk，将对配置的修改持久化！如图：<br><img src="/images/proxy17.png" alt="akb48"></p><p>这三个级别的配置文件互不干扰，在某个层级修改了配置文件，想要加载或保存到另一个层级，需要额外的LOAD或SAVE操作：”LOAD xx_config FROM xx_level | LOAD xx_config TO xx_level | SAVE xx_config TO xx_level | SAVE xx_config FROM xx_level”等等。</p><p>由此可见，如果想要更改proxysql的初始账号密码以及端口，改了<code>/etc/proxysql.cnf</code>是没用的，应该通过sql命令行进入到proxysql里，先查看<code>global_variables</code>这个表：<br><img src="/images/proxy19.png" alt="akb48"></p><p>要修改表里的内容才算是真正的修改了配置文件！于是想要在admin:admin的基础上添加一个lcshop:lcshop2019这个用户同时把登录端口改成127.0.0.1:6969，那么语句如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">update global_variables set variable_value = <span class="string">'admin:admin;lcshop:lcshop2019'</span> where variable_name = <span class="string">'admin-admin_credentials'</span>;</span><br><span class="line">update global_variables set variable_value = <span class="string">'127.0.0.1:6969'</span> where variable_name = <span class="string">'admin-mysql_ifaces'</span>;</span><br><span class="line">LOAD MYSQL SERVERS TO RUNTIME  <span class="comment">#常用，让修改的配置生效</span></span><br><span class="line">SAVE MYSQL SERVERS TO DISK     <span class="comment">#常用，将修改的配置持久化</span></span><br></pre></td></tr></table></figure></p><p>此时就是使用新账号和新端口访问proxysql了！如图：<br><img src="/images/proxy20.png" alt="akb48"></p><h2><span id="具体配置">具体配置</span></h2><p>假设我有一组阿里云RDS数据库，主库的内网地址是rm-bp1el471x0ltbg402.mysql.rds.aliyuncs.com，从库的内网地址是rr-bp10ki29n7n8z0ex0.mysql.rds.aliyuncs.com，端口皆3306。</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://github.com/sysown/ProxySQL" target="_blank" rel="noopener">https://github.com/sysown/ProxySQL</a><br><a href="http://seanlook.com/2017/04/10/mysql-proxysql-install-config/" target="_blank" rel="noopener">http://seanlook.com/2017/04/10/mysql-proxysql-install-config/</a> （具体各表的信息可以看这个）</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;script src=&quot;\assets\js\APlayer.min.js&quot;&gt; &lt;/script&gt;&lt;h2&gt;&lt;span id=&quot;安装于启动&quot;&gt;安装于启动&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;先去&lt;code&gt;https://github.com/sysown/proxysql/releas
+      
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
+    
+      <category term="读写分离" scheme="http://yoursite.com/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
+    
+      <category term="proxysql" scheme="http://yoursite.com/tags/proxysql/"/>
+    
+  </entry>
   
   <entry>
     <title>Gitlab配置ssh，实现秘钥上传下载代码</title>
@@ -376,9 +405,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="atlas" scheme="http://yoursite.com/tags/atlas/"/>
-    
       <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
+    
+      <category term="atlas" scheme="http://yoursite.com/tags/atlas/"/>
     
       <category term="读写分离" scheme="http://yoursite.com/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
     
@@ -479,32 +508,6 @@
       <category term="云原生" scheme="http://yoursite.com/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
     
       <category term="k8s" scheme="http://yoursite.com/tags/k8s/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>从Nginx配置缓存到HTTP缓存</title>
-    <link href="http://yoursite.com/2019/03/18/%E4%BB%8ENginx%E9%85%8D%E7%BD%AE%E7%BC%93%E5%AD%98%E5%88%B0HTTP%E7%BC%93%E5%AD%98/"/>
-    <id>http://yoursite.com/2019/03/18/从Nginx配置缓存到HTTP缓存/</id>
-    <published>2019-03-18T11:52:43.000Z</published>
-    <updated>2019-03-19T06:15:29.800Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="使用nginx配置缓存">使用nginx配置缓存</span></h2><p>proxy_cache_path是nginx配置缓存的关键词，它是1.7.9之后的版本推出的功能。配置它很简单，只需要在<code>nginx.conf</code>里的http段里添加一句话：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxy_cache_path /data/httpd/nginx_cache/ecstore levels=<span class="number">1</span>:<span class="number">2</span> keys_zone=ecstore:<span class="number">100</span>m max_size=<span class="number">2</span>g inactive=<span class="number">168</span>h;</span><br></pre></td></tr></table></figure></p><p>上面的命令先说明<code>/data/httpd/nginx_cache/ecstore</code>就是nginx配置缓存的文件夹，<code>keys_zone</code>指的是缓存空间名称，100m意思是可以存储8000*100个key；<code>max_size</code>指的是缓存文件可以占用的最大空间；<code>nactive</code>指的是如果一个缓存文件多长时间不被访问，就会被删除；</p><p>然后手动建立<code>/data/httpd/nginx_cache/ecstore</code>这个文件夹，给予它nginx可访问的权限，然后在具体的配置文件里加上：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">    location = /wap/ &#123;</span><br><span class="line">            <span class="keyword">if</span> ($query_string) &#123;</span><br><span class="line">                    proxy_pass http://172.16.0.199:3000/wap/?$query_string;</span><br><span class="line">            &#125;</span><br><span class="line">            proxy_pass http://<span class="number">172.16</span><span class="number">.0</span><span class="number">.199</span>:<span class="number">3000</span>/wap/;</span><br><span class="line">            include headerproxy.conf;</span><br><span class="line">            proxy_cache ecstore;<span class="comment">#这里的ecstore就是上面keys_zone的名称</span></span><br><span class="line">            proxy_cache_key <span class="string">"$host$request_uri$cookie_user"</span>;<span class="comment">#这里就是缓存的key</span></span><br><span class="line">proxy_cache_min_uses <span class="number">5</span>;<span class="comment">#至少访问5次就开始缓存，默认情况是访问一次就缓存</span></span><br><span class="line">proxy_cache_methods GET HEAD POST；<span class="comment">#对GET、HEAD、POST方法都可以缓存</span></span><br><span class="line">            add_header X-Cache web1$upstream_cache_status;</span><br><span class="line">            proxy_cache_valid <span class="number">200</span> <span class="number">206</span> <span class="number">302</span> <span class="number">301</span> <span class="number">304</span> <span class="number">2</span>h;<span class="comment">#对200、206、302、301、304状态码缓存2小时</span></span><br><span class="line">proxy_no_cache $http_pragma $http_authorization;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p><p>上面这个例子就是“如果访问/wap，会跳转到<a href="http://172.16.0.199:3000/，同时记录下缓存”" target="_blank" rel="noopener">http://172.16.0.199:3000/，同时记录下缓存”</a> 的配置。重启nginx就会生效。</p><h2><span id="验证和排错">验证和排错</span></h2><p>验证nginx是否缓存成功很简单，因为我们在配置文件夹加上了<code>add_header X-Cache web1$upstream_cache_status;</code>这样的配置，那么我们打开目标的网页：<br><img src="/images/CDN5.png" alt="akb48" title="我是三台nginx集群，分别是Web1~3，这个显示缓存到了第三台nginx上"></p><p>发现看到了<code>add_header</code>的内容，可见缓存是成功的。</p><p>如果此刻给这个nginx外面套上一个CDN，那么<code>curl -I</code>在访问页面里具体元素的结果就会是：<br><img src="/images/CDN4.png" alt="akb48"></p><p>我这里用的是阿里云的CDN，可见他们使用<code>Server: Tengine</code>做的CDN，而且这个js元素被CDN成功缓存。如果是<code>TCP_MEM_HIT</code>的字样，那么就说明是是从内存命中的。不同厂家的CDN展示结果不一样的。</p><p>如果nginx缓存没有生效，很大可能是<code>Cache-Control</code>和<code>Set-Cookie</code>的问题，那么就要在上面的配置文件里添加：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">proxy_ignore_headers Set-Cookie Cache-Control;</span><br></pre></td></tr></table></figure></p><p>重启nginx看看效果。</p><h2><span id="vary跟etag的差别">Vary跟Etag的差别</span></h2><p>在上面的截图里看到了<code>Etag</code>和<code>Vary</code>这两个字段，先说<code>Etag</code>。</p><p><code>Etag</code>是一个比较常见的字段，HTTP利用它来判断所访问的元素是否发生了变化—如果浏览器发送请求的请求头<code>If-None-Match</code>里的<code>Etag</code>没有变化（为False）那么服务器就直接304，把缓存内容返给浏览器；如果<code>Etag</code>发生变化了，那么服务器就拿出新的内容给它同时反馈200。它比<code>Last-Modified</code>强的最重要的地方就是<code>Last-Modified</code>只能精确到秒，遇到1s内修改了N次的情况就只能干瞪眼了，而<code>Etag</code>不会。</p><p>而说Vary之前要先说一下<code>Cache-Control</code>，<code>Cache-Control</code>有四个比较出名的缓存策略，分别是：<br>1.no-cache：可以在本地缓存，可以在代理服务器缓存，但是这个缓存要服务器验证才可以使用；<br>2.no-store：彻底得禁用缓存，本地和代理服务器都不缓存，每次都从服务器获取；<br>3.private：为仅浏览器客户端可缓存；<br>4.public：为多个用户都可以缓存，比如可以缓存到CDN上。</p><p>而图片里的<code>Vary: Accept-Encoding</code>是什么意思呢？它是告诉缓存服务器根据<code>Accept-Encoding</code>头值的不同去缓存不同的版本，比如同一个文件可能有gzip方式压缩的，有compress方式压缩的，甚至还有没压缩的。因为在实际的场景中，我们需要一些特殊的缓存：它会忽略响应头中的<code>Content-Encoding</code>，从而可能给不支持压缩的客户端返回缓存的压缩版本。有两个方案可以避免这种情况发生：<br>1.将响应头中的<code>Cache-Control</code>字段设为<code>private</code>，告诉中继缓存（比如CDN）不要缓存它；<br>2.增加<code>Vary: Accept-Encoding</code>响应头，明确告知缓存服务器按照<code>Accept-Encoding</code>字段的内容，分别缓存不同的版本；</p><p>通常为了更好的利用中间实体的缓存功能，我们都用第二种方案。对于<code>css</code>、<code>js</code>这样的静态资源，只要客户端支持gzip，服务端应该总是启用它；同时为了避免有BUG的缓存服务器给用户返回错误的版本，还应该输出<code>Vary: Accept-Encoding</code>。</p><p>nginx配置<code>Vary：Accept-Encoding</code>也很简单，在<code>nginx.conf</code>的http段里加上<code>gzip_vary on;</code>即可。</p><p>当然Vary还要很多种，比如<code>Vary: User-Agent, Cookie</code>，这表示“服务端同时使用请求头中User-Agent和Cookie这两个字段来生成内容”。注意！客户端如果直接访问源服务器的话，Vary就没意义了。</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://blog.csdn.net/dengjiexian123/article/details/53386586" target="_blank" rel="noopener">https://blog.csdn.net/dengjiexian123/article/details/53386586</a><br><a href="https://blog.csdn.net/t12x3456/article/details/17301897" target="_blank" rel="noopener">https://blog.csdn.net/t12x3456/article/details/17301897</a><br><a href="https://www.jianshu.com/p/625c2b15dad5" target="_blank" rel="noopener">https://www.jianshu.com/p/625c2b15dad5</a><br><a href="https://imququ.com/post/vary-header-in-http.html" target="_blank" rel="noopener">https://imququ.com/post/vary-header-in-http.html</a><br><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ" target="_blank" rel="noopener">https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching_FAQ</a><br><a href="https://segmentfault.com/a/1190000016648967" target="_blank" rel="noopener">https://segmentfault.com/a/1190000016648967</a><br><img src="/images/greenbook.jpg" alt="akb48" title="其实有时候不一定要用仇恨去对抗仇恨"></p>]]></content>
-    
-    <summary type="html">
-    
-      在web高效性问题上，缓存是一个绕不过的话题
-    
-    </summary>
-    
-      <category term="工作与原理" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E5%8E%9F%E7%90%86/"/>
-    
-    
-      <category term="CDN" scheme="http://yoursite.com/tags/CDN/"/>
-    
-      <category term="nginx" scheme="http://yoursite.com/tags/nginx/"/>
-    
-      <category term="HTTP" scheme="http://yoursite.com/tags/HTTP/"/>
     
   </entry>
   

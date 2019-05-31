@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[记录部署ProxySql的过程]]></title>
+    <url>%2F2019%2F05%2F31%2F%E8%AE%B0%E5%BD%95%E9%83%A8%E7%BD%B2ProxySql%E7%9A%84%E8%BF%87%E7%A8%8B%2F</url>
+    <content type="text"><![CDATA[安装于启动先去https://github.com/sysown/proxysql/releases 下载稳定版本 ，我是下载的proxysql-2.0.4-1-centos7.x86_64.rpm，然后rpm -ivh proxysql-2.0.4-1-centos7.x86_64.rpm，如果出现了如下错误： 1234[root@dvlshop-proxysql-001 ~]# rpm -ivh proxysql-2.0.4-1-centos7.x86_64.rpm error: Failed dependencies: perl(DBD::mysql) is needed by proxysql-2.0.4-1.x86_64 perl(DBI) is needed by proxysql-2.0.4-1.x86_64 就执行一下yum install -y perl-IO-Socket-SSL perl-DBD-MySQL就可以了。 安装成功之后，启动的命令是service proxysql start： 12345[root@dvlshop-proxysql-001 ~]# service proxysql startStarting ProxySQL: 2019-05-31 11:23:10 [INFO] Using config file /etc/proxysql.cnf2019-05-31 11:23:10 [INFO] No SSL keys/certificates found in datadir (/var/lib/proxysql). Generating new keys/certificates.DONE![root@dvlshop-proxysql-001 ~]# 启动完毕就可以使用初始命令mysql -uadmin -padmin -h 127.0.0.1 -P 6032来登录proxysql了，如图： 补充一下：proxysql的默认管理端口是6032，客户端服务端口是6033。默认的用户名密码都是admin，可以在配置文件里看到。 再说一下各个重要文件的位置：proxysql的静态配置文件是/etc/proxysql.cnf，日志文件是/var/lib/proxysql/proxysql.log，SQLITE的数据文件是/var/lib/proxysql/proxysql.db。 基本概念与之前的中间件atlas不同，配置ProxySQL是基于sql命令的方式完成的，而且配置完成之后直接应用无需重启。怎么做到这个的呢？是因为ProxySQL的三层管理配置设计： runtime：运行中使用的配置文件，这些表的数据库无法直接修改，只能从其他层级load加载。这一份配置会直接影响到生产环境的，所以要将配置加载进RUNTIME层时需要三思而行； memory：提供用户动态修改配置文件，它是我们修改proxysql的唯一正常入口。一般来说在修改一个配置时，首先修改Memory层，确认无误后再接入RUNTIME层，最后持久化到DISK和CONFIG FILE层。也就是说memeory层里面的配置随便改，不影响生产，也不影响磁盘中保存的数据。 disk：将修改的配置保存到磁盘SQLit表中（即：proxysql.db），DISK/CONFIG FILE层表示持久存储的那份配置，持久层对应的磁盘文件是$(DATADIR)/proxysql.db，在重启ProxySQL的时候，会从proxysql.db文件中加载信息。即如果不持久化下来，重启后，配置都将丢失。 config：一般不使用它（即：proxysql.cnf） 再重复一遍：proxysql分为三个级别，RUNTIME是即时生效的，MEMORY是保存在内存中但并不立即生效的，DISK|CONFIG FILE是持久化或写在配置文件中的。修改的配置都是在memory层。可以load到runtime，使配置在不用重启proxysql的情况下也可以生效，也可以save到disk，将对配置的修改持久化！如图： 这三个级别的配置文件互不干扰，在某个层级修改了配置文件，想要加载或保存到另一个层级，需要额外的LOAD或SAVE操作：”LOAD xx_config FROM xx_level | LOAD xx_config TO xx_level | SAVE xx_config TO xx_level | SAVE xx_config FROM xx_level”等等。 由此可见，如果想要更改proxysql的初始账号密码以及端口，改了/etc/proxysql.cnf是没用的，应该通过sql命令行进入到proxysql里，先查看global_variables这个表： 要修改表里的内容才算是真正的修改了配置文件！于是想要在admin:admin的基础上添加一个lcshop:lcshop2019这个用户同时把登录端口改成127.0.0.1:6969，那么语句如下： 1234update global_variables set variable_value = 'admin:admin;lcshop:lcshop2019' where variable_name = 'admin-admin_credentials';update global_variables set variable_value = '127.0.0.1:6969' where variable_name = 'admin-mysql_ifaces';LOAD MYSQL SERVERS TO RUNTIME #常用，让修改的配置生效SAVE MYSQL SERVERS TO DISK #常用，将修改的配置持久化 此时就是使用新账号和新端口访问proxysql了！如图： 具体配置假设我有一组阿里云RDS数据库，主库的内网地址是rm-bp1el471x0ltbg402.mysql.rds.aliyuncs.com，从库的内网地址是rr-bp10ki29n7n8z0ex0.mysql.rds.aliyuncs.com，端口皆3306。 参考资料https://github.com/sysown/ProxySQLhttp://seanlook.com/2017/04/10/mysql-proxysql-install-config/ （具体各表的信息可以看这个）]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>mysql</tag>
+        <tag>读写分离</tag>
+        <tag>proxysql</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Gitlab配置ssh，实现秘钥上传下载代码]]></title>
     <url>%2F2019%2F05%2F21%2FGitlab%E9%85%8D%E7%BD%AEssh%EF%BC%8C%E5%AE%9E%E7%8E%B0%E7%A7%98%E9%92%A5%E4%B8%8A%E4%BC%A0%E4%B8%8B%E8%BD%BD%E4%BB%A3%E7%A0%81%2F</url>
     <content type="text"><![CDATA[常规配置gitlab配置ssh比较简单，在代码机上使用ssh-keygen -t rsa -C &quot;你的邮箱&quot;制作id_rsa和id_rsa.pub，然后来到gitlab的web页面，settings—ssh keys,把id_rsa.pub拷贝进去，然后点击Add key: 然后返回到代码机器上，再对应的代码目录里使用git remote -v查看一下当前的方式，如果不是git的话，通过git remote set-url origin git@你的project地址修改，然后再试一下 ssh -T git@&quot;你的gitlab服务器地址&quot;是否会出现welcome，如果可以的话，那么就可以通过ssh的方式下载上传代码以及git clone 对应的project了。 容器配置但是现在很多人都用容器部署gitlab，而且在部署的时候除了指定80，443端口的映射，还制定了22端口的映射。比如我的这个gitlab容器的启动命令就是： 1docker run --detach --hostname 外网IP --publish 443:443 --publish 80:80 --publish 2222:22 --name gitlab --restart always gitlab/gitlab-ce:latest 可见我把宿主机的2222端口对应给了gitlab容器。那么像上面的方法肯定不会成功，这里就需要我们修改一处地方。 首先进入容器，然后修改gitlab.rb文件，这个文件在容器里有很多，我这个镜像里的gitlab.rb是/etc/gitlab/gitlab.rb，然后把gitlab_rails[&#39;gitlab_shell_ssh_port&#39;]改成2222并且去掉注释，如图： 然后gitlab-ctl restart重启之，重启完毕之后，在代码机上测试一下ssh： 可以已经连通，修改一下remote master地址之后，就可以直接上传了：]]></content>
@@ -179,8 +192,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>atlas</tag>
         <tag>mysql</tag>
+        <tag>atlas</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -884,8 +897,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Jenkins</tag>
         <tag>钉钉</tag>
+        <tag>Jenkins</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -962,8 +975,8 @@
       </categories>
       <tags>
         <tag>阿里云</tag>
-        <tag>python3.6</tag>
         <tag>爬虫</tag>
+        <tag>python3.6</tag>
       </tags>
   </entry>
   <entry>
@@ -1047,8 +1060,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1072,8 +1085,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1085,8 +1098,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1893,8 +1906,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>atlas</tag>
         <tag>mysql</tag>
+        <tag>atlas</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
