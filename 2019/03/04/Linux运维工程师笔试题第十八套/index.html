@@ -97,7 +97,7 @@
 <meta property="og:description" content="这次是跟docker相关的题">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock9.png">
-<meta property="og:updated_time" content="2019-05-29T09:12:00.050Z">
+<meta property="og:updated_time" content="2019-06-06T03:44:51.457Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十八套">
 <meta name="twitter:description" content="这次是跟docker相关的题">
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,557
+                  1,576
                 </span>
               
 
@@ -463,7 +463,7 @@
 <p>上面这个语句新建立一个叫BACKUP的容器，它与A容器挂载情况相同（即都是挂载/DATA），同时将本地的/tmp挂载到容器的/backup，在容器生成的时候，执行了<code>tar cvf /backup/A.tar /DATA</code>将DATA文件夹的内容进行了打包，又由于/tmp已经与/backup挂载，所以就可以直接从宿主机上的/tmp里得到A.tar了。</p>
 <p>4.linux里删除某个用户的所有进程的语句？<br>ps -u username | grep -v PID | awk ‘{print$1}’| xargs kill -9<br>或者killall -u username</p>
 <p>5.linux如何彻底删除一个用户？<br>userdel -r zhidao（前提是这个用户下已经没有程序运行了）</p>
-<p>6.杀死某进程的命令？<br>ps -ef |grep 进程名|awk “{print $2}”|xargs kill -9 </p>
+<p>6.杀死某进程的命令？<br>ps -ef |grep 进程名 |grep -v grep|awk ‘{print $2}’|xargs kill -9<br>注意！这里awk后面是单引号不是双引号 </p>
 <p>7.普通用户如何访问docker?<br>使用<code>gpasswd -a lcshop docker</code>把该用户添加到docker组即可。</p>
 <p>8.输入ping IP后敲回车，发包前会发生什么？<br>首先要知道，ICMP协议是三层（网络层协议），因为不带端口所以肯定不是四层，又因为依赖IP地址所以肯定比2层高。</p>
 <p>其次ping可以帮我们了解到是否能够与对方连通，但是ping如果能不开就不开，因为网络上会有无聊的人给你发大量的ping包把你的带宽占满。</p>
