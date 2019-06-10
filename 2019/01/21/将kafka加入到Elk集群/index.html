@@ -99,7 +99,7 @@
 <meta property="og:image" content="http://yoursite.com/images/elk19.png">
 <meta property="og:image" content="http://yoursite.com/images/elk23.png">
 <meta property="og:image" content="http://yoursite.com/images/elk20.png">
-<meta property="og:updated_time" content="2019-06-10T02:54:32.592Z">
+<meta property="og:updated_time" content="2019-06-10T02:58:44.896Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="将kafka加入到Elk集群">
 <meta name="twitter:description" content="elk6跟elk5有了很大的变化，很多文本格式都已经不识别了。">
@@ -417,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,657
+                  1,667
                 </span>
               
 
@@ -485,7 +485,7 @@
 <p>其实这是没关系的，可以无视掉。然后在浏览器里访问<code>外网ip地址:5601</code>就可以查看kibana了，先去<code>menagement</code> —&gt;<code>index pattern</code>填入刚刚生成的index，然后在<code>discover</code>页面里选择刚刚生成的index就能看到日志内容了：<br><img src="/images/elk20.png" alt="akb48"></p>
 <p>如果kibana在某一天突然出现了”重定向过多”,重启kibana进程可破，但是index都会消失…但愿你永远不会遇到这样的bug情况…</p>
 <p><code>X-pack</code>目前还不支持6.2以上的版本，故此先略。因为没有<code>X-pack</code>，所以再<code>kibana.yml</code>里的<code>elasticsearch.url</code>我们还是写http，有了<code>X-pack</code>就要改成<code>elasticsearch.url: &quot;https://&lt;your_elasticsearch_host&gt;.com:9200&quot;</code>的样子，让es与kibana之间的传输是加密的。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://dzone.com/articles/just-say-no-swapping" target="_blank" rel="noopener">https://dzone.com/articles/just-say-no-swapping</a><br><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/cn/heap-sizing.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/cn/heap-sizing.html</a></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://dzone.com/articles/just-say-no-swapping" target="_blank" rel="noopener">https://dzone.com/articles/just-say-no-swapping</a><br><a href="https://www.elastic.co/guide/cn/elasticsearch/guide/cn/heap-sizing.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/elasticsearch/guide/cn/heap-sizing.html</a><br><a href="https://www.elastic.co/guide/cn/kibana/current/settings.html" target="_blank" rel="noopener">https://www.elastic.co/guide/cn/kibana/current/settings.html</a></p>
 
       
     </div>
@@ -938,7 +938,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共243.3k字</span>
+  <span class="post-count">博客全站共243.4k字</span>
 </div>
         
 

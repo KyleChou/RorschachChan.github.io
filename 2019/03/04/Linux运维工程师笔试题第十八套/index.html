@@ -97,7 +97,7 @@
 <meta property="og:description" content="这次是跟docker相关的题">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/mysql-sock9.png">
-<meta property="og:updated_time" content="2019-06-06T03:44:51.457Z">
+<meta property="og:updated_time" content="2019-06-10T07:02:00.313Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十八套">
 <meta name="twitter:description" content="这次是跟docker相关的题">
@@ -415,7 +415,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,576
+                  1,585
                 </span>
               
 
@@ -477,7 +477,7 @@
 <p>11.假设有一个dockerfile A内容如下：<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ENV name Cloud Man</span><br><span class="line">ENTRYPOINT [&quot;/bin/echo&quot;, &quot;Hello, $name&quot;]</span><br></pre></td></tr></table></figure></p>
 <p>还有一个B dockerfile内容如下：<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ENV name Cloud Man  </span><br><span class="line">ENTRYPOINT echo &quot;Hello, $name&quot;</span><br></pre></td></tr></table></figure></p>
 <p>请问两者分别运行容器结果是啥？<br>A是<code>Hello, $name</code>，B是<code>Hello, Cloud Man</code>。A的环境变量并没有达到效果，如果想要达到效果，应该改成如下：<br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ENV name Cloud Man  </span><br><span class="line">ENTRYPOINT [&quot;/bin/sh&quot;, &quot;-c&quot;, &quot;echo Hello, $name&quot;]</span><br></pre></td></tr></table></figure></p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec" target="_blank" rel="noopener">https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec</a><br><a href="http://dockone.io/question/469" target="_blank" rel="noopener">http://dockone.io/question/469</a><br><a href="https://www.ibm.com/developerworks/community/blogs/132cfa78-44b0-4376-85d0-d3096cd30d3f/entry/RUN_vs_CMD_vs_ENTRYPOINT_%E6%AF%8F%E5%A4%A95%E5%88%86%E9%92%9F%E7%8E%A9%E8%BD%AC_Docker_%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF_17?lang=en" target="_blank" rel="noopener">https://www.ibm.com/developerworks/community/blogs/132cfa78-44b0-4376-85d0-d3096cd30d3f/entry/RUN_vs_CMD_vs_ENTRYPOINT_%E6%AF%8F%E5%A4%A95%E5%88%86%E9%92%9F%E7%8E%A9%E8%BD%AC_Docker_%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF_17?lang=en</a></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec" target="_blank" rel="noopener">https://stackoverflow.com/questions/30960686/difference-between-docker-attach-and-docker-exec</a><br><a href="http://dockone.io/question/469" target="_blank" rel="noopener">http://dockone.io/question/469</a><br><a href="https://www.ibm.com/developerworks/community/blogs/132cfa78-44b0-4376-85d0-d3096cd30d3f/entry/RUN_vs_CMD_vs_ENTRYPOINT_%E6%AF%8F%E5%A4%A95%E5%88%86%E9%92%9F%E7%8E%A9%E8%BD%AC_Docker_%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF_17?lang=en" target="_blank" rel="noopener">https://www.ibm.com/developerworks/community/blogs/132cfa78-44b0-4376-85d0-d3096cd30d3f/entry/RUN_vs_CMD_vs_ENTRYPOINT_%E6%AF%8F%E5%A4%A95%E5%88%86%E9%92%9F%E7%8E%A9%E8%BD%AC_Docker_%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF_17?lang=en</a><br><a href="https://c.isme.pub/2018/07/11/python-interview/" target="_blank" rel="noopener">https://c.isme.pub/2018/07/11/python-interview/</a></p>
 
       
     </div>
@@ -930,7 +930,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共243.3k字</span>
+  <span class="post-count">博客全站共243.4k字</span>
 </div>
         
 
