@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[记录一次优化前端docker的过程]]></title>
+    <url>%2F2019%2F06%2F12%2F%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E4%BC%98%E5%8C%96%E5%89%8D%E7%AB%AFdocker%E7%9A%84%E8%BF%87%E7%A8%8B%2F</url>
+    <content type="text"><![CDATA[最初优化前端node项目一直以来虽然是容器部署，但是是很粗糙的形式—每次更新的过程给各位感受一下： 1先在宿主机里去项目文件夹里执行`git pull`，然后`docker exec -it 容器名 /bin/bash`进入到对应容器里，然后执行`pm2 flush`、`npm run build`和`pm2 reload 0`。 这种拿docker做虚拟机的行为实在是让人“叔可忍婶不可忍”。于是就要改变一下这个思路，重写一个dockerfile，内容如下： 12345678FROM keymetrics/pm2:latest-alpineMAINTAINER ChrisChan &lt;chen_shuo@dahuatech.com&gt;WORKDIR /var/www/node/shopFrontCOPY shopFront/ . #由于上面已经指定了WORKDIR的地址，所以COPY/ADD/RUN等命令的相对路径都是WORKDIR的路径，所以这里是.RUN git pull &amp;&amp; npm run buildEXPOSE 3000 #暴露3000端口CMD [ "pm2", "start", "npm"] 然后docker build -t=&quot;ecnode：0.1&quot; .生成镜像，docker run --name ECNODE -it -p 33664:3000 ecnode:0.1启动叫ECNODE的容器，发现服务站不住，启动完了后就死了。发现其实不能用pm2 start npm这种方法，应该用pm2-docker start XXX.js作为CMD，这样才能在后台站住。 继续折腾上面这个dockerfile打成镜像的时间总共是165秒，如图： 时间大量的消耗在npm run build和COPY这两个步骤上了，因为文件夹里包括node_modules，这个文件夹220M左右，复制肯定比较消耗时间。于是我尝试换了一个Dockerfile写法： 1234567891011FROM keymetrics/pm2:latest-alpineMAINTAINER ChrisChan &lt;chen_shuo@dahuatech.com&gt;COPY package.json /tmp/package.jsonRUN cd /tmp &amp;&amp; npm installRUN mkdir -p /var/www/node/shopFront &amp;&amp; cp -a /tmp/node_modules /var/www/node/shopFrontWORKDIR /var/www/node/shopFrontCOPY shopFront/ .RUN git pullEXPOSE 3000CMD [ "pm2-docker", "start", "server.js"] 执行之后效果如图： 妈的，时间反而多了20秒。不过这样文件夹里就不用带着node_modules，因为npm install会生成一个node_modules。不过这个0.2镜像蛮大的，比之前的多200M。所以看来看去还是0.1更划算。 补充一下：docker ps -a --no-trunc是查看docker ps完全命令，有的时候COMMAND显示不全就用它。 参考资料https://pm2.io/doc/zh/runtime/integration/docker/#%E8%AE%BE%E7%BD%AE%E4%B8%80%E4%B8%AAdocker%E6%96%87%E4%BB%B6https://mp.weixin.qq.com/s?__biz=MzA5OTAyNzQ2OA==&amp;mid=2649700687&amp;idx=1&amp;sn=a656b7c7fdacc1b3df97c1d2630e50d9&amp;scene=21#wechat_redirecthttps://mp.weixin.qq.com/s?__biz=MzUxMTcwOTM4Mg==&amp;mid=2247485014&amp;idx=1&amp;sn=678e8ddbf6e7794ec7ceecfad541548d&amp;chksm=f96edfffce1956e911ef9cc6d6d93487fe73f7906b07142e3b733ebeea33083d9ba37e859f79&amp;scene=0&amp;xtrack=1&amp;key=196bef05a6768f28a2ed7bc2971ae0948f4f3a5eb6c75b89fa3192703dfd615f3107d2de492245fa5a6e0ef7a973c0db6e95d51dde6be55ed787537a86188905465fb0f0d9dfad4ce724a2dd8c31eaa0&amp;ascene=1&amp;uin=MTE4NTkxNTEwMA%3D%3D&amp;devicetype=Windows+7&amp;version=62060833&amp;lang=zh_CN&amp;pass_ticket=07xJ6B%2F3iCihW9bobj996srD297X2G7uvamoKYYiG8rJ6Ga7ItzESaX7Rjiis5YWhttps://stackoverflow.com/questions/35774714/how-to-cache-the-run-npm-install-instruction-when-docker-build-a-dockerfile]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>前端node</tag>
+        <tag>前端pm2</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[使用Zabbix监控logstash]]></title>
     <url>%2F2019%2F06%2F11%2F%E4%BD%BF%E7%94%A8zabbix%E7%9B%91%E6%8E%A7logstash%2F</url>
     <content type="text"><![CDATA[配置过程logstash常规的监控项可以去移步 https://github.com/fredprod/logstash-zabbix ，有模板有脚本，可以说是非常全面、服务到家了。 本文主要是要监控logstash的tps，先说一下tps的定义：它是Transactions Per Second（每秒传输的事物处理个数），即服务器每秒处理的事务数。TPS包括一条消息入和一条消息出，加上一次用户数据库访问。我们从TPS里反馈出logstash的实时工作状态。 首先先要安装logstash-output-zabbix，安装方法很简单：在logstash/bin目录下执行./logstash-plugin install logstash-output-zabbix，如图： 然后在启动logstash对应的conf文件里，新增如下的配置： 12345678910111213141516171819202122232425262728input &#123; ...&#125;filter &#123; ...原有配置略 metrics &#123; meter =&gt; "events" #这里统计经过filter的事件 add_tag =&gt; "metric" add_field =&gt; &#123;"[@metadata][zabbix_key]" =&gt; "logstash_events"&#125; #zabbix item的key，这个要和zabbix-server的配置一致 add_field =&gt; &#123; "[@metadata][zabbix_host]" =&gt; "被监控机器名" &#125; #zabbix写入的主机 flush_interval =&gt; 30 #设定写入频率，我这里是30秒一次 &#125; &#125; output &#123; ...原有配置略 if "metric" in [tags] &#123; zabbix &#123; zabbix_server_host =&gt; "172.31.0.77" #这里是zabbix-server的地址 zabbix_host =&gt; "[@metadata][zabbix_host]" zabbix_key =&gt; "[@metadata][zabbix_key]" zabbix_value =&gt; "[events][count]" #[events][count] 是事件统计数据， &#125; &#125; 保存之后，来到zabbix-server的web端，新增一个items，如下： 注意！这个items的类型是zabbix-trapper（Zabbix采集器）！同时设定Preprocessing steps为simple change。 然后重启logstash即可。重启之后，如果出现了如下的错误： 12[2019-06-11T15:53:33,789][WARN ][logstash.outputs.zabbix ] Zabbix server at ZABBIXIP地址 rejected all items sent. &#123;:zabbix_host=&gt;"被监控机器名"&#125;[2019-06-11T15:53:43,797][WARN ][logstash.outputs.zabbix ] Zabbix server at ZABBIXIP地址 rejected all items sent. &#123;:zabbix_host=&gt;"被监控机器名"&#125; 检查一下zabbix_key、zabbix_host是否与zabbix-server网页端配置的完全一致，而且zabbix_value也最好不要是具体值，[events][count]就可以了。 然后在zabbix-server端就可以看到tps结果了： 使用systemctl启动logstash我这个logstash是tar包安装的，每一次杀死启动都是敲命令，看上去很挫，于是就要转成systemctl的方式。首先先创建logstash用户和用户组，确认logstash用户在logstash用户组里。然后需要改几个地方： 先去pipelines.yml里修改path.config: “/logstash路径/config/*.conf”，改成实际的配置文件。然后再在同文件夹的startup.options里修改 123LS_HOME=/usr/share/logstash-6.2.3 项目目录LS_SETTINGS_DIR="$LS_HOME/config"LS_OPTS="--path.settings $&#123;LS_SETTINGS_DIR&#125;" 再logstash安装路径下执行./bin/system-install /logstash安装路径/config/startup.options systemd。一会就能看到一个成功的字样，去/etc/systemd/system/logstash.service目录可以看到配置文件。此时就是可使用systemctl enable/start/stop/restart logstash.service来操作了！ 参考资料https://www.zabbix.com/cn/integrations/logstashhttps://notes-by-yangjinjie.readthedocs.io/zh_CN/latest/service/elk/08-logstash-output-zabbix.html]]></content>
@@ -230,8 +243,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>atlas</tag>
         <tag>mysql</tag>
+        <tag>atlas</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -1512,18 +1525,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root用户启动tomcat进程]]></title>
-    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>centos</tag>
-        <tag>运维安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root启动进程以及启动docker]]></title>
     <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
     <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
@@ -1533,6 +1534,18 @@
       <tags>
         <tag>docker</tag>
         <tag>安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root用户启动tomcat进程]]></title>
+    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>centos</tag>
+        <tag>运维安全</tag>
       </tags>
   </entry>
   <entry>
@@ -1944,8 +1957,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>atlas</tag>
         <tag>mysql</tag>
+        <tag>atlas</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
