@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/xtrabackup2.png">
 <meta property="og:image" content="http://yoursite.com/images/xtrabackup.png">
-<meta property="og:updated_time" content="2019-06-17T09:29:54.086Z">
+<meta property="og:updated_time" content="2019-06-17T12:56:31.275Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="XtraBackup的安装和使用">
 <meta name="twitter:description" content="java 8-alpine这个镜像好像不带有/etc/localtime这个文件，这样可能日志时间会相差8小时，可以修改jar包来指定区域来解决问题。">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,470
+                  1,483
                 </span>
               
 
@@ -480,7 +480,7 @@
 <p>整理一下mysql里更新语句的内幕：</p>
 <p>系统当取到一个UPDATE语句的时候，会先通过主键找到该行，判断此行是否在buffer里，如果在就直接返回给执行器，如果不在就先从磁盘拷贝一份到内存里，在内存里对数据进行修改，此时生成了<code>dirty page</code>，同时也将这个操作记录更新到<code>redo log</code>里，<code>redo log</code>处于<code>prepare</code>状态（mysql生成<code>xid</code>)，通知执行器可以提交覆盖磁盘（这是一个事务）。然后执行器先生成这个操作的bin log（mysql是<code>日志先行</code>的设计），然后再执行覆盖的农作（将<code>xid</code>写进<code>bin log</code>)。至此更新完成。</p>
 <p>假设此时mysql出现了非正常宕机，那么先找一下有没有之前的xtrabackup等工具保留的备份，如果有当日的备份，再结合<code>bin log</code>可以恢复一个临时表。然后扫描最后一个<code>bin log</code>，提取出xid。重做检查点以后的<code>redo log</code>，搜集处于<code>prepare</code>阶段的事务链表，将事务的<code>xid</code>与<code>bin log</code>中的<code>xid</code>对比。若存在，说明事务记录到<code>bin log</code>成功，但是最终未<code>commit</code>成功，则提交，否则就回滚。</p>
-<h2><span id="参考文档">参考文档</span></h2><p><a href="http://mysql.taobao.org/monthly/2016/03/07/" target="_blank" rel="noopener">http://mysql.taobao.org/monthly/2016/03/07/</a><br><a href="http://mysql.taobao.org/monthly/2018/02/05/" target="_blank" rel="noopener">http://mysql.taobao.org/monthly/2018/02/05/</a><br><a href="https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect</a></p>
+<h2><span id="参考文档">参考文档</span></h2><p><a href="http://mysql.taobao.org/monthly/2016/03/07/" target="_blank" rel="noopener">http://mysql.taobao.org/monthly/2016/03/07/</a><br><a href="http://mysql.taobao.org/monthly/2018/02/05/" target="_blank" rel="noopener">http://mysql.taobao.org/monthly/2018/02/05/</a><br><a href="https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect</a><br><a href="https://help.aliyun.com/knowledge_detail/41738.html?spm=a2c4g.11186631.2.4.2b9d6998v5nwaK" target="_blank" rel="noopener">https://help.aliyun.com/knowledge_detail/41738.html?spm=a2c4g.11186631.2.4.2b9d6998v5nwaK</a></p>
 
       
     </div>
