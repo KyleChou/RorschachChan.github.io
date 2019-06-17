@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/xtrabackup2.png">
 <meta property="og:image" content="http://yoursite.com/images/xtrabackup.png">
-<meta property="og:updated_time" content="2019-06-17T08:56:38.245Z">
+<meta property="og:updated_time" content="2019-06-17T09:29:54.086Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="XtraBackup的安装和使用">
 <meta name="twitter:description" content="java 8-alpine这个镜像好像不带有/etc/localtime这个文件，这样可能日志时间会相差8小时，可以修改jar包来指定区域来解决问题。">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,175
+                  1,470
                 </span>
               
 
@@ -432,7 +432,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  5
+                  6
                 </span>
               
             </div>
@@ -472,7 +472,9 @@
 <p>安装步骤如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@share ~]<span class="comment">#	yum install -y cmake libaio-devel</span></span><br><span class="line">[root@share ~]<span class="comment">#	yum install glibc glibc-devel glibc-static</span></span><br><span class="line">[root@share ~]<span class="comment"># rpm -ivh percona-xtrabackup-24-2.4.14-1.el6.x86_64.rpm </span></span><br><span class="line">warning: percona-xtrabackup<span class="number">-24</span><span class="number">-2.4</span><span class="number">.14</span><span class="number">-1.</span>el6.x86_64.rpm: Header V4 RSA/SHA256 Signature, key ID <span class="number">8507</span>efa5: NOKEY</span><br><span class="line">Preparing...                          <span class="comment">################################# [100%]</span></span><br><span class="line">Updating / installing...</span><br><span class="line">   <span class="number">1</span>:percona-xtrabackup<span class="number">-24</span><span class="number">-2.4</span><span class="number">.14</span><span class="number">-1.</span>el<span class="comment">################################# [100%]</span></span><br><span class="line">[root@share ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
 <p>安装完毕之后，就可以<code>innobackupex --host=127.0.0.1 --user=root --password=数据库密码 --defaults-file=/etc/mysql/my.cnf /备份的文件夹名</code>来备份数据库。同时备份结束之后会生成一个LSN号，在增量备份时候，就只备份大于此号的数据页。</p>
 <p>如果有了备份文件想要全量恢复的话，就是如下操作：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">scp -r /backup/备份文件夹/ 另一个mysqlIP:/backup/	<span class="comment">#先将本机的备份文件夹拷贝到其他服务器里去</span></span><br><span class="line">innobackupex --apply-log --use-memory=<span class="number">1</span>G /backup/备份文件夹/	<span class="comment">#在新的mysql里进行数据的准备工作，这一步用来合成可用的数据，--use-memory根据实际情况指定</span></span><br><span class="line">systemctl stop mariadb</span><br><span class="line">rm -rf /var/lib/mysql/*		<span class="comment">#停止当前进程，并且删除数据目录和对应日志</span></span><br><span class="line">innobackupex --datadir=/var/lib/mysql --copy-back /backup/备份文件夹/		<span class="comment">#将准备好的数据还原到对应目录里</span></span><br><span class="line">chown -R mysql: /var/lib/mysql/		<span class="comment">#将文件夹属主和组都更改成mysql</span></span><br><span class="line">systemctl start mariadb		<span class="comment">#重启进程</span></span><br></pre></td></tr></table></figure></p>
-<h2><span id="增量备份与恢复">增量备份与恢复</span></h2><h2><span id="mysql如何恢复到任意时间点">Mysql如何恢复到任意时间点</span></h2><p>众所周知，mysql的更新操作（UPDATE）是“先备份再覆盖”的一个过程，那备份在哪里呢?<code>buffer</code>。</p>
+<h2><span id="增量备份与恢复">增量备份与恢复</span></h2><p>增量备份的前提是全量备份，假设我们已经进行了全量备份。增量备份过程如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">innobackupex -p数据库密码 --incremental /全量备份文件夹 --incremental-basedir=/backup/增量备份文件夹<span class="number">1</span>/	<span class="comment">#与全量备份文件夹相比，进行增量备份</span></span><br><span class="line">scp -r /backup/* 另一个mysqlIP:/backup/		<span class="comment">#传递给另个mysql里</span></span><br><span class="line">innobackupex --apply-log --redo-only --use-memory=<span class="number">1</span>G /backup/全量备份文件夹/	<span class="comment">#先对最早的全量备份进行恢复</span></span><br><span class="line">innobackupex --apply-log --redo-only --use-memory=<span class="number">1</span>G /backup/全量备份文件夹/ --incremental-dir=/backup/增量备份文件夹<span class="number">1</span>		</span><br><span class="line"><span class="comment">#在之前全量备份的基础上合并一波增量备份</span></span><br><span class="line">systemctl stop mariadb</span><br><span class="line">rm -rf /var/lib/mysql/*		<span class="comment">#停止当前进程，并且删除数据目录和对应日志</span></span><br><span class="line">innobackupex --datadir=/var/lib/mysql --copy-back /backup/备份文件夹/		<span class="comment">#将准备好的数据还原到对应目录里</span></span><br><span class="line">chown -R mysql: /var/lib/mysql/		<span class="comment">#将文件夹属主和组都更改成mysql</span></span><br><span class="line">systemctl start mariadb		<span class="comment">#重启进程</span></span><br></pre></td></tr></table></figure></p>
+<p>查看是否是增量备份还是全量备份，可以通过<code>xtrabackup_checkpoints</code>文件里的<code>backup_type</code>字段：<code>full-prepared</code>是全量备份、<code>incremental</code>是增量备份。    </p>
+<h2><span id="mysql如何恢复到任意时间点">Mysql如何恢复到任意时间点</span></h2><p>众所周知，mysql的更新操作（UPDATE）是“先备份再覆盖”的一个过程，那备份在哪里呢?<code>buffer</code>。</p>
 <p>但是这个瞬间就会出现buffer的数据页与磁盘的数据页内容不一致，这时的buffer的数据页叫<code>dirty page</code>。如果此时出现了mysql非正常宕机，就会出现“数据并没有同步到磁盘文件中，而且已经从内存里出来了”的现象，即数据丢失。</p>
 <p>为了解决这个现象，就在buffer的<code>dirty page</code>变更结束之后，把相应修改记录记录到<code>redo log</code>里。如果在发现有数据丢失的现象，可以通过<code>redo log</code>回溯。更多内容可以看<a href="https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect</a> 这篇文章。</p>
 <p>整理一下mysql里更新语句的内幕：</p>
@@ -927,7 +929,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共246.6k字</span>
+  <span class="post-count">博客全站共246.9k字</span>
 </div>
         
 
