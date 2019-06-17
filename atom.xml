@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-12T13:35:10.232Z</updated>
+  <updated>2019-06-17T08:56:38.245Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,30 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>XtraBackup的安装和使用</title>
+    <link href="http://yoursite.com/2019/06/17/XtraBackup%E7%9A%84%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8/"/>
+    <id>http://yoursite.com/2019/06/17/XtraBackup的安装和使用/</id>
+    <published>2019-06-17T02:37:56.000Z</published>
+    <updated>2019-06-17T08:56:38.245Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>XtraBackup是数据库物理备份工具，是阿里云RDS备份数据库的组件。它的优点是热备而且速度快，效率比mysqldump不知道高到哪里去了。它的备份原理如下:</p><ol><li>innobackupex首先会启动一个xtrabackup_log后台检测的进程，实时检测mysql的redo log的变化，一旦发现redo有新的日志写入，立刻将日志写入到日志文件xtrabackup_log中。</li><li>物理拷贝innodb的数据文件和系统表空间文件idbdata1到对应的以默认时间戳为备份目录的地方</li><li>复制结束后，执行<code>flush table with read lock</code>操作进行全库锁表准备备份非InnoDB文件</li><li>复制.frm .myd .myi等非InnoDB引擎文件</li><li>查看binary log 的位置</li><li>解锁unlock tables</li><li>停止xtrabackup_log进程</li></ol><p><img src="/images/xtrabackup2.png" alt="akb48"></p><h2><span id="安装与全量备份">安装与全量备份</span></h2><p>先去<a href="https://www.percona.com/downloads/Percona-XtraBackup-2.4/LATEST/" target="_blank" rel="noopener">https://www.percona.com/downloads/Percona-XtraBackup-2.4/LATEST/</a> 下载2.4版本的XtraBackup，虽然最新的版本是<code>8.0.6</code>，但是据说它只支持mysql8.0和percona8.0…<br><img src="/images/xtrabackup.png" alt="akb48"></p><p>安装步骤如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@share ~]<span class="comment">#yum install -y cmake libaio-devel</span></span><br><span class="line">[root@share ~]<span class="comment">#yum install glibc glibc-devel glibc-static</span></span><br><span class="line">[root@share ~]<span class="comment"># rpm -ivh percona-xtrabackup-24-2.4.14-1.el6.x86_64.rpm </span></span><br><span class="line">warning: percona-xtrabackup<span class="number">-24</span><span class="number">-2.4</span><span class="number">.14</span><span class="number">-1.</span>el6.x86_64.rpm: Header V4 RSA/SHA256 Signature, key ID <span class="number">8507</span>efa5: NOKEY</span><br><span class="line">Preparing...                          <span class="comment">################################# [100%]</span></span><br><span class="line">Updating / installing...</span><br><span class="line">   <span class="number">1</span>:percona-xtrabackup<span class="number">-24</span><span class="number">-2.4</span><span class="number">.14</span><span class="number">-1.</span>el<span class="comment">################################# [100%]</span></span><br><span class="line">[root@share ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p><p>安装完毕之后，就可以<code>innobackupex --host=127.0.0.1 --user=root --password=数据库密码 --defaults-file=/etc/mysql/my.cnf /备份的文件夹名</code>来备份数据库。同时备份结束之后会生成一个LSN号，在增量备份时候，就只备份大于此号的数据页。</p><p>如果有了备份文件想要全量恢复的话，就是如下操作：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">scp -r /backup/备份文件夹/ 另一个mysqlIP:/backup/<span class="comment">#先将本机的备份文件夹拷贝到其他服务器里去</span></span><br><span class="line">innobackupex --apply-log --use-memory=<span class="number">1</span>G /backup/备份文件夹/<span class="comment">#在新的mysql里进行数据的准备工作，这一步用来合成可用的数据，--use-memory根据实际情况指定</span></span><br><span class="line">systemctl stop mariadb</span><br><span class="line">rm -rf /var/lib/mysql/*<span class="comment">#停止当前进程，并且删除数据目录和对应日志</span></span><br><span class="line">innobackupex --datadir=/var/lib/mysql --copy-back /backup/备份文件夹/<span class="comment">#将准备好的数据还原到对应目录里</span></span><br><span class="line">chown -R mysql: /var/lib/mysql/<span class="comment">#将文件夹属主和组都更改成mysql</span></span><br><span class="line">systemctl start mariadb<span class="comment">#重启进程</span></span><br></pre></td></tr></table></figure></p><h2><span id="增量备份与恢复">增量备份与恢复</span></h2><h2><span id="mysql如何恢复到任意时间点">Mysql如何恢复到任意时间点</span></h2><p>众所周知，mysql的更新操作（UPDATE）是“先备份再覆盖”的一个过程，那备份在哪里呢?<code>buffer</code>。</p><p>但是这个瞬间就会出现buffer的数据页与磁盘的数据页内容不一致，这时的buffer的数据页叫<code>dirty page</code>。如果此时出现了mysql非正常宕机，就会出现“数据并没有同步到磁盘文件中，而且已经从内存里出来了”的现象，即数据丢失。</p><p>为了解决这个现象，就在buffer的<code>dirty page</code>变更结束之后，把相应修改记录记录到<code>redo log</code>里。如果在发现有数据丢失的现象，可以通过<code>redo log</code>回溯。更多内容可以看<a href="https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect</a> 这篇文章。</p><p>整理一下mysql里更新语句的内幕：</p><p>系统当取到一个UPDATE语句的时候，会先通过主键找到该行，判断此行是否在buffer里，如果在就直接返回给执行器，如果不在就先从磁盘拷贝一份到内存里，在内存里对数据进行修改，此时生成了<code>dirty page</code>，同时也将这个操作记录更新到<code>redo log</code>里，<code>redo log</code>处于<code>prepare</code>状态（mysql生成<code>xid</code>)，通知执行器可以提交覆盖磁盘（这是一个事务）。然后执行器先生成这个操作的bin log（mysql是<code>日志先行</code>的设计），然后再执行覆盖的农作（将<code>xid</code>写进<code>bin log</code>)。至此更新完成。</p><p>假设此时mysql出现了非正常宕机，那么先找一下有没有之前的xtrabackup等工具保留的备份，如果有当日的备份，再结合<code>bin log</code>可以恢复一个临时表。然后扫描最后一个<code>bin log</code>，提取出xid。重做检查点以后的<code>redo log</code>，搜集处于<code>prepare</code>阶段的事务链表，将事务的<code>xid</code>与<code>bin log</code>中的<code>xid</code>对比。若存在，说明事务记录到<code>bin log</code>成功，但是最终未<code>commit</code>成功，则提交，否则就回滚。</p><h2><span id="参考文档">参考文档</span></h2><p><a href="http://mysql.taobao.org/monthly/2016/03/07/" target="_blank" rel="noopener">http://mysql.taobao.org/monthly/2016/03/07/</a><br><a href="http://mysql.taobao.org/monthly/2018/02/05/" target="_blank" rel="noopener">http://mysql.taobao.org/monthly/2018/02/05/</a><br><a href="https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MjM5NjMyMjUzNg==&amp;mid=2448131616&amp;idx=1&amp;sn=5af80b03adef5846b7dc51015d99f7e7&amp;scene=0#wechat_redirect&amp;rd2werd=1#wechat_redirect</a></p>]]></content>
+    
+    <summary type="html">
+    
+      java 8-alpine这个镜像好像不带有/etc/localtime这个文件，这样可能日志时间会相差8小时，可以修改jar包来指定区域来解决问题。
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
+    
+      <category term="数据备份" scheme="http://yoursite.com/tags/%E6%95%B0%E6%8D%AE%E5%A4%87%E4%BB%BD/"/>
+    
+  </entry>
   
   <entry>
     <title>记录一次优化前端docker的过程</title>
@@ -483,32 +507,6 @@
       <category term="django" scheme="http://yoursite.com/tags/django/"/>
     
       <category term="gateone" scheme="http://yoursite.com/tags/gateone/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>Atlas出了一个很诡异的bug</title>
-    <link href="http://yoursite.com/2019/03/26/Atlas%E5%87%BA%E4%BA%86%E4%B8%80%E4%B8%AA%E5%BE%88%E8%AF%A1%E5%BC%82%E7%9A%84bug/"/>
-    <id>http://yoursite.com/2019/03/26/Atlas出了一个很诡异的bug/</id>
-    <published>2019-03-26T08:39:18.000Z</published>
-    <updated>2019-05-06T09:05:12.896Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>这几天数据库更换密码，就在原有的atlas文件基础上拷贝出来一个新文件，修改了密码，然后启动进程。但是启动之后，发现虽然端口起来了，但是atlas没有连接数据库成功，如图:<br><img src="/images/atlas14.png" alt="akb48"></p><p>登录到atlas后台一看，竟然是双down:<br><img src="/images/atlas15.png" alt="akb48"></p><p>可是在atlas服务器上单独直连阿里云数据库是没任何问题的，而且数据库的监控也没有任何异常。我怀疑是密码含有了atlas不识别的特殊符号，改成了纯数字和字母的组合，重新启动还是不行，这就很尴尬了，明明原来的配置文件可以启动，我就更改了密码和端口，怎么新的进程就不好使？</p><p><img src="/images/atlas16.png" alt="akb48" title="一边好使，一边不好使"></p><p>于是我尝试抓包，使用<code>tcpdump -s 0 -i any -v port 3318 and src host mysql的ip -w test.pcap</code>，结果发现3318的包少的可怜，于是我就改用<code>tcpdump -s 0 -i any -v host mysql的ip -w test2.pcap</code>扩大了范围，然后发现包有这样的字样：<br><img src="/images/atlas17.png" alt="akb48"></p><p>可见atlas一直以root去请求数据库，但是我这个是阿里云的RDS服务（Mysql 5.6.7)，本身是没有root的，所以就爆“User not exist”。</p><p>这就很尴尬了，为什么会突然以root身份请求数据库？莫非这是atlas的BUG？先把问题记录下来，然后慢慢解决…</p><p><strong>PS.</strong>这个BUG后来修复了，需要重新编译安装，新的安装包地址见：<a href="https://github.com/RorschachChan/noroot-atlas" target="_blank" rel="noopener">https://github.com/RorschachChan/noroot-atlas</a><br><img src="/images/妹子.jpg" alt="akb48"></p>]]></content>
-    
-    <summary type="html">
-    
-      atlas现在已经被360抛弃了，这次估计要转投proxysql了
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
-    
-      <category term="atlas" scheme="http://yoursite.com/tags/atlas/"/>
-    
-      <category term="读写分离" scheme="http://yoursite.com/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
     
   </entry>
   
