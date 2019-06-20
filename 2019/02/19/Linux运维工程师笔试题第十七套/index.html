@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这次是nginx和CDN相关的题目">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-10T06:44:06.319Z">
+<meta property="og:updated_time" content="2019-06-20T05:56:34.002Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十七套">
 <meta name="twitter:description" content="这次是nginx和CDN相关的题目">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,766
+                  1,840
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  7
+                  8
                 </span>
               
             </div>
@@ -476,6 +476,7 @@
 <p>按照上述配置，则访问/test/目录里面的文件时，nginx会去<code>/www/test/</code>目录找文件：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /test/ &#123;</span><br><span class="line">          root /www/test;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <p>按照这种配置，则访问/test/目录下的文件时，nginx会去<code>/www/test/test/</code>目录下找文件。</p>
 <p>另一个区别是alias后面必须要用<code>/</code>结束，否则会找不到文件，而root则对<code>/</code>可有可无。</p>
+<p><font color="red">注意！location后面的/test/如果是/test的话（没有用/收尾），而同时alias的文件夹是有/收尾的话，就会出现“目录穿越”漏洞，即外来人可以访问你/www/test../即www文件夹的内容。</font>详情可见 <a href="https://www.leavesongs.com/PENETRATION/nginx-insecure-configuration.html" target="_blank" rel="noopener">https://www.leavesongs.com/PENETRATION/nginx-insecure-configuration.html</a> 。</p>
 <p>12.CDN缓存命中率下降的因素有哪些？</p>
 <ol>
 <li>客户是否刷新过缓存？<br>答：如果刷新缓存，有可能会短时间表现命中率下降。特别说明下：CDN的url或者目录刷新是清除CDN缓存的动作（这个比较容易理解偏差）</li>
@@ -730,7 +731,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">239</span>
+                  <span class="site-state-item-count">240</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -752,7 +753,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">205</span>
+                  <span class="site-state-item-count">206</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -946,7 +947,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共246.9k字</span>
+  <span class="post-count">博客全站共247.1k字</span>
 </div>
         
 
