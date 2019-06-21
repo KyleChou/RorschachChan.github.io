@@ -96,10 +96,14 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="AWS的工单反馈与阿里云真是天差地别">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-21T10:04:24.326Z">
+<meta property="og:image" content="http://yoursite.com/images/LLD1.png">
+<meta property="og:image" content="http://yoursite.com/images/LLD2.png">
+<meta property="og:image" content="http://yoursite.com/images/LLD3.png">
+<meta property="og:updated_time" content="2019-06-21T11:12:58.295Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="研究一下Zabbix 3.4的服务主动发现功能">
 <meta name="twitter:description" content="AWS的工单反馈与阿里云真是天差地别">
+<meta name="twitter:image" content="http://yoursite.com/images/LLD1.png">
 
 
 
@@ -413,7 +417,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  222
+                  272
                 </span>
               
 
@@ -458,6 +462,9 @@
 <p>LLD对返回的内容有一个json格式，这个json格式必须要被<code>zabbix-server</code>识别。所以我们需要准备一个脚本，脚本的结果就是生成这个json。本文<code>zabbix-server</code>和<code>zabbix-agent</code>的版本都是<code>3.4.15</code>。</p>
 <h2><span id="服务器内部操作">服务器内部操作</span></h2><p>然后在<code>zabbix_agentd.conf</code>里添加两个<code>items</code>，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UserParameter=services.scan,/bin/bash /etc/zabbix/script/discovery_services.sh</span><br><span class="line">UserParameter=services.status[*],/bin/bash /etc/zabbix/script/discovery_services.sh $<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
 <p>服务端操作到此结束。</p>
+<h2><span id="web端操作">WEB端操作</span></h2><p>添加自动发现规则与添加item很相似，先<code>configuation</code>—<code>templates</code>—<code>create template</code>:<br><img src="/images/LLD1.png" alt="akb48"></p>
+<p><img src="/images/LLD2.png" alt="akb48"></p>
+<p>在新生成的“服务进程自动发现”的template里添加<code>Discovery rules</code>，设定Key是<code>Services.scan</code>如下：<br><img src="/images/LLD3.png" alt="akb48"></p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery" target="_blank" rel="noopener">https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery</a><br><a href="https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/" target="_blank" rel="noopener">https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/</a></p>
 
       
@@ -853,7 +860,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;">&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;">&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="web&#x7AEF;&#x64CD;&#x4F5C;">WEB&#x7AEF;&#x64CD;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
