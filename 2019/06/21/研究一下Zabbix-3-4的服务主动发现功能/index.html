@@ -99,7 +99,8 @@
 <meta property="og:image" content="http://yoursite.com/images/LLD1.png">
 <meta property="og:image" content="http://yoursite.com/images/LLD2.png">
 <meta property="og:image" content="http://yoursite.com/images/LLD3.png">
-<meta property="og:updated_time" content="2019-06-21T11:12:58.295Z">
+<meta property="og:image" content="http://yoursite.com/images/LLD4.png">
+<meta property="og:updated_time" content="2019-06-21T11:26:32.580Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="研究一下Zabbix 3.4的服务主动发现功能">
 <meta name="twitter:description" content="AWS的工单反馈与阿里云真是天差地别">
@@ -417,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  272
+                  307
                 </span>
               
 
@@ -465,6 +466,7 @@
 <h2><span id="web端操作">WEB端操作</span></h2><p>添加自动发现规则与添加item很相似，先<code>configuation</code>—<code>templates</code>—<code>create template</code>:<br><img src="/images/LLD1.png" alt="akb48"></p>
 <p><img src="/images/LLD2.png" alt="akb48"></p>
 <p>在新生成的“服务进程自动发现”的template里添加<code>Discovery rules</code>，设定Key是<code>Services.scan</code>如下：<br><img src="/images/LLD3.png" alt="akb48"></p>
+<p>上面那个<code>Services.scan</code>到时候要写到<code>zabbix-agent.conf</code>里的，切记保持一模一样。然后在点击Filters标签页，如下：<br><img src="/images/LLD4.png" alt="akb48"></p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery" target="_blank" rel="noopener">https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery</a><br><a href="https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/" target="_blank" rel="noopener">https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/</a></p>
 
       
@@ -914,7 +916,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共247.3k字</span>
+  <span class="post-count">博客全站共247.4k字</span>
 </div>
         
 
