@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title><![CDATA[研究一下Zabbix3.4的主动探测]]></title>
-    <url>%2F2019%2F06%2F20%2FZabbix3-4%E7%9A%84%E4%B8%BB%E5%8A%A8%E6%8E%A2%E6%B5%8B%2F</url>
-    <content type="text"><![CDATA[参考资料https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discoveryhttps://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>zabbix</tag>
-        <tag>监控</tag>
-      </tags>
+    <title><![CDATA[研究一下Zabbix 3.4的服务主动发现功能]]></title>
+    <url>%2F2019%2F06%2F21%2F%E7%A0%94%E7%A9%B6%E4%B8%80%E4%B8%8BZabbix-3-4%E7%9A%84%E6%9C%8D%E5%8A%A1%E4%B8%BB%E5%8A%A8%E5%8F%91%E7%8E%B0%E5%8A%9F%E8%83%BD%2F</url>
+    <content type="text"><![CDATA[]]></content>
   </entry>
   <entry>
     <title><![CDATA[XtraBackup的安装和使用]]></title>
@@ -1135,8 +1128,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1160,8 +1153,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1173,8 +1166,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
