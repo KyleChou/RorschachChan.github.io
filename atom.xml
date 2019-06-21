@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-21T09:52:19.745Z</updated>
+  <updated>2019-06-21T10:04:24.326Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="http://yoursite.com/2019/06/21/%E7%A0%94%E7%A9%B6%E4%B8%80%E4%B8%8BZabbix-3-4%E7%9A%84%E6%9C%8D%E5%8A%A1%E4%B8%BB%E5%8A%A8%E5%8F%91%E7%8E%B0%E5%8A%9F%E8%83%BD/"/>
     <id>http://yoursite.com/2019/06/21/研究一下Zabbix-3-4的服务主动发现功能/</id>
     <published>2019-06-21T09:24:11.000Z</published>
-    <updated>2019-06-21T09:52:19.745Z</updated>
+    <updated>2019-06-21T10:04:24.326Z</updated>
     
     <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>我所在组一直以来对不同服务的监控方针是：针对不同的服务（比如nginx,tomcat,mysql等等）创建不同的template，然后将这个template应用于对应的服务器上，在每一个template里添加具体的item和trigger。今天尝试一下全新的自动发现<code>Low-level discovery</code>（LLD）。</p><p>LLD对返回的内容有一个json格式，这个json格式必须要被<code>zabbix-server</code>识别。所以我们需要准备一个脚本，脚本的结果就是生成这个json。本文<code>zabbix-server</code>和<code>zabbix-agent</code>的版本都是<code>3.4.15</code>。</p><h2><span id="服务器内部操作">服务器内部操作</span></h2><p>然后在<code>zabbix_agentd.conf</code>里添加两个<code>items</code>，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">UserParameter=services.scan,/bin/bash /etc/zabbix/script/discovery_services.sh</span><br><span class="line">UserParameter=services.status[*],/bin/bash /etc/zabbix/script/discovery_services.sh $<span class="number">1</span></span><br></pre></td></tr></table></figure></p><p>服务端操作到此结束。</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery" target="_blank" rel="noopener">https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery</a><br><a href="https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/" target="_blank" rel="noopener">https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/</a></p>]]></content>
     
