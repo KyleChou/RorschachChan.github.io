@@ -104,7 +104,10 @@
 <meta property="og:image" content="http://yoursite.com/images/LLD4.png">
 <meta property="og:image" content="http://yoursite.com/images/LLD5.png">
 <meta property="og:image" content="http://yoursite.com/images/LLD6.png">
-<meta property="og:updated_time" content="2019-06-24T02:27:58.348Z">
+<meta property="og:image" content="http://yoursite.com/images/LLD9.png">
+<meta property="og:image" content="http://yoursite.com/images/LLD10.png">
+<meta property="og:image" content="http://yoursite.com/images/LLD11.png">
+<meta property="og:updated_time" content="2019-06-24T02:59:44.470Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="研究一下Zabbix 3.4的服务主动发现功能">
 <meta name="twitter:description" content="AWS的工单反馈与阿里云真是天差地别">
@@ -422,7 +425,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  840
+                  907
                 </span>
               
 
@@ -481,7 +484,10 @@
 <p>图中的解释器是：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(&#123;auto Service discovery:services.status[&#123;<span class="comment">#PRO_NAME&#125;].last()&#125;&lt;&gt;1) and (&#123;auto Service discovery:services.status[&#123;#PRO_NAME&#125;].last(,1h)&#125;=1)</span></span><br></pre></td></tr></table></figure></p>
 <p>这句话的意思是“最后状态不是1同时一小时前的状态是1”的服务出现了问题会发生报警，这主要是因为当启动一些临时进程，比如yum，当yum完毕了之后，进程就不存在了，那么如果只是通过判断进程数的话，就会报<code>yum is down</code>。</p>
 <p>至此web端配置结束。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery" target="_blank" rel="noopener">https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery</a><br><a href="https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/" target="_blank" rel="noopener">https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/</a><br><a href="https://www.cnblogs.com/fengbohello/p/5954895.html" target="_blank" rel="noopener">https://www.cnblogs.com/fengbohello/p/5954895.html</a> （Linux Shell 截取字符串）</p>
+<h2><span id="错误解决">错误解决</span></h2><p>如果web界面出现了<code>Value should be a JSON object.</code>的错误，如图：<br><img src="/images/LLD9.png" alt="akb48"></p>
+<p>跑到zabbix-server去zabbix-get一下发现有错误：<br><img src="/images/LLD10.png" alt="akb48"></p>
+<p>将mdadm这个文件夹改成755即可。回到web页面查看一下<code>latest data</code>:<br><img src="/images/LLD11.png" alt="akb48"></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery" target="_blank" rel="noopener">https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discovery</a><br><a href="https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/" target="_blank" rel="noopener">https://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/</a><br><a href="https://www.cnblogs.com/fengbohello/p/5954895.html" target="_blank" rel="noopener">https://www.cnblogs.com/fengbohello/p/5954895.html</a> （Linux Shell 截取字符串）<br><a href="http://caosiyang.github.io/2017/03/06/zabbix-get-value-error/" target="_blank" rel="noopener">http://caosiyang.github.io/2017/03/06/zabbix-get-value-error/</a></p>
 
       
     </div>
@@ -876,7 +882,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;">&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="web&#x7AEF;&#x64CD;&#x4F5C;">WEB&#x7AEF;&#x64CD;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;">&#x670D;&#x52A1;&#x5668;&#x5185;&#x90E8;&#x64CD;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="web&#x7AEF;&#x64CD;&#x4F5C;">WEB&#x7AEF;&#x64CD;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x9519;&#x8BEF;&#x89E3;&#x51B3;">&#x9519;&#x8BEF;&#x89E3;&#x51B3;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -930,7 +936,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共247.9k字</span>
+  <span class="post-count">博客全站共248.0k字</span>
 </div>
         
 
