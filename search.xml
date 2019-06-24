@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[使用Alpine当基础镜像的坑]]></title>
+    <url>%2F2019%2F06%2F24%2F%E4%BD%BF%E7%94%A8Alpine%E5%BD%93%E5%9F%BA%E7%A1%80%E9%95%9C%E5%83%8F%E7%9A%84%E5%9D%91%2F</url>
+    <content type="text"><![CDATA[踩坑正文今天部署开发要上一个新模块，此模块已经通过golang编译好的，而且在本地机器可以正常启动，现在需要将其容器化—-制作一个镜像，然后在根据这个镜像启动程序。 本着基础镜像最小的原则，就选择了alpine:latest。先创建一个干净的alpine镜像挂载模块所在的文件夹，然后docker exec进去执行启动脚本。发现启动脚本里涉及到了yum、rpm、ps -p、 sudo等alpine非自带命令所以无法启动。alpine安装模块的命令即非yum又非apt-get，而是apk add，于是在Dockerfile里添加一句： 1RUN apk add cpulimit &amp;&amp; apk add rpm &amp;&amp; apk add sudo &amp;&amp; apk --update add procps 新镜像制作完毕，进去启动还是失败。具体表现是./启动脚本的时候报&quot;no such file or directory&quot;，开始我以为是因为alpine没有/bin/bash的缘故，把所有的shebang都改成了/bin/sh。但是发现启动的时候报格式错误，我想到这是一个go编译好的脚本，那么./就应该可以直接启动的。后来在https://github.com/gin-gonic/gin/issues/1178 里查到原来alpine里是没有稳定的libc，所以还要添加libc6-compat和libstdc++。 在镜像里apk add libc6-compat &amp;&amp; apk add libstdc++之后，发现启动脚本还有这样一句话： 1echo './core_%e.%p' | sudo tee /proc/sys/kernel/core_pattern 这个命令是无法执行的，因为docker里/proc/sys/kernel/core_pattern是只读文件，自然无法进行修改。但是宿主机上的这个文件是root用户可以修改的。这可怎么办？ 我开始想既然宿主机的/proc/sys/kernel/core_pattern可以修改，那么就把宿主机的/proc/sys/kernel/core_pattern挂载给镜像不就得了？但是在执行的时候会报错：cannot be mounted because it is located inside “/proc”，因为Docker不允许在proc目录下随意挂文件，如果你有信心可以通过修改docker的源码来实现挂载的效果。 但是我觉得还是沉稳为上，于是就想出一个办法：在docker run的时候添加--privileged，这样容器获得了额外的特权可以对系统变量的值进行修改。但是要注意如果容器发生了重启，那么值会恢复成原样，即无法持久化。不过在启动脚本里已经有了echo语句，这样每一次执行启动脚本都会更改/proc/sys/kernel/core_pattern，于是就不用太担心这个问题了。 最后完整的Dockerfile如下： 12345678FROM alpine:latestMAINTAINER ChrisChan &lt;33664@dahuatech.com&gt;RUN apk update &amp;&amp; apk add libc6-compat &amp;&amp; apk add libstdc++ &amp;&amp; apk add cpulimit &amp;&amp; apk add rpm &amp;&amp; apk add sudo &amp;&amp; apk --update add procpsRUN mkdir -p /mnt/agentmizar #agentmizar这个就是工作的模块WORKDIR /mnt/agentmizar #设定工作目录COPY agentmizar/ . #将文件夹拷贝到镜像里CMD ["sh", "control", "start"] #启动之 创建完镜像之后，启动语句如下： 1docker run --name 容器名 -dit -v /opt/:/opt/:ro --privileged 镜像名 参考资料https://blog.csdn.net/qq_41980563/article/details/88876874https://serverfault.com/questions/883625/alpine-shell-cant-find-file-in-dockerhttps://sq.163yun.com/blog/article/155817999160799232]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>Golang</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[研究一下Zabbix 3.4的服务主动发现功能]]></title>
     <url>%2F2019%2F06%2F21%2F%E7%A0%94%E7%A9%B6%E4%B8%80%E4%B8%8BZabbix-3-4%E7%9A%84%E6%9C%8D%E5%8A%A1%E4%B8%BB%E5%8A%A8%E5%8F%91%E7%8E%B0%E5%8A%9F%E8%83%BD%2F</url>
-    <content type="text"><![CDATA[我所在组一直以来对不同服务的监控方针是：针对不同的服务（比如nginx,tomcat,mysql等等）创建不同的template，然后将这个template应用于对应的服务器上，在每一个template里添加具体的item和trigger。今天尝试一下全新的自动发现Low-level discovery（LLD）。 LLD对返回的内容有一个json格式，这个json格式必须要被zabbix-server识别。所以我们需要准备一个脚本，脚本的结果就是生成这个json。本文zabbix-server和zabbix-agent的版本都是3.4.15。 服务器内部操作首先在被监控服务器里，创建一个脚本/etc/zabbix/script/discovery_services.sh，内容如下： 1234567891011121314151617181920#!/bin/bashproarray=($(find /var/run/ -name "*.pid"|egrep -v '(rpc|php_daemon|haldaemon|irqbalance|console-kit-daemon)' |awk -F'/' '&#123;print $NF&#125;'|awk -F'.' '&#123;print $1&#125;')) # 排除不监控的服务length=$&#123;#proarray[@]&#125; #￥&#123;#var&#125;是用来取长度printf "&#123;\n"printf '\t'"\"data\":["printf "\t"printf '\n\t\t&#123;'printf "\"&#123;#PRO_NAME&#125;\":\"iptables\"&#125;" #必须要添加的iptablesprintf ","for ((i=0;i&lt;$length;i++))do printf '\n\t\t&#123;' printf "\"&#123;#PRO_NAME&#125;\":\"$&#123;proarray[$i]&#125;\"&#125;" if [ $i -lt $[$length-1] ];then printf ',' fidoneprintf "\n\t]\n"printf "&#125;\n" 这里我们设定将所有的进程文件的pid统一放到/var/run下，这样能取到所有进程的文件。脚本里的{PRO_NAME}这个就是自动发现规则中的宏变量，另外这个脚本返回的是符合zabbix-server的json格式。如图： 同时在加上一个判断进程是否运行的脚本/etc/zabbix/script/discovery_services.sh，内容如下： 1234567891011121314151617#!/bin/bashprocjetName="$&#123;1:-NULL&#125;"LOCK_PATH="/var/lock/subsys" RUN_PATH="/var/run"ret_ok=1ret_critical=3ret_unknown=4if [[ $&#123;procjetName&#125; == "NULL" ]] ; then echo $&#123;ret_unknown&#125;fiif [ -f "$&#123;LOCK_PATH&#125;/$&#123;procjetName&#125;" ] || [ -f "$&#123;RUN_PATH&#125;/$&#123;procjetName&#125;.pid" ] || [ -f "$&#123;RUN_PATH&#125;/$&#123;procjetName&#125;/$&#123;procjetName&#125;.pid" ] ; then echo $&#123;ret_ok&#125;else echo $&#123;ret_critical&#125;fi 这个脚本的结果就是：服务若存在就返回1，否则返回3。如图： 然后在zabbix_agentd.conf里添加两个items，如下： 12UserParameter=services.scan,/bin/bash /etc/zabbix/script/discovery_services.shUserParameter=services.status[*],/bin/bash /etc/zabbix/script/discovery_services.sh $1 服务端操作到此结束。 WEB端操作添加自动发现规则与添加item很相似，先configuation—templates—create template: 在新生成的“服务进程自动发现”的template里添加Discovery rules，设定Key是Services.scan如下： 上面那个Services.scan到时候要写到zabbix-agent.conf里的，切记保持一模一样。然后在点击Filters标签页，如下： 此处的{PRO_NAME}就是我们的脚本返回的变量，保存之。然后创建一个item prototypes，如图： 此处需要注意的$1和键值是我们之前定义的，也即是服务名，保存之。 然后创建一个trigger prototype，如图： 图中的解释器是： 1(&#123;auto Service discovery:services.status[&#123;#PRO_NAME&#125;].last()&#125;&lt;&gt;1) and (&#123;auto Service discovery:services.status[&#123;#PRO_NAME&#125;].last(,1h)&#125;=1) 这句话的意思是“最后状态不是1同时一小时前的状态是1”的服务出现了问题会发生报警，这主要是因为当启动一些临时进程，比如yum，当yum完毕了之后，进程就不存在了，那么如果只是通过判断进程数的话，就会报yum is down。 至此web端配置结束。 错误解决如果web界面出现了Value should be a JSON object.的错误，如图： 跑到zabbix-server去zabbix-get一下发现有错误： 将mdadm这个文件夹改成755即可。回到web页面查看一下latest data: 参考资料https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discoveryhttps://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/https://www.cnblogs.com/fengbohello/p/5954895.html （Linux Shell 截取字符串）http://caosiyang.github.io/2017/03/06/zabbix-get-value-error/]]></content>
+    <content type="text"><![CDATA[我所在组一直以来对不同服务的监控方针是：针对不同的服务（比如nginx,tomcat,mysql等等）创建不同的template，然后将这个template应用于对应的服务器上，在每一个template里添加具体的item和trigger。今天尝试一下全新的自动发现Low-level discovery（LLD）。 LLD对返回的内容有一个json格式，这个json格式必须要被zabbix-server识别。所以我们需要准备一个脚本，脚本的结果就是生成这个json。本文zabbix-server和zabbix-agent的版本都是3.4.15。 服务器内部操作首先在被监控服务器里，创建一个脚本/etc/zabbix/script/discovery_services.sh，内容如下： 1234567891011121314151617181920#!/bin/bashproarray=($(find /var/run/ -name "*.pid"|egrep -v '(rpc|php_daemon|haldaemon|irqbalance|console-kit-daemon)' |awk -F'/' '&#123;print $NF&#125;'|awk -F'.' '&#123;print $1&#125;')) # 排除不监控的服务length=$&#123;#proarray[@]&#125; #$&#123;#var&#125;是用来取长度printf "&#123;\n"printf '\t'"\"data\":["printf "\t"printf '\n\t\t&#123;'printf "\"&#123;#PRO_NAME&#125;\":\"iptables\"&#125;" #必须要添加的iptablesprintf ","for ((i=0;i&lt;$length;i++))do printf '\n\t\t&#123;' printf "\"&#123;#PRO_NAME&#125;\":\"$&#123;proarray[$i]&#125;\"&#125;" #for循环取每一项 if [ $i -lt $[$length-1] ];then printf ',' fidoneprintf "\n\t]\n"printf "&#125;\n" 这里我们设定将所有的进程文件的pid统一放到/var/run下，这样能取到所有进程的文件。脚本里的{PRO_NAME}这个就是自动发现规则中的宏变量，另外这个脚本返回的是符合zabbix-server的json格式。如图： 同时在加上一个判断进程是否运行的脚本/etc/zabbix/script/program_status.sh，内容如下： 1234567891011121314151617#!/bin/bashprocjetName="$&#123;1:-NULL&#125;"LOCK_PATH="/var/lock/subsys" RUN_PATH="/var/run"ret_ok=1ret_critical=3ret_unknown=4if [[ $&#123;procjetName&#125; == "NULL" ]] ; then echo $&#123;ret_unknown&#125;fiif [ -f "$&#123;LOCK_PATH&#125;/$&#123;procjetName&#125;" ] || [ -f "$&#123;RUN_PATH&#125;/$&#123;procjetName&#125;.pid" ] || [ -f "$&#123;RUN_PATH&#125;/$&#123;procjetName&#125;/$&#123;procjetName&#125;.pid" ] ; then echo $&#123;ret_ok&#125;else echo $&#123;ret_critical&#125;fi 这个脚本的结果就是：服务若存在就返回1，否则返回3。如图： 然后在zabbix_agentd.conf里添加两个items，如下： 12UserParameter=services.scan,/bin/bash /etc/zabbix/script/discovery_services.shUserParameter=services.status[*],/bin/bash /etc/zabbix/script/program_status.sh $1 服务端操作到此结束。 WEB端操作添加自动发现规则与添加item很相似，先configuation—templates—create template: 在新生成的“服务进程自动发现”的template里添加Discovery rules，设定Key是Services.scan如下： 上面那个Services.scan到时候要写到zabbix-agent.conf里的，切记保持一模一样。然后在点击Filters标签页，如下： 此处的{PRO_NAME}就是我们的脚本返回的变量，保存之。然后创建一个item prototypes，如图： 此处需要注意的$1和键值是我们之前定义的，也即是服务名，保存之。 然后创建一个trigger prototype，如图： 图中的解释器是： 1(&#123;auto Service discovery:services.status[&#123;#PRO_NAME&#125;].last()&#125;&lt;&gt;1) and (&#123;auto Service discovery:services.status[&#123;#PRO_NAME&#125;].last(,1h)&#125;=1) 这句话的意思是“最后状态不是1同时一小时前的状态是1”的服务出现了问题会发生报警，这主要是因为当启动一些临时进程，比如yum，当yum完毕了之后，进程就不存在了，那么如果只是通过判断进程数的话，就会报yum is down。 至此web端配置结束。 错误解决如果web界面出现了Value should be a JSON object.的错误，如图： 跑到zabbix-server去zabbix-get一下发现有错误： 将mdadm这个文件夹改成755即可。回到web页面查看一下latest data: 参考资料https://www.zabbix.com/documentation/3.4/zh/manual/discovery/low_level_discoveryhttps://www.xiaomastack.com/2015/07/04/zabbix-auto-tcp-port/https://www.cnblogs.com/fengbohello/p/5954895.html （Linux Shell 截取字符串）http://caosiyang.github.io/2017/03/06/zabbix-get-value-error/]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -1135,8 +1147,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -1160,8 +1172,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -1173,8 +1185,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>mycat</tag>
         <tag>数据库中间件</tag>
+        <tag>mycat</tag>
       </tags>
   </entry>
   <entry>
@@ -2501,8 +2513,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>面试经验</tag>
         <tag>shell</tag>
+        <tag>面试经验</tag>
       </tags>
   </entry>
   <entry>
