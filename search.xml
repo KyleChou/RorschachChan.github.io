@@ -1,6 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Python端口探测脚本]]></title>
+    <url>%2F2019%2F06%2F25%2FPython%E7%AB%AF%E5%8F%A3%E6%8E%A2%E6%B5%8B%E8%84%9A%E6%9C%AC%2F</url>
+    <content type="text"><![CDATA[有一个模块最近总是假死，假死的现象就是进程还在但是端口（9030端口）已经不工作了。于是就需要写一个端口探测脚本，发现该端口一旦无法正常收到信息，就重启此模块。 由于此模块是一个五台机器的集群，我这次没有在五台机器都跑一样的脚本，而是在一个可以免密码ssh到他们的机器上写了一个脚本，让这个机器去探测对应的端口。模式如图： 先创建一个detect.conf如下，他的格式是yaml： 1234567891011121314151617181920--- Name: localhost IP: 127.0.0.1 Port: 9030--- Name: mrs-05 IP: 10.0.1.14 Port: 9030--- Name: mrs-04 IP: 10.0.1.13 Port: 9030--- Name: mrs-03 IP: 10.0.1.12 Port: 9030--- Name: mrs-02 IP: 10.0.1.11 Port: 9030 脚本detect.py内容如下： 123456789101112131415161718192021222324252627282930313233343536373839404142# !/usr/bin/env python # -*- coding:utf-8 -*-# 作者：ChrisChan# 用途：Python3.6脚本，检测IP端口连接是否正常,建议放在单独的机器里进行端口扫描，此脚本需要搭配同目录下的detect.conf使用。# 请先pip install PyYaml,pip install apramikoimport socketimport paramikoimport yaml# ssh秘钥地址key_filename = "秘钥地址,即id_rsa"# 重启进程命令command = "具体的进程启动命令"def is_open(ip, port): s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) try: s.connect((ip, int(port))) s.shutdown(2) return True except: return Falsedef ssh(ip): ssh = paramiko.SSHClient() ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) ssh.connect(ip, 22, "appuser", key_filename=key_filename) #这里写死了22端口和“appuser”用户 stdin, stdout, stderr = ssh.exec_command(command) print(stdout.readlines())if __name__ == '__main__': input = open('detect.conf', 'r') # 这里是pyyaml 5.1的新格式 ys = yaml.load_all(input, Loader=yaml.FullLoader) for y in ys: host = y["IP"] #从yaml里取值 port = y["Port"] if is_open(host, port): print(y["Name"] + " is OK") else: print(y["Name"] + " is NO") ssh(host) print("Process is started!") 内网探测效果还不错，如果时间耗时比较长，就放弃for循环，走多进程路线更佳！]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>python3</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[使用Alpine当基础镜像的坑]]></title>
     <url>%2F2019%2F06%2F24%2F%E4%BD%BF%E7%94%A8Alpine%E5%BD%93%E5%9F%BA%E7%A1%80%E9%95%9C%E5%83%8F%E7%9A%84%E5%9D%91%2F</url>
     <content type="text"><![CDATA[踩坑正文今天部署开发要上一个新模块，此模块已经通过golang编译好的，而且在本地机器可以正常启动，现在需要将其容器化—-制作一个镜像，然后在根据这个镜像启动程序。 本着基础镜像最小的原则，就选择了alpine:latest。先创建一个干净的alpine镜像挂载模块所在的文件夹，然后docker exec进去执行启动脚本。发现启动脚本里涉及到了cpulimit、rpm、ps -p、 sudo等alpine非自带命令所以无法启动。alpine安装模块的命令即非yum又非apt-get，而是apk add，于是在Dockerfile里添加一句： 1RUN apk add cpulimit &amp;&amp; apk add rpm &amp;&amp; apk add sudo &amp;&amp; apk --update add procps 新镜像制作完毕，进去启动还是失败。具体表现是./启动脚本的时候报&quot;no such file or directory&quot;，开始我以为是因为alpine没有/bin/bash的缘故，把所有的shebang都改成了/bin/sh。但是发现启动的时候报格式错误，我想到这是一个go编译好的脚本，那么./就应该可以直接启动的。后来在https://github.com/gin-gonic/gin/issues/1178 里查到原来alpine里是没有稳定的libc，所以还要添加libc6-compat和libstdc++。 在镜像里apk add libc6-compat &amp;&amp; apk add libstdc++之后，发现启动脚本还有这样一句话： 1echo './core_%e.%p' | sudo tee /proc/sys/kernel/core_pattern 这个命令是无法执行的，因为docker里/proc/sys/kernel/core_pattern是只读文件，自然无法进行修改。但是宿主机上的这个文件是root用户可以修改的。这可怎么办？ 我开始想既然宿主机的/proc/sys/kernel/core_pattern可以修改，那么就把宿主机的/proc/sys/kernel/core_pattern挂载给镜像不就得了？但是在执行的时候会报错：cannot be mounted because it is located inside “/proc”，因为Docker不允许在proc目录下随意挂文件，如果你有信心可以通过修改docker的源码来实现挂载的效果。 但是我觉得还是沉稳为上，于是就想出一个办法：在docker run的时候添加--privileged，这样容器获得了额外的特权可以对系统变量的值进行修改。但是要注意如果容器发生了重启，那么值会恢复成原样，即无法持久化。不过在启动脚本里已经有了echo语句，这样每一次执行启动脚本都会更改/proc/sys/kernel/core_pattern，于是就不用太担心这个问题了。 最后完整的Dockerfile如下： 1234567FROM alpine:latestMAINTAINER ChrisChan &lt;33664@dahuatech.com&gt;RUN apk update &amp;&amp; apk add libc6-compat &amp;&amp; apk add libstdc++ &amp;&amp; apk add cpulimit &amp;&amp; apk add rpm &amp;&amp; apk add sudo &amp;&amp; apk --update add procpsRUN mkdir -p /mnt/agentmizar #agentmizar这个就是工作的模块名WORKDIR /mnt/agentmizar #设定工作目录CMD ["sh", "control", "start"] #启动之 创建完镜像之后，启动语句如下： 1docker run --name 容器名 -dit -v /opt/:/opt/:ro -v /etc/localtime:/etc/localtime:ro --privileged 镜像名 #别忘了对准时间 补充一句，最后镜像大小不到50MB。 参考资料https://blog.csdn.net/qq_41980563/article/details/88876874https://serverfault.com/questions/883625/alpine-shell-cant-find-file-in-dockerhttps://sq.163yun.com/blog/article/155817999160799232]]></content>
@@ -144,8 +155,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>阿里云OSS</tag>
         <tag>python3</tag>
+        <tag>阿里云OSS</tag>
         <tag>gui</tag>
       </tags>
   </entry>
@@ -1561,18 +1572,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root启动进程以及启动docker]]></title>
-    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root用户启动tomcat进程]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
     <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
@@ -1582,6 +1581,18 @@
       <tags>
         <tag>centos</tag>
         <tag>运维安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root启动进程以及启动docker]]></title>
+    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>安全</tag>
       </tags>
   </entry>
   <entry>
@@ -2513,8 +2524,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>shell</tag>
         <tag>面试经验</tag>
+        <tag>shell</tag>
       </tags>
   </entry>
   <entry>
@@ -2778,9 +2789,9 @@
         <category>博客搭建</category>
       </categories>
       <tags>
+        <tag>github</tag>
         <tag>hexo</tag>
         <tag>博客搭建</tag>
-        <tag>github</tag>
       </tags>
   </entry>
   <entry>
