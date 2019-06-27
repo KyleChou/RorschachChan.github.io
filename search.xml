@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Ansible-Playbook判断进程是否存在]]></title>
+    <url>%2F2019%2F06%2F27%2FAnsible-Playbook%E5%88%A4%E6%96%AD%E8%BF%9B%E7%A8%8B%E6%98%AF%E5%90%A6%E5%AD%98%E5%9C%A8%2F</url>
+    <content type="text"><![CDATA[正文部署有一个需求，要将所有的模块服务器里添加一个叫agentmizar的日志采集模块。但是有一些服务器提前有部署过，那么判断一下如果服务器里有此进程就跳过，如果没有此进程就传包并修改配置文件然后启动。 与playbook搭配的yaml内容如下： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950- hosts: all #默认执行hosts里的所有IP remote_user: root any_errors_fatal: no gather_facts: no #不采集对方机器的数据，提高执行速度 serial: - 5 #5台机器一组 tasks: - name: judge agent process is exits shell: ps -aux | grep agent ignore_errors: True #如果命令执行不成功，即 echo $?不为0，则在其语句后面的ansible语句不会被执行，导致整个程序中止。 register: result - name: agent is running shell: echo "agent is running" when: result.stdout.find('agent.conf') != -1 - name: agent dir is exits shell: ls /opt/agentmizar ignore_errors: True register: dirresult - name: copy packages copy: src: /tmp/agentmizar.zip dest: /opt owner: root when: dirresult is failed #如果文件夹存在就是dirresult is succeeded - name: unzip agentmizar unarchive: #extra_opts: -j #将zip里的所有递归文件都放到本目录 src: /opt/agentmizar.zip dest: /opt remote_src: yes when: result.stdout.find('agent.conf') == -1 - name: backup old and unpack new package shell: cp -rf /opt/build/* /opt/ #由于zip包也解压缩出来是一个build文件夹，需要再扒一层 when: result.stdout.find('agent.conf') == -1 - name: update agent.conf lineinfile: dest: /opt/agentmizar/agent.conf regexp: "kafka = 192.168.0.1:9092,192.168.0.2:9092,192.168.0.3:9092" #修改配置文件 line: "kafka = 172.0.10.1:9092" when: result.stdout.find('agent.conf') == -1 - name: start agentmizar shell: cd /opt/agentmizar/ &amp;&amp; /bin/bash /opt/agentmizar/start_agent.sh when: result.stdout.find('agent.conf') == -1 这个yaml，我执行ps -aux | grep agent，并将结果存储到result这个register里。然后从register里去find关键字agent.conf，如果不存在就返回-1，那么可以判断当前机器里没有agentmizar进程。 如果说进程是一个守护进程，那么在判断进程（比如是systemctl status apache2）是否存在可以这么写： 1234567891011121314- name: Check if Apache is running command: systemctl status apache2 ignore_errors: yes changed_when: false register: service_apache_status- name: Report status of Apache fail: msg: | Service apache2 is not running. Output of `systemctl status apache2`: &#123;&#123; service_apache_status.stdout &#125;&#125; &#123;&#123; service_apache_status.stderr &#125;&#125; when: service_apache_status | failed 注意！如果when条件判断句中有变量的话要将用（）来括变量，如下： 12when: ansible_default_ipv4.address == &#123;&#123; ETCD_NODE03 &#125;&#125; #错误写法when: ansible_default_ipv4.address == (ETCD_NODE03) #正确写法 再注意！register变量的命名不能用-（中横线），比如dev-sda6_result，则会被解析成sda6_result，dev会被丢掉！ 参考资料https://www.ibm.com/developerworks/cn/linux/1608_lih_ansible/index.htmlhttps://blog.51cto.com/liuzhengwei521/1962382 （条件判断）]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>ansible</tag>
+        <tag>批量部署</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Python端口探测脚本]]></title>
     <url>%2F2019%2F06%2F25%2FPython%E7%AB%AF%E5%8F%A3%E6%8E%A2%E6%B5%8B%E8%84%9A%E6%9C%AC%2F</url>
     <content type="text"><![CDATA[有一个模块最近总是假死，假死的现象就是进程还在但是端口（9030端口）已经不工作了。于是就需要写一个端口探测脚本，发现该端口一旦无法正常收到信息，就重启此模块。 由于此模块是一个五台机器的集群，我这次没有在五台机器都跑一样的脚本，而是在一个可以免密码ssh到他们的机器上写了一个脚本，让这个机器去探测对应的端口。模式如图： 先创建一个detect.conf如下，他的格式是yaml，所以不要用tab用空格： 1234567891011121314151617181920--- Name: localhost IP: 127.0.0.1 Port: 9030--- Name: mrs-05 IP: 10.0.1.14 Port: 9030--- Name: mrs-04 IP: 10.0.1.13 Port: 9030--- Name: mrs-03 IP: 10.0.1.12 Port: 9030--- Name: mrs-02 IP: 10.0.1.11 Port: 9030 脚本detect.py内容如下： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950# !/usr/bin/env python # -*- coding:utf-8 -*-# 作者：ChrisChan# 用途：Python3.6脚本，检测IP端口连接是否正常,建议放在单独的机器里进行端口扫描，此脚本需要搭配同目录下的detect.conf使用。# 请先pip install PyYaml,pip install paramikoimport socketimport paramikoimport yaml# ssh秘钥地址key_filename = "秘钥地址,即id_rsa"# 重启进程命令command = "具体的进程启动命令"def is_open(ip, port): s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) try: s.connect((ip, int(port))) s.shutdown(2) return True except: return Falsedef ssh(ip): ssh = paramiko.SSHClient() ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) try: ssh.connect(ip, 22, "appuser", key_filename=key_filename) #这里写死了22端口和appuser用户 except FileNotFoundError as e: print('私钥文件不存在！') except AuthenticationException as e: print('私钥不正确，请检查对应用户或私钥内容！') else: stdin, stdout, stderr = ssh.exec_command(command) print(stdout.readlines()) finally: ssh.close()if __name__ == '__main__': input = open('detect.conf', 'r') # 这里是pyyaml 5.1的新格式 ys = yaml.load_all(input, Loader=yaml.FullLoader) for y in ys: host = y["IP"] #从yaml里取值 port = y["Port"] if is_open(host, port): print(y["Name"] + " is OK") else: print(y["Name"] + " is NO") ssh(host) print("Process is started!") 内网探测效果还不错，如果时间耗时比较长，就放弃for循环，走多进程路线更佳！]]></content>
@@ -995,8 +1007,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>Jenkins</tag>
         <tag>钉钉</tag>
+        <tag>Jenkins</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -1572,18 +1584,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root用户启动tomcat进程]]></title>
-    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>centos</tag>
-        <tag>运维安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root启动进程以及启动docker]]></title>
     <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
     <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
@@ -1593,6 +1593,18 @@
       <tags>
         <tag>docker</tag>
         <tag>安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root用户启动tomcat进程]]></title>
+    <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>centos</tag>
+        <tag>运维安全</tag>
       </tags>
   </entry>
   <entry>
@@ -2584,8 +2596,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>大数据</tag>
         <tag>elk</tag>
+        <tag>大数据</tag>
       </tags>
   </entry>
   <entry>
@@ -2789,9 +2801,9 @@
         <category>博客搭建</category>
       </categories>
       <tags>
-        <tag>github</tag>
         <tag>hexo</tag>
         <tag>博客搭建</tag>
+        <tag>github</tag>
       </tags>
   </entry>
   <entry>
