@@ -96,12 +96,12 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="如果遇到文件模式是dos的话，执行set ff=unix即可。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://yoursite.com/images/DH12-1.png">
-<meta property="og:updated_time" content="2019-06-28T07:36:45.665Z">
+<meta property="og:image" content="http://yoursite.com/images/DH12-1.gif">
+<meta property="og:updated_time" content="2019-06-28T09:03:14.067Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ansible-Playbook判断进程是否存在">
 <meta name="twitter:description" content="如果遇到文件模式是dos的话，执行set ff=unix即可。">
-<meta name="twitter:image" content="http://yoursite.com/images/DH12-1.png">
+<meta name="twitter:image" content="http://yoursite.com/images/DH12-1.gif">
 
 
 
@@ -462,7 +462,7 @@
 <p>如果说进程是一个守护进程，那么在判断进程（比如是systemctl status apache2）是否存在可以这么写：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">- name: Check <span class="keyword">if</span> Apache <span class="keyword">is</span> running</span><br><span class="line">  command: systemctl status apache2</span><br><span class="line">  ignore_errors: yes</span><br><span class="line">  changed_when: false</span><br><span class="line">  register: service_apache_status</span><br><span class="line"></span><br><span class="line">- name: Report status of Apache</span><br><span class="line">  fail:</span><br><span class="line">    msg: |</span><br><span class="line">      Service apache2 <span class="keyword">is</span> <span class="keyword">not</span> running.</span><br><span class="line">      Output of `systemctl status apache2`:</span><br><span class="line">      &#123;&#123; service_apache_status.stdout &#125;&#125;</span><br><span class="line">      &#123;&#123; service_apache_status.stderr &#125;&#125;</span><br><span class="line">  when: service_apache_status | failed</span><br></pre></td></tr></table></figure></p>
 <p>注意！如果when条件判断句中有变量的话要将用（）来括变量，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">when: ansible_default_ipv4.address == &#123;&#123; ETCD_NODE03 &#125;&#125;		<span class="comment">#错误写法</span></span><br><span class="line">when: ansible_default_ipv4.address == (ETCD_NODE03)			<span class="comment">#正确写法</span></span><br></pre></td></tr></table></figure></p>
 <p>再注意！<code>register</code>变量的命名不能用-（中横线），比如<code>dev-sda6_result</code>，则会被解析成<code>sda6_result</code>，dev会被丢掉！</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.ibm.com/developerworks/cn/linux/1608_lih_ansible/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1608_lih_ansible/index.html</a><br><a href="https://blog.51cto.com/liuzhengwei521/1962382" target="_blank" rel="noopener">https://blog.51cto.com/liuzhengwei521/1962382</a>    （条件判断）<br><img src="/images/DH12-1.png" alt="akb48" title="2009年东部半决赛魔术VS骑士"></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.ibm.com/developerworks/cn/linux/1608_lih_ansible/index.html" target="_blank" rel="noopener">https://www.ibm.com/developerworks/cn/linux/1608_lih_ansible/index.html</a><br><a href="https://blog.51cto.com/liuzhengwei521/1962382" target="_blank" rel="noopener">https://blog.51cto.com/liuzhengwei521/1962382</a>    （条件判断）<br><img src="/images/DH12-1.gif" alt="akb48" title="2009年东部半决赛魔术VS骑士"></p>
 
       
     </div>
