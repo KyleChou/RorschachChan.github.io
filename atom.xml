@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-06-27T14:30:28.974Z</updated>
+  <updated>2019-06-28T06:02:09.086Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Proxysql添加后端SSL加密</title>
+    <link href="http://yoursite.com/2019/06/28/Proxysql%E6%B7%BB%E5%8A%A0%E5%90%8E%E7%AB%AFSSL%E5%8A%A0%E5%AF%86/"/>
+    <id>http://yoursite.com/2019/06/28/Proxysql添加后端SSL加密/</id>
+    <published>2019-06-28T02:45:53.000Z</published>
+    <updated>2019-06-28T06:02:09.086Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>安全部门最近放出了新需求，要数据库流量实现内网加密。即<code>mysql&lt;-----&gt;proxysql</code>之间是加密的，整个配置流程如下：</p><p>首先登陆阿里云控制台RDS，选择对应的数据库—数据安全性—SSL，点击<code>开通</code>，如图：<br><img src="/images/proxy27.png" alt="akb48"></p><p>注意！此项举动会重启数据库，所以线上环境请慎重！</p><p>在配置的时候，同时下载CA证书，上传到proxysql所在的服务器的<code>/var/lib/proxysql/</code>里。解压缩之，发现压缩包里是三个文件，如图：<br><img src="/images/proxy28.png" alt="akb48"></p><p>我们主要用的是<code>ApsaraDB-CA-Chain.pem</code>这个文件。</p><p>如果数据库开通ssl成功，那么在阿里云的控制台上是显示为“已开通”，在mysql命令行里使用<code>show global variables like &#39;%ssl%&#39;;</code>查看如下：<br><img src="/images/proxy30.png" alt="akb48"></p><p>登录proxysql，查看当前链接mysql情况，如图：<br><img src="/images/proxy29.png" alt="akb48"></p><p>发现里面的<code>use_ssl</code>是0，所以<code>update mysql_servers set use_ssl=1;</code>将他们改成1。</p><p>然后<code>set mysql-ssl_p2s_ca = &#39;/var/lib/proxysql/ApsaraDB-CA-Chain.pem&#39;;</code>设定CA证书所在路径。随后就是<code>load mysql variables to runtime;</code>和<code>save mysql variables to disk;</code>，保存之后使用<code>select * from runtime_global_variables;</code>查看：<br><img src="/images/proxy31.png" alt="akb48"></p><p>验证的方法也很简单，在对应数据库里操作的同时<code>tcpdump -s 0 -i any -v port 3306 -w /root/test.pcap</code> 抓一下包看一下里面的内容是否加密了就行。</p>]]></content>
+    
+    <summary type="html">
+    
+      这个世界总会有一些莫名其妙的事情
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="读写分离" scheme="http://yoursite.com/tags/%E8%AF%BB%E5%86%99%E5%88%86%E7%A6%BB/"/>
+    
+      <category term="proxysql" scheme="http://yoursite.com/tags/proxysql/"/>
+    
+      <category term="ssl加密" scheme="http://yoursite.com/tags/ssl%E5%8A%A0%E5%AF%86/"/>
+    
+  </entry>
   
   <entry>
     <title>Ansible-Playbook判断进程是否存在</title>
@@ -378,9 +404,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="阿里云" scheme="http://yoursite.com/tags/%E9%98%BF%E9%87%8C%E4%BA%91/"/>
-    
       <category term="python3" scheme="http://yoursite.com/tags/python3/"/>
+    
+      <category term="阿里云" scheme="http://yoursite.com/tags/%E9%98%BF%E9%87%8C%E4%BA%91/"/>
     
       <category term="tkinter" scheme="http://yoursite.com/tags/tkinter/"/>
     
@@ -477,30 +503,6 @@
       <category term="django" scheme="http://yoursite.com/tags/django/"/>
     
       <category term="paramiko" scheme="http://yoursite.com/tags/paramiko/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>一个批量部署脚本（未完成）</title>
-    <link href="http://yoursite.com/2019/04/12/%E4%B8%80%E4%B8%AA%E6%89%B9%E9%87%8F%E9%83%A8%E7%BD%B2%E8%84%9A%E6%9C%AC/"/>
-    <id>http://yoursite.com/2019/04/12/一个批量部署脚本/</id>
-    <published>2019-04-12T08:40:16.000Z</published>
-    <updated>2019-04-29T12:04:36.965Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="脚本设计">脚本设计</span></h2><p>首先安装ansible，并且用group1,group2…对相同模块的服务器进行分组，注意！group1只能是一台服务器，剩下的服务器均摊。</p><p>按模块依赖顺序输入，模块名称用逗号分隔。进行for循环，先使用ansible对group1进行部署工作，部署模块并且启动之后，暂停600秒，让开发利用这10分钟检查日志和配置项是否有问题，如果有问题就ctrl+c，在暂停600秒的同时，脚本新开一个进程A，paramiko到第一台服务器里，检查日志是否出现ERROR等关键字样，如果有就输出，600秒结束之后，关闭线程A，继续部署group2，直至名单里所有的模块都部署完毕。</p><p>作画的意思如下：<br><img src="/images/multiprocessing1.png" alt="akb48"></p><h2><span id="用python去实现tailf功能">用python去实现tailf功能</span></h2><p>在shell下执行<code>tail -f</code>就是一句话的事，但是用python实现则需要一个脚本了，内容如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment">#coding=utf-8</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">watch</span><span class="params">(fn, words)</span>:</span></span><br><span class="line">    fp = open(fn, <span class="string">'r'</span>)</span><br><span class="line">    <span class="keyword">while</span> <span class="keyword">True</span>:</span><br><span class="line">        new = fp.readline()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> new:</span><br><span class="line">            <span class="keyword">for</span> word <span class="keyword">in</span> words:</span><br><span class="line">                <span class="keyword">if</span> word <span class="keyword">in</span> new:</span><br><span class="line">                    <span class="keyword">yield</span> (word, new)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            time.sleep(<span class="number">1</span>)</span><br><span class="line"></span><br><span class="line">fn = <span class="string">'文件路径'</span></span><br><span class="line">words = [<span class="string">'关键词'</span>]</span><br><span class="line"><span class="keyword">for</span> hit_word, hit_sentence <span class="keyword">in</span> watch(fn, words):</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"发现关键词 %r 在日志里: %r"</span> % (hit_word, hit_sentence)</span><br></pre></td></tr></table></figure></p><h2><span id="python实现线程通信">python实现线程通信</span></h2><p>假设我们有一个函数叫AAA，希望脚本能开两个线程，线程A是等待5秒，线程B是不断的执行AAA（），直到5秒结束，线程B也停止线程AAA（）。那么脚本如下：</p><h2><span id="按行读取文件取各种集合">按行读取文件取各种集合</span></h2><p>python对于两个字典求交集（&amp;），差集（-），全集（|）比较简单，而对于两个文件按行取集合的方法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line">s1 = set(open(<span class="string">r'C:\Users\33664\Desktop\aaa.txt'</span>,<span class="string">'r'</span>).readlines())</span><br><span class="line">s2 = set(open(<span class="string">r'C:\Users\33664\Desktop\bbb.txt'</span>,<span class="string">'r'</span>).readlines())</span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> (<span class="string">'交集是: %s'</span> % (s1.intersection(s2)))</span><br><span class="line"><span class="keyword">print</span> (<span class="string">'并集是: %s'</span> % (s1.union(s2)))</span><br><span class="line"><span class="keyword">print</span> (<span class="string">'差集是: %s'</span>%(s1.difference(s2)))</span><br><span class="line"><span class="keyword">print</span> (<span class="string">'dif: %s'</span>%(s1.difference(s2).union(s2.difference(s1))))</span><br></pre></td></tr></table></figure></p><h2><span id="_的问题">_的问题</span></h2><p>有些python脚本在for循环里会有这样的代码：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> _ <span class="keyword">in</span> range(<span class="number">5</span>)</span><br><span class="line"><span class="keyword">print</span> (<span class="string">"我想放假，我想放假"</span>)</span><br></pre></td></tr></table></figure></p><p>这里面的独立_其实没有特殊的意义，仅仅是是用作一个名字，来表示某个变量是临时的或无关紧要的。</p><p>不过_还有其他的用途，它可以展示最近的一次表达式的结果，比如：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="number">20</span> + <span class="number">3</span></span><br><span class="line"><span class="number">23</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>_</span><br><span class="line"><span class="number">23</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(_)</span><br><span class="line"><span class="number">23</span></span><br></pre></td></tr></table></figure></p><h2><span id="额外补充">额外补充</span></h2><p>1.tailf命令主动停止命令：<code>tail -f 目标日志|sed &#39;/启动成功/Q&#39;</code>，此语句会在”启动成功”打印时退出，但log只能打印到”启动成功”的上一行；<br>2.<code>subprocess.call(&quot;命令1&quot;)</code>，命令1是按顺序执行的，效果等同于<code>subprocess.Popen(&quot;命令1&quot;).wait()</code>；<code>subprocess.Popen(&quot;命令2&quot;)</code>，命令2是与前一个命令并发进行的；  </p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://stackoverflow.com/questions/1703640/how-to-implement-a-pythonic-equivalent-of-tail-f" target="_blank" rel="noopener">https://stackoverflow.com/questions/1703640/how-to-implement-a-pythonic-equivalent-of-tail-f</a><br><a href="https://python3-cookbook.readthedocs.io/zh_CN/latest/c12/p03_communicating_between_threads.html" target="_blank" rel="noopener">https://python3-cookbook.readthedocs.io/zh_CN/latest/c12/p03_communicating_between_threads.html</a><br><a href="https://stackoverflow.com/questions/22698754/subprocess-calls-are-they-done-in-parallel/22698825#22698825" target="_blank" rel="noopener">https://stackoverflow.com/questions/22698754/subprocess-calls-are-they-done-in-parallel/22698825#22698825</a><br><img src="/images/手刀秒饿狼.gif" alt="akb48" title="琦玉与饿狼的第一次会面"></p>]]></content>
-    
-    <summary type="html">
-    
-      缓存设计两条规则：1.越靠近用户的请求越好，比如能用本地缓存的就不要发送HTTP请求，能用CDN缓存的就不要打到Web服务器，能用Nginx缓存的就不要用数据库的缓存；2.尽量使用本进程和本机的缓存解决，因为跨了进程和机器甚至机房，缓存的网络开销就会非常大，在高并发的时候会非常明显。
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="python" scheme="http://yoursite.com/tags/python/"/>
-    
-      <category term="多线程" scheme="http://yoursite.com/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/"/>
     
   </entry>
   
