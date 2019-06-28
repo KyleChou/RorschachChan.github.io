@@ -101,7 +101,7 @@
 <meta property="og:image" content="http://yoursite.com/images/proxy30.png">
 <meta property="og:image" content="http://yoursite.com/images/proxy29.png">
 <meta property="og:image" content="http://yoursite.com/images/proxy31.png">
-<meta property="og:updated_time" content="2019-06-28T06:02:09.086Z">
+<meta property="og:updated_time" content="2019-06-28T07:15:42.478Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Proxysql添加后端SSL加密">
 <meta name="twitter:description" content="这个世界总会有一些莫名其妙的事情">
@@ -419,7 +419,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  330
+                  453
                 </span>
               
 
@@ -435,7 +435,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -462,7 +462,8 @@
       
         <script src="\assets\js\APlayer.min.js"> </script><p>安全部门最近放出了新需求，要数据库流量实现内网加密。即<code>mysql&lt;-----&gt;proxysql</code>之间是加密的，整个配置流程如下：</p>
 <p>首先登陆阿里云控制台RDS，选择对应的数据库—数据安全性—SSL，点击<code>开通</code>，如图：<br><img src="/images/proxy27.png" alt="akb48"></p>
-<p>注意！此项举动会重启数据库，所以线上环境请慎重！</p>
+<font color="red">注意！此项举动会重启数据库，所以线上环境请慎重！</font>
+
 <p>在配置的时候，同时下载CA证书，上传到proxysql所在的服务器的<code>/var/lib/proxysql/</code>里。解压缩之，发现压缩包里是三个文件，如图：<br><img src="/images/proxy28.png" alt="akb48"></p>
 <p>我们主要用的是<code>ApsaraDB-CA-Chain.pem</code>这个文件。</p>
 <p>如果数据库开通ssl成功，那么在阿里云的控制台上是显示为“已开通”，在mysql命令行里使用<code>show global variables like &#39;%ssl%&#39;;</code>查看如下：<br><img src="/images/proxy30.png" alt="akb48"></p>
@@ -470,6 +471,11 @@
 <p>发现里面的<code>use_ssl</code>是0，所以<code>update mysql_servers set use_ssl=1;</code>将他们改成1。</p>
 <p>然后<code>set mysql-ssl_p2s_ca = &#39;/var/lib/proxysql/ApsaraDB-CA-Chain.pem&#39;;</code>设定CA证书所在路径。随后就是<code>load mysql variables to runtime;</code>和<code>save mysql variables to disk;</code>，保存之后使用<code>select * from runtime_global_variables;</code>查看：<br><img src="/images/proxy31.png" alt="akb48"></p>
 <p>验证的方法也很简单，在对应数据库里操作的同时<code>tcpdump -s 0 -i any -v port 3306 -w /root/test.pcap</code> 抓一下包看一下里面的内容是否加密了就行。</p>
+<p>补充：虽然SSL方式使得安全性提高了，但是相对地使得QPS也降低23%左右。所以要谨慎选择：</p>
+<ol>
+<li>对于非常敏感核心的数据，或者QPS本来就不高的核心数据，可以采用SSL方式保障数据安全性；</li>
+<li>对于采用短链接、要求高性能的应用，或者不产生核心敏感数据的应用，性能和可用性才是首要，建议不要采用SSL方式；</li>
+</ol>
 
       
     </div>
@@ -895,7 +901,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共250.4k字</span>
+  <span class="post-count">博客全站共250.5k字</span>
 </div>
         
 
