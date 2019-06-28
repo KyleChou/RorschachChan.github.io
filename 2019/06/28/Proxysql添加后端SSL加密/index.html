@@ -102,7 +102,7 @@
 <meta property="og:image" content="http://yoursite.com/images/proxy29.png">
 <meta property="og:image" content="http://yoursite.com/images/proxy31.png">
 <meta property="og:image" content="http://yoursite.com/images/DH12-2.png">
-<meta property="og:updated_time" content="2019-06-28T07:43:01.512Z">
+<meta property="og:updated_time" content="2019-06-28T08:13:09.718Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Proxysql添加后端SSL加密">
 <meta name="twitter:description" content="这个世界总会有一些莫名其妙的拒绝">
@@ -420,7 +420,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  513
+                  533
                 </span>
               
 
@@ -466,7 +466,7 @@
 <font color="red">注意！此项举动会重启数据库，所以线上环境请慎重！</font>
 
 <p>在配置的时候，同时下载CA证书，上传到proxysql所在的服务器的<code>/var/lib/proxysql/</code>里。解压缩之，发现压缩包里是三个文件，如图：<br><img src="/images/proxy28.png" alt="akb48"></p>
-<p>我们主要用的是<code>ApsaraDB-CA-Chain.pem</code>这个文件。</p>
+<p>我们主要用的是<code>ApsaraDB-CA-Chain.pem</code>这个文件（如果是读写库，那么这个pem的文件是一模一样的）。</p>
 <p>如果数据库开通ssl成功，那么在阿里云的控制台上是显示为“已开通”，在mysql命令行里使用<code>show global variables like &#39;%ssl%&#39;;</code>查看如下：<br><img src="/images/proxy30.png" alt="akb48"></p>
 <p>登录proxysql，查看当前链接mysql情况，如图：<br><img src="/images/proxy29.png" alt="akb48"></p>
 <p>发现里面的<code>use_ssl</code>是0，所以<code>update mysql_servers set use_ssl=1;</code>将他们改成1。</p>
@@ -713,7 +713,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">244</span>
+                  <span class="site-state-item-count">245</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -929,7 +929,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共250.6k字</span>
+  <span class="post-count">博客全站共251.4k字</span>
 </div>
         
 

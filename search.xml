@@ -3,7 +3,7 @@
   <entry>
     <title><![CDATA[Proxysql添加后端SSL加密]]></title>
     <url>%2F2019%2F06%2F28%2FProxysql%E6%B7%BB%E5%8A%A0%E5%90%8E%E7%AB%AFSSL%E5%8A%A0%E5%AF%86%2F</url>
-    <content type="text"><![CDATA[配置正文安全部门最近放出了新需求，要数据库流量实现内网加密。即mysql&lt;-----&gt;proxysql之间是加密的，这里记录整个配置过程，安装部分可以移步去看 https://rorschachchan.github.io/2019/05/31/%E8%AE%B0%E5%BD%95%E9%83%A8%E7%BD%B2ProxySql%E7%9A%84%E8%BF%87%E7%A8%8B/ 这篇文章。 首先登陆阿里云控制台RDS，选择对应的数据库—数据安全性—SSL，点击开通，如图： 注意！此项举动会重启数据库，所以线上环境请慎重！ 在配置的时候，同时下载CA证书，上传到proxysql所在的服务器的/var/lib/proxysql/里。解压缩之，发现压缩包里是三个文件，如图： 我们主要用的是ApsaraDB-CA-Chain.pem这个文件。 如果数据库开通ssl成功，那么在阿里云的控制台上是显示为“已开通”，在mysql命令行里使用show global variables like &#39;%ssl%&#39;;查看如下： 登录proxysql，查看当前链接mysql情况，如图： 发现里面的use_ssl是0，所以update mysql_servers set use_ssl=1;将他们改成1。 然后set mysql-ssl_p2s_ca = &#39;/var/lib/proxysql/ApsaraDB-CA-Chain.pem&#39;;设定CA证书所在路径。随后就是load mysql variables to runtime;和save mysql variables to disk;，保存之后使用select * from runtime_global_variables;查看： 验证的方法也很简单，在对应数据库里操作的同时tcpdump -s 0 -i any -v port 3306 -w /root/test.pcap 抓一下包看一下里面的内容是否加密了就行。 补充：虽然SSL方式使得安全性提高了，但是相对地使得QPS也降低23%左右。所以要谨慎选择： 对于非常敏感核心的数据，或者QPS本来就不高的核心数据，可以采用SSL方式保障数据安全性； 对于采用短链接、要求高性能的应用，或者不产生核心敏感数据的应用，性能和可用性才是首要，建议不要采用SSL方式； 参考资料https://github.com/sysown/proxysql/wiki/SSL-Support]]></content>
+    <content type="text"><![CDATA[配置正文安全部门最近放出了新需求，要数据库流量实现内网加密。即mysql&lt;-----&gt;proxysql之间是加密的，这里记录整个配置过程，安装部分可以移步去看 https://rorschachchan.github.io/2019/05/31/%E8%AE%B0%E5%BD%95%E9%83%A8%E7%BD%B2ProxySql%E7%9A%84%E8%BF%87%E7%A8%8B/ 这篇文章。 首先登陆阿里云控制台RDS，选择对应的数据库—数据安全性—SSL，点击开通，如图： 注意！此项举动会重启数据库，所以线上环境请慎重！ 在配置的时候，同时下载CA证书，上传到proxysql所在的服务器的/var/lib/proxysql/里。解压缩之，发现压缩包里是三个文件，如图： 我们主要用的是ApsaraDB-CA-Chain.pem这个文件（如果是读写库，那么这个pem的文件是一模一样的）。 如果数据库开通ssl成功，那么在阿里云的控制台上是显示为“已开通”，在mysql命令行里使用show global variables like &#39;%ssl%&#39;;查看如下： 登录proxysql，查看当前链接mysql情况，如图： 发现里面的use_ssl是0，所以update mysql_servers set use_ssl=1;将他们改成1。 然后set mysql-ssl_p2s_ca = &#39;/var/lib/proxysql/ApsaraDB-CA-Chain.pem&#39;;设定CA证书所在路径。随后就是load mysql variables to runtime;和save mysql variables to disk;，保存之后使用select * from runtime_global_variables;查看： 验证的方法也很简单，在对应数据库里操作的同时tcpdump -s 0 -i any -v port 3306 -w /root/test.pcap 抓一下包看一下里面的内容是否加密了就行。 补充：虽然SSL方式使得安全性提高了，但是相对地使得QPS也降低23%左右。所以要谨慎选择： 对于非常敏感核心的数据，或者QPS本来就不高的核心数据，可以采用SSL方式保障数据安全性； 对于采用短链接、要求高性能的应用，或者不产生核心敏感数据的应用，性能和可用性才是首要，建议不要采用SSL方式； 参考资料https://github.com/sysown/proxysql/wiki/SSL-Support]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -58,6 +58,18 @@
       <tags>
         <tag>zabbix</tag>
         <tag>监控</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[网易雷火运维面试全纪录]]></title>
+    <url>%2F2019%2F06%2F20%2F%E7%BD%91%E6%98%93%E9%9B%B7%E7%81%AB%E8%BF%90%E7%BB%B4%E9%9D%A2%E8%AF%95%E8%AE%B0%E5%BD%95%2F</url>
+    <content type="text"><![CDATA[电话一面 都搞过什么linux的发行版，区别是啥？ 为什么云服务器普遍不装swap？ 1小内存主机由于内存不足导致持续swapping后会严重影响存储设备的IO性能。其实如果需要使用swap的话，主机性能也已经是烂的一塌糊涂，根本不能满足使用了，建议增加内存为上。 localhost与127.0.0.1的区别 1localhot（local）是不经网卡传输！这点很重要，它不受网络防火墙和网卡相关的的限制。127.0.0.1是通过网卡传输，依赖网卡，并受到网络防火墙和网卡相关的限制。 iptables的四表五链是啥？ 出现延迟都有原因？ 如何把数据库恢复到指定时刻？ 你从业以来参与的比较大的故障是什么？怎么解决的？ 电话二面 介绍一下你自己 使用docker遇到了什么坑？ docker的网络模式有哪些？为什么不能选hosts？ 服务器调整进程优先级的命令是啥？ 123456789一般来说微服务（即一个云服务器只跑一个进程）的场景来说，这个问题很少遇到，但是实际很多公司是一个服务器（比如80核160G）跑多个进程，那么对后台的程序有优先级限制就要使用`nice`命令。Linux系统中，进程有-19到19这39个优先级。-19最优先，19最不优先。进程的默认优先级为0。如果希望将进程调整为最优先，则将进程的nice值设置为-19；如果希望进程最不优先，占用最少的系统CPU时间，则将其设置为19。修改已经存在的进程的优先级将PID为1799的进程优先级设置为最低（19）：renice 19 1799将PID为1799的进程优先级设置为最高（-19）：renice -19 1799新建进程并设置优先级nice -19 tar zcf pack.tar.gz documents #这里-19并不是最高优先级，而是最低优先级，要设定最高优先级是--19 python的==和is有什么不同？ 1is比较的是id是不是一样，==比较的是值是不是一样。 如何删除某文件下所有名称带有空格的文件？ 12可以通过转义符，或者获取文件的PID，根据PID删除对应的文件比如想rm文件名为“my file”的文件可以用rm my\ file ansibleplaybook的回滚方法？ 如果nginx的server设置了add header，同时子location也设置了add header，那么会有什么现象？ 现场技术一面 写一下Python序列循环移位的方法，原来是[1,2,3,4,5,6]，变成[3,4,5,6,1,2]，任意语言都可以。 1234使用切片，简单易理解，速度最快，可同时实现循环左移（k&gt;0）和右移（k&lt;0）。def demo(lst, k): return lst[k:] + lst[:k] 你们平时备份mysql使用什么方法？为什么用这个开源软件？ 服务器你们是如何初始化的？ 简单的介绍一下python的生成器？ 剩下的就是一些流程性的问题了。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>大牛之路</tag>
+        <tag>面试</tag>
       </tags>
   </entry>
   <entry>
@@ -193,8 +205,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>python3</tag>
         <tag>阿里云</tag>
+        <tag>python3</tag>
         <tag>tkinter</tag>
       </tags>
   </entry>
@@ -2754,8 +2766,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>zabbix</tag>
         <tag>redis</tag>
+        <tag>zabbix</tag>
       </tags>
   </entry>
   <entry>
