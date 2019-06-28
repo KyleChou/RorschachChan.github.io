@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="这个世界总会有一些莫名其妙的拒绝">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-28T08:29:56.414Z">
+<meta property="og:updated_time" content="2019-06-28T12:25:25.851Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="网易雷火运维面试全纪录">
 <meta name="twitter:description" content="这个世界总会有一些莫名其妙的拒绝">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  831
+                  1,190
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  5
                 </span>
               
             </div>
@@ -471,6 +471,9 @@
 </li>
 <li><p>你从业以来参与的比较大的故障是什么？怎么解决的？</p>
 </li>
+<li><p>如果要大量insert数据到数据库，有什么优化的方法？</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>)一条SQL语句插入多条数据:比如一次insert插入多个values，INSERT INTO `insert_table` (`datetime`, `uid`, `content`, `type`) </span><br><span class="line">   VALUES (<span class="string">'0'</span>, <span class="string">'userid_0'</span>, <span class="string">'content_0'</span>, <span class="number">0</span>), (<span class="string">'1'</span>, <span class="string">'userid_1'</span>, <span class="string">'content_1'</span>, <span class="number">1</span>);</span><br><span class="line">这样的好处是减少binlog和innodb的日质量，降低了日志刷盘的频率提高效率，同时减少了网络传输的IO，这个优化效果特别明显；</span><br><span class="line"><span class="number">2</span>）把多一个insert写成一个事务，进行一个insert操作时，MySQL内部会建立一个事务，在事务内才进行真正插入处理操作。通过使用事务可以减少创建事务的消耗，所有插入都在执行后才进行提交操作；</span><br><span class="line"><span class="number">3</span>）数据按照主键有序插入，因为数据库插入时，需要维护索引数据，无序的记录会增大维护索引的成本，不过这个方法提高的并不明显；</span><br><span class="line"><span class="number">4</span>）以上方法综合使用；</span><br></pre></td></tr></table></figure>
+</li>
 </ol>
 <h2><span id="电话二面">电话二面</span></h2><ol>
 <li><p>介绍一下你自己</p>
@@ -491,6 +494,9 @@
 <li><p>ansibleplaybook的回滚方法？</p>
 </li>
 <li><p>如果nginx的server设置了add header，同时子location也设置了add header，那么会有什么现象？</p>
+</li>
+<li><p>如何判断查询是否用到了索引？</p>
+ <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">使用explain，如果type类型是all就是没有用到索引，如果是其他具体类型就是用到了索引。</span><br><span class="line">索引依次从好到差：system，const，eq_ref，ref，fulltext，ref_or_null，unique_subquery，index_subquery，range，index_merge，index，ALL，除了all之外，其他的type都可以使用到索引，除了index_merge之外，其他的type只可以用到一个索引。</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
 <h2><span id="现场技术一面">现场技术一面</span></h2><ol>
@@ -957,7 +963,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共251.4k字</span>
+  <span class="post-count">博客全站共251.8k字</span>
 </div>
         
 
