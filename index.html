@@ -317,6 +317,226 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/01/Linux运维工程师笔试题第十九套/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Chris Chan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Chris Chan's BLOG">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/01/Linux运维工程师笔试题第十九套/" itemprop="url">Linux运维工程师笔试题第十九套</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-01T10:31:06+08:00">
+                2019-07-01
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/大牛之路/" itemprop="url" rel="index">
+                    <span itemprop="name">大牛之路</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/07/01/Linux运维工程师笔试题第十九套/" class="leancloud_visitors" data-flag-title="Linux运维工程师笔试题第十九套">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+				 <span>℃</spam>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  683
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  3
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <script src="\assets\js\APlayer.min.js"> </script><h2><span id="试题内容">试题内容</span></h2><ol>
+<li><p>简述一下客户端请求网页里a.css的过程。<br><img src="/images/css5.png" alt="akb48"></p>
+</li>
+<li><p>HTTP 协议中与缓存相关的<code>HTTP Header</code>有哪些?<br>见<a href="https://segmentfault.com/a/1190000014445687?utm_source=index-hottest/*&amp;^%$" target="_blank" rel="noopener">https://segmentfault.com/a/1190000014445687?utm_source=index-hottest/*&amp;^%$</a> 这篇文章吧。</p>
+</li>
+<li><p>SQL语句：<code>update apps set ID=&quot;12345&quot; and NAME=&quot;李四&quot; where ID=&quot;11111&quot; and NAME=&quot;张三&quot;</code>的执行结果是什么？为什么会有这个结果？<br><img src="/images/css6.png" alt="akb48"></p>
+</li>
+</ol>
+<p>mysql官方要求以逗号分隔的<code>col_name=value</code>列表，如果是and的话，题目中的句子实际执行效果是<code>update apps set ID=（&quot;12345&quot; and NAME=&quot;李四&quot;） where ID=&quot;11111&quot; and NAME=&quot;张三&quot;</code>，即括号里的是一个逻辑表达式，但是由于NAME是等于张三而不是李四，于是就等于<code>ID=&quot;12345&quot; and False</code>，即False，在mysql里False等于0。所以出现了这个情况。</p>
+<ol>
+<li><p>接上题，如果要正确达到目的应该怎么写？<br>正确写法是：<code>update apps set Id=&quot;12345&quot;，NAME=&quot;李四&quot; where ID=&quot;11111&quot; and NAME=&quot;张三&quot;</code>，这样才能达到同时修改两个列的目的。</p>
+</li>
+<li><p>POST和GET的区别<br>见<a href="https://www.cnblogs.com/logsharing/p/8448446.html" target="_blank" rel="noopener">https://www.cnblogs.com/logsharing/p/8448446.html</a> 这篇文章吧。</p>
+</li>
+<li><p>如何保证用户鉴权过程是安全的？<br>用户在网页输入用户名A和密码B，对“A+B+有规律的字符串”进行加密得到C，将A和C传递给服务器。由于A是明文的，服务器可根据A去数据库里得到相应的密码B，也用同样的步骤生成D，比较C和D是否相同即可。</p>
+</li>
+<li><p>Lunix如何查看某个进程的线程？<br>两种方法：<br>1）ps -T -p pid  其中spid就是线程号<br>2）top -H -p pid</p>
+</li>
+<li><p>数据库事务隔离级别<br>数据库事务的隔离级别有4个，由低到高依次为<code>Read uncommitted（</code>读未提交） 、<code>Read committed</code>（读提交，SQL和ORACLE的默认规则） 、<code>Repeatable read</code>（重复读，MYSQL默认的） 、<code>Serializable</code>（序列化，效率低但是最准确） ，这四个级别可以逐个解决脏读、不可重复读、幻读这几类问题。</p>
+</li>
+<li><p>将软连接的原文件删除，能否编辑此软连接？会有什么现象？<br>可以通过echo命令编辑此软连接，结果生成名跟原文件一样的文件，inode也一样，但是文件内容已经是echo的新内容了。</p>
+</li>
+<li><p>如何识别此文件是硬链接？<br>使用ll -hit查看文件，如果索引数不是1就是硬链接。</p>
+</li>
+<li><p>数据库延迟同步的语句是什么？<br>一般来说为了防止数据库误操作，都会给一个异地备份数据库配置延迟同步功能，语句如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt;stop slave;</span><br><span class="line">mysql&gt;CHANGE MASTER TO MASTER_DELAY = <span class="number">1800</span>；单位为秒</span><br><span class="line">mysql&gt;start slave;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://github.com/kaiye/kaiye.github.com/issues/3" target="_blank" rel="noopener">https://github.com/kaiye/kaiye.github.com/issues/3</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	
+	
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+		   
+		<div>    
+			
+		</div>
+	
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/28/Proxysql添加后端SSL加密/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -452,7 +672,7 @@
 
       
         
-          以通配符（%）开始的like字符串，走索引。比如.like %aaa%会使用索引，而like aaa%不会
+          以通配符（%）开始的like字符串，走索引。比如like %aaa%会使用索引，而like aaa%不会
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2019/06/28/Proxysql添加后端SSL加密/">
@@ -1394,7 +1614,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,190
+                  1,203
                 </span>
               
 
@@ -2068,202 +2288,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/10/搭建V2Ray服务端搭配Shadowrocket使用/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Chris Chan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Chris Chan's BLOG">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/10/搭建V2Ray服务端搭配Shadowrocket使用/" itemprop="url">搭建V2Ray服务端搭配Shadowrocket使用</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-10T20:17:49+08:00">
-                2019-06-10
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
-                    <span itemprop="name">工作与技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2019/06/10/搭建V2Ray服务端搭配Shadowrocket使用/" class="leancloud_visitors" data-flag-title="搭建V2Ray服务端搭配Shadowrocket使用">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-				 <span>℃</spam>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  654
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  3
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          这颗心还是向往更旷阔的世界的。
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/06/10/搭建V2Ray服务端搭配Shadowrocket使用/">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-	
-	
-	
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-		   
-		<div>    
-			
-		</div>
-	
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2320,7 +2344,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">245</span>
+                  <span class="site-state-item-count">246</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2520,7 +2544,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共251.8k字</span>
+  <span class="post-count">博客全站共252.5k字</span>
 </div>
         
 
