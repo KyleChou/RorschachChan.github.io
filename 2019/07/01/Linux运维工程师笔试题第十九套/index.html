@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/css5.png">
 <meta property="og:image" content="http://yoursite.com/images/css6.png">
-<meta property="og:updated_time" content="2019-07-01T06:18:27.690Z">
+<meta property="og:updated_time" content="2019-07-01T06:27:50.160Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十九套">
 <meta name="twitter:description" content="主键索引和非主键索引是有区别的，主键索引存放的值是整行字段的数据，而非主键索引上存放的值不是整行字段的数据，而且存放主键字段的值。">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  707
+                  737
                 </span>
               
 
@@ -473,7 +473,7 @@
 </li>
 <li><p>如何保证用户鉴权过程是安全的？<br>用户在网页输入用户名A和密码B，对“A+B+有规律的字符串”进行加密得到C，将A和C传递给服务器。由于A是明文的，服务器可根据A去数据库里得到相应的密码B，也用同样的步骤生成D，比较C和D是否相同即可。</p>
 </li>
-<li><p>Lunix如何查看某个进程的线程？<br>两种方法：<br>1）ps -T -p pid  其中spid就是线程号<br>2）top -H -p pid</p>
+<li><p>Lunix如何查看某个进程的线程？<br>两种方法：<br>1）<code>ps -T -p pid</code>，返回的结果里spid就是线程号<br>2）<code>top -H -p pid</code></p>
 </li>
 <li><p>数据库事务隔离级别<br>数据库事务的隔离级别有4个，由低到高依次为<code>Read uncommitted（</code>读未提交） 、<code>Read committed</code>（读提交，SQL和ORACLE的默认规则） 、<code>Repeatable read</code>（重复读，MYSQL默认的） 、<code>Serializable</code>（序列化，效率低但是最准确） ，这四个级别可以逐个解决脏读、不可重复读、幻读这几类问题。</p>
 </li>
@@ -483,6 +483,8 @@
 </li>
 <li><p>数据库延迟同步的语句是什么？<br>一般来说为了防止数据库误操作，都会给一个异地备份数据库配置延迟同步功能，语句如下：</p>
 <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt;stop slave;</span><br><span class="line">mysql&gt;CHANGE MASTER TO MASTER_DELAY = <span class="number">1800</span>；单位为秒</span><br><span class="line">mysql&gt;start slave;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>SQL语句执行很慢的原因都有什么？<br>见<a href="https://zhuanlan.zhihu.com/p/62941196" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/62941196</a> 这篇文章。</p>
 </li>
 </ol>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://github.com/kaiye/kaiye.github.com/issues/3" target="_blank" rel="noopener">https://github.com/kaiye/kaiye.github.com/issues/3</a><br><a href="https://tech.meituan.com/2014/08/20/innodb-lock.html" target="_blank" rel="noopener">https://tech.meituan.com/2014/08/20/innodb-lock.html</a> （Innodb中的事务隔离级别和锁的关系）</p>
@@ -936,7 +938,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共252.5k字</span>
+  <span class="post-count">博客全站共252.6k字</span>
 </div>
         
 
