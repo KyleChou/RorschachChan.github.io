@@ -98,7 +98,7 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/css5.png">
 <meta property="og:image" content="http://yoursite.com/images/css6.png">
-<meta property="og:updated_time" content="2019-07-01T06:27:50.160Z">
+<meta property="og:updated_time" content="2019-07-02T05:55:27.036Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux运维工程师笔试题第十九套">
 <meta name="twitter:description" content="主键索引和非主键索引是有区别的，主键索引存放的值是整行字段的数据，而非主键索引上存放的值不是整行字段的数据，而且存放主键字段的值。">
@@ -416,7 +416,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  737
+                  758
                 </span>
               
 
@@ -473,7 +473,7 @@
 </li>
 <li><p>如何保证用户鉴权过程是安全的？<br>用户在网页输入用户名A和密码B，对“A+B+有规律的字符串”进行加密得到C，将A和C传递给服务器。由于A是明文的，服务器可根据A去数据库里得到相应的密码B，也用同样的步骤生成D，比较C和D是否相同即可。</p>
 </li>
-<li><p>Lunix如何查看某个进程的线程？<br>两种方法：<br>1）<code>ps -T -p pid</code>，返回的结果里spid就是线程号<br>2）<code>top -H -p pid</code></p>
+<li><p>Lunix如何查看某个进程的线程？<br>两种方法：<br>1）<code>ps -T -p pid</code>，返回的结果里spid就是线程号<br>2）<code>top -H -p pid</code><br>3）<code>pstree -p 进程用户名 | grep 进程名</code>，<code>ps -Lf 进程名</code>，<code>pstack 进程名</code></p>
 </li>
 <li><p>数据库事务隔离级别<br>数据库事务的隔离级别有4个，由低到高依次为<code>Read uncommitted（</code>读未提交） 、<code>Read committed</code>（读提交，SQL和ORACLE的默认规则） 、<code>Repeatable read</code>（重复读，MYSQL默认的） 、<code>Serializable</code>（序列化，效率低但是最准确） ，这四个级别可以逐个解决脏读、不可重复读、幻读这几类问题。</p>
 </li>
@@ -610,6 +610,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2019/07/02/Go语言flag包学习/" rel="prev" title="一个Go语言按行读取文件的脚本">
+                一个Go语言按行读取文件的脚本 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -722,7 +726,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">246</span>
+                  <span class="site-state-item-count">247</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -744,7 +748,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">210</span>
+                  <span class="site-state-item-count">211</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -938,7 +942,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共252.6k字</span>
+  <span class="post-count">博客全站共253.3k字</span>
 </div>
         
 
