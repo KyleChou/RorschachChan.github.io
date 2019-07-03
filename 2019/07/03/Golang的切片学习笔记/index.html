@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="golang判断map里是否含有某个key，可以使用if val, ok := dict[&quot;foo&quot;]的方法">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-03T11:31:05.955Z">
+<meta property="og:updated_time" content="2019-07-03T11:59:35.919Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang的切片学习笔记">
 <meta name="twitter:description" content="golang判断map里是否含有某个key，可以使用if val, ok := dict[&quot;foo&quot;]的方法">
@@ -454,8 +454,7 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><p>与python对比## </p>
-<p> ##初开始接触golang的slice，感觉跟python的slice有点像，但也有几个比较明显的区别：</p>
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="与python对比">与python对比</span></h2><p>初开始接触golang的slice，感觉跟python的slice有点像，但也有几个比较明显的区别：</p>
 <ol>
 <li>python中的slice是在原有基础上拷贝一份。go中的slice则是指向生成它的数组/切片(切片和数组共用同一片内存)，切最长长度不会超限；</li>
 <li>go的切片，其成员是相同类型的，python的列表和元组则不限制类型；</li>
@@ -860,7 +859,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5224;&#x65AD;&#x5207;&#x7247;&#x76F8;&#x7B49;">&#x5224;&#x65AD;&#x5207;&#x7247;&#x76F8;&#x7B49;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="copy&#x7684;&#x95EE;&#x9898;">copy&#x7684;&#x95EE;&#x9898;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x5224;&#x65AD;&#x5B57;&#x7B26;&#x4E32;&#x7684;&#x51E0;&#x79CD;&#x60C5;&#x51B5;">&#x5224;&#x65AD;&#x5B57;&#x7B26;&#x4E32;&#x7684;&#x51E0;&#x79CD;&#x60C5;&#x51B5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x4E0E;python&#x5BF9;&#x6BD4;">&#x4E0E;python&#x5BF9;&#x6BD4;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5224;&#x65AD;&#x5207;&#x7247;&#x76F8;&#x7B49;">&#x5224;&#x65AD;&#x5207;&#x7247;&#x76F8;&#x7B49;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="copy&#x7684;&#x95EE;&#x9898;">copy&#x7684;&#x95EE;&#x9898;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x5224;&#x65AD;&#x5B57;&#x7B26;&#x4E32;&#x7684;&#x51E0;&#x79CD;&#x60C5;&#x51B5;">&#x5224;&#x65AD;&#x5B57;&#x7B26;&#x4E32;&#x7684;&#x51E0;&#x79CD;&#x60C5;&#x51B5;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
