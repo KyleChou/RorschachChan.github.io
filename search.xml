@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Intellij Idea配置GO调用本地包]]></title>
+    <url>%2F2019%2F07%2F05%2FIntellij-Idea%E9%85%8D%E7%BD%AEGO%E8%B0%83%E7%94%A8%E6%9C%AC%E5%9C%B0%E5%8C%85%2F</url>
+    <content type="text"><![CDATA[go代码里使用import去导入包文件，比如常见的import fmt，这个命令实际上导入的就是GOROOT\src\fmt。但是当遇到需要导入本地包的时候，就需要配置一下。 我windows里的go脚本文件夹是E:\github\GoeveryDay，现在在这个文件夹里创建src\chentest\，然后在src\下面创建一个chenchen.go，在chentest\下创建testtest.go，如图： 而chenchen.go的内容如下： 123456789101112131415package mainimport ( "chentest" "fmt")func main()&#123; chentest.XXX() var s1 chentest.Player s1.Name = "iverson" s1.Number = 3 s1.Team = "76ers" fmt.Println(s1)&#125; 现在需要让chenchen.go能成功调用到chentest.go里的XXX函数，如果此时在chenchen.go里直接import testtest.go所在文件夹是会报错的，错误提示是Cannot resolve file ‘testtest.go所在文件夹’，这是因为程序在运行时先去GOROOT去搜索导入包，然后去GOPATH寻找导入包，最后在当前项目模块下寻找导入包，如果三个都找不到就会报错。 可见在idea中默认不支持直接导入本地Golang包，那么解决该问题的关键是明白GOROOT和GOPATH的作用，根据官方文档的解释GOPATH的主要作用是存放文件以便Golang程序编译时可以进行搜索引用，GOPATH可以设置一个值或多个值，多个值之间以分号隔开。很明显只要我们将本地Golang加入到GOPATH中即可在IDEA中正常运行该程序。 那么先File--Settings--Languages &amp; Frameworks--Go--GOPATH，在project GOPATH里添加E:\github\GoeveryDay这个总的文件路径，如图： apply保存即可，记住这里不能填E:\github\GoeveryDay\src，因为系统会自带src目录，如图： 此时再执行就得到正确结果了！如图： 但是要注意，要使用本地包函数、结构体、结构体的成员，首字母必须是大写！如果首字母是小写是私有的，是不可见的，只能在同一个包里使用。]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>golang</tag>
+        <tag>intellij idea</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[Golang的切片学习笔记]]></title>
     <url>%2F2019%2F07%2F03%2FGolang%E7%9A%84%E5%88%87%E7%89%87%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%2F</url>
-    <content type="text"><![CDATA[与python对比初开始接触golang的slice，感觉跟python的slice有点像，但也有几个比较明显的区别： python中的slice是在原有基础上拷贝一份。go中的slice则是指向生成它的数组/切片(切片和数组共用同一片内存)，切最长长度不会超限； go的切片，其成员是相同类型的，python的列表和元组则不限制类型； 对于[a:b]这种切片操作，go的a、b两个参数不能是负数，python可以是负数，此时就相当于从末尾往前数； 对于[a:b:c]这种切片操作，go的c，表示的是容量；而python的c表示的是步长。 判断切片相等比较两个切片是否相等，除了循环遍历还有一个reflect方法： 12345678910111213141516171819package mainimport ( "fmt" "reflect")func bijiao(b,c []int) bool&#123; return reflect.DeepEqual(b,c)&#125;func main()&#123; b := []int&#123;&#125; //他俩是一回事 c :=make([]int,0,0) var d []int fmt.Println(bijiao(b,c)) fmt.Println(bijiao(d,c)) fmt.Println(d) fmt.Println(c)&#125; copy的问题go的copy是拷贝对应的位置，而不是全拷贝，也就是说如果是让一个空切片作为目的切片，那得到了新切片就是空切片，如果是让一个空切片做源切片，那么得到的新切片与目的切片一致。 判断字符串的几种情况用一个例子说明： 12345678910111213141516package mainimport ("fmt""strings")func main() &#123; var str string = "This is an example of a string." //定义变量 fmt.Printf("T/F? Does the string \"%s\" have prefix %s? ", str, "Th") fmt.Printf("%t\n", strings.HasPrefix(str, "Th")) fmt.Printf("%t\n", strings.HasSuffix(str,"ing")) fmt.Println(strings.Contains(str,"an")) //目标变量是否含有an fmt.Println(strings.ContainsAny(str,"axwq")) //目标变量是否含有“axwq”里的任意一个 fmt.Println(strings.Count(str, "s")) //目标变量里有多少个s&#125; 参考资料https://studygolang.com/articles/12944 （判断相等的deepequal）https://studygolang.com/articles/5769 （golang中strings包用法）]]></content>
+    <content type="text"><![CDATA[与python对比初开始接触golang的slice，感觉跟python的slice有点像，但也有几个比较明显的区别： python中的slice是在原有基础上拷贝一份。go中的slice则是指向生成它的数组/切片(切片和数组共用同一片内存)，切最长长度不会超限； go的切片，其成员是相同类型的，python的列表和元组则不限制类型； 对于[a:b]这种切片操作，go的a、b两个参数不能是负数，python可以是负数，此时就相当于从末尾往前数； 对于[a:b:c]这种切片操作，go的c表示的是容量；而python的c表示的是步长。 判断切片相等比较两个切片是否相等，除了循环遍历还有一个reflect方法： 12345678910111213141516171819package mainimport ( "fmt" "reflect")func bijiao(b,c []int) bool&#123; return reflect.DeepEqual(b,c)&#125;func main()&#123; b := []int&#123;&#125; //他俩是一回事 c :=make([]int,0,0) var d []int //d跟b、c不是一回事 fmt.Println(bijiao(b,c)) fmt.Println(bijiao(d,c)) fmt.Println(d) fmt.Println(c)&#125; copy的问题go的copy是拷贝对应的位置，而不是全拷贝，也就是说如果是让一个空切片作为目的切片，那得到了新切片就是空切片，如果是让一个空切片做源切片，那么得到的新切片与目的切片一致。 判断字符串的几种情况用一个例子说明： 12345678910111213141516package mainimport ("fmt""strings")func main() &#123; var str string = "This is an example of a string." //定义变量 fmt.Printf("T/F? Does the string \"%s\" have prefix %s? ", str, "Th") fmt.Printf("%t\n", strings.HasPrefix(str, "Th")) fmt.Printf("%t\n", strings.HasSuffix(str,"ing")) fmt.Println(strings.Contains(str,"an")) //目标变量是否含有an fmt.Println(strings.ContainsAny(str,"axwq")) //目标变量是否含有“axwq”里的任意一个 fmt.Println(strings.Count(str, "s")) //目标变量里有多少个s&#125; 如果要获取汉字字符串的汉字数，可以使用utf8.RuneCountInString(s)。 参考资料https://studygolang.com/articles/12944 （判断相等的deepequal）https://studygolang.com/articles/5769 （golang中strings包用法）]]></content>
       <categories>
         <category>工作与技术</category>
       </categories>
@@ -363,8 +375,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>
@@ -1231,8 +1243,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1256,8 +1268,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1269,8 +1281,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -2077,8 +2089,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>atlas</tag>
+        <tag>mysql</tag>
         <tag>读写分离</tag>
       </tags>
   </entry>

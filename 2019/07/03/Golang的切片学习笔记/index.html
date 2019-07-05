@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="golang判断map里是否含有某个key，可以使用if val, ok := dict[&quot;foo&quot;]的方法">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-03T11:59:35.919Z">
+<meta property="og:updated_time" content="2019-07-04T12:19:59.845Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Golang的切片学习笔记">
 <meta name="twitter:description" content="golang判断map里是否含有某个key，可以使用if val, ok := dict[&quot;foo&quot;]的方法">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  516
+                  545
                 </span>
               
 
@@ -459,11 +459,12 @@
 <li>python中的slice是在原有基础上拷贝一份。go中的slice则是指向生成它的数组/切片(切片和数组共用同一片内存)，切最长长度不会超限；</li>
 <li>go的切片，其成员是相同类型的，python的列表和元组则不限制类型；</li>
 <li>对于[a:b]这种切片操作，go的a、b两个参数不能是负数，python可以是负数，此时就相当于从末尾往前数；</li>
-<li>对于[a:b:c]这种切片操作，go的c，表示的是容量；而python的c表示的是步长。</li>
+<li>对于[a:b:c]这种切片操作，go的c表示的是容量；而python的c表示的是步长。</li>
 </ol>
-<h2><span id="判断切片相等">判断切片相等</span></h2><p>比较两个切片是否相等，除了循环遍历还有一个<code>reflect</code>方法：<br>    <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"reflect"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">bijiao</span><span class="params">(b,c []<span class="keyword">int</span>)</span> <span class="title">bool</span></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> reflect.DeepEqual(b,c)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	b := []<span class="keyword">int</span>&#123;&#125;		<span class="comment">//他俩是一回事</span></span><br><span class="line">	c :=<span class="built_in">make</span>([]<span class="keyword">int</span>,<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">	<span class="keyword">var</span> d []<span class="keyword">int</span></span><br><span class="line">	fmt.Println(bijiao(b,c))</span><br><span class="line">	fmt.Println(bijiao(d,c))</span><br><span class="line">	fmt.Println(d)</span><br><span class="line">	fmt.Println(c)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2><span id="判断切片相等">判断切片相等</span></h2><p>比较两个切片是否相等，除了循环遍历还有一个<code>reflect</code>方法：<br>    <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">	<span class="string">"fmt"</span></span><br><span class="line">	<span class="string">"reflect"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">bijiao</span><span class="params">(b,c []<span class="keyword">int</span>)</span> <span class="title">bool</span></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> reflect.DeepEqual(b,c)</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">	b := []<span class="keyword">int</span>&#123;&#125;		<span class="comment">//他俩是一回事</span></span><br><span class="line">	c :=<span class="built_in">make</span>([]<span class="keyword">int</span>,<span class="number">0</span>,<span class="number">0</span>)</span><br><span class="line">	<span class="keyword">var</span> d []<span class="keyword">int</span>			<span class="comment">//d跟b、c不是一回事</span></span><br><span class="line">	fmt.Println(bijiao(b,c))</span><br><span class="line">	fmt.Println(bijiao(d,c))</span><br><span class="line">	fmt.Println(d)</span><br><span class="line">	fmt.Println(c)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
 <h2><span id="copy的问题">copy的问题</span></h2><p>go的copy是拷贝对应的位置，而不是全拷贝，也就是说如果是让一个空切片作为目的切片，那得到了新切片就是空切片，如果是让一个空切片做源切片，那么得到的新切片与目的切片一致。</p>
 <h2><span id="判断字符串的几种情况">判断字符串的几种情况</span></h2><p>用一个例子说明：<br>    <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line"><span class="string">"fmt"</span></span><br><span class="line"><span class="string">"strings"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">main</span><span class="params">()</span></span> &#123;</span><br><span class="line">	<span class="keyword">var</span> str <span class="keyword">string</span> = <span class="string">"This is an example of a string."</span>		<span class="comment">//定义变量</span></span><br><span class="line">	fmt.Printf(<span class="string">"T/F? Does the string \"%s\" have prefix %s? "</span>, str, <span class="string">"Th"</span>)</span><br><span class="line">	fmt.Printf(<span class="string">"%t\n"</span>, strings.HasPrefix(str, <span class="string">"Th"</span>))</span><br><span class="line">	fmt.Printf(<span class="string">"%t\n"</span>, strings.HasSuffix(str,<span class="string">"ing"</span>))</span><br><span class="line">	fmt.Println(strings.Contains(str,<span class="string">"an"</span>))			<span class="comment">//目标变量是否含有an</span></span><br><span class="line">	fmt.Println(strings.ContainsAny(str,<span class="string">"axwq"</span>))	<span class="comment">//目标变量是否含有“axwq”里的任意一个</span></span><br><span class="line">	fmt.Println(strings.Count(str, <span class="string">"s"</span>))			<span class="comment">//目标变量里有多少个s</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>如果要获取汉字字符串的汉字数，可以使用<code>utf8.RuneCountInString(s)</code>。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://studygolang.com/articles/12944" target="_blank" rel="noopener">https://studygolang.com/articles/12944</a> （判断相等的deepequal）<br><a href="https://studygolang.com/articles/5769" target="_blank" rel="noopener">https://studygolang.com/articles/5769</a>  （golang中strings包用法）</p>
 
       
@@ -585,6 +586,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2019/07/05/Intellij-Idea配置GO调用本地包/" rel="prev" title="Intellij Idea配置GO调用本地包">
+                Intellij Idea配置GO调用本地包 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -697,7 +702,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">248</span>
+                  <span class="site-state-item-count">249</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -913,7 +918,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共253.9k字</span>
+  <span class="post-count">博客全站共254.5k字</span>
 </div>
         
 
