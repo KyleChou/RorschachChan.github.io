@@ -88,22 +88,22 @@
 
 
 
-<meta name="description" content="go代码里使用import去导入包文件，比如常见的import fmt，这个命令实际上导入的就是GOROOT\src\fmt。但是当遇到需要导入本地包的时候，就需要配置一下。 我windows里的go脚本文件夹是E:\github\GoeveryDay，现在在这个文件夹里创建src\chentest\，然后在src\下面创建一个chenchen.go，在chentest\下创建testtest.">
+<meta name="description" content="Golang其实是鼓励驼峰命名法的，奈何intrllij总是有小提示">
 <meta name="keywords" content="golang,intellij idea">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Intellij Idea配置GO调用本地包">
 <meta property="og:url" content="http://yoursite.com/2019/07/05/Intellij-Idea配置GO调用本地包/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="go代码里使用import去导入包文件，比如常见的import fmt，这个命令实际上导入的就是GOROOT\src\fmt。但是当遇到需要导入本地包的时候，就需要配置一下。 我windows里的go脚本文件夹是E:\github\GoeveryDay，现在在这个文件夹里创建src\chentest\，然后在src\下面创建一个chenchen.go，在chentest\下创建testtest.">
+<meta property="og:description" content="Golang其实是鼓励驼峰命名法的，奈何intrllij总是有小提示">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/go4.png">
 <meta property="og:image" content="http://yoursite.com/images/go5.png">
 <meta property="og:image" content="http://yoursite.com/images/go6.png">
 <meta property="og:image" content="http://yoursite.com/images/go7.png">
-<meta property="og:updated_time" content="2019-07-05T09:17:20.727Z">
+<meta property="og:updated_time" content="2019-07-05T09:19:14.193Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Intellij Idea配置GO调用本地包">
-<meta name="twitter:description" content="go代码里使用import去导入包文件，比如常见的import fmt，这个命令实际上导入的就是GOROOT\src\fmt。但是当遇到需要导入本地包的时候，就需要配置一下。 我windows里的go脚本文件夹是E:\github\GoeveryDay，现在在这个文件夹里创建src\chentest\，然后在src\下面创建一个chenchen.go，在chentest\下创建testtest.">
+<meta name="twitter:description" content="Golang其实是鼓励驼峰命名法的，奈何intrllij总是有小提示">
 <meta name="twitter:image" content="http://yoursite.com/images/go4.png">
 
 
@@ -441,6 +441,10 @@
           
 
           
+              <div class="post-description">
+                  Golang其实是鼓励驼峰命名法的，奈何intrllij总是有小提示
+              </div>
+          
 
         </div>
       </header>
@@ -463,7 +467,7 @@
 <p>那么先<code>File--Settings--Languages &amp; Frameworks--Go--GOPATH</code>，在project GOPATH里添加<code>E:\github\GoeveryDay</code>这个总的文件路径，如图：<br><img src="/images/go5.png" alt="抱光妹"></p>
 <p>apply保存即可，记住这里不能填<code>E:\github\GoeveryDay\src</code>，因为系统会自带src目录，如图：<br><img src="/images/go6.png" alt="抱光妹"></p>
 <p>此时再执行就得到正确结果了！如图：<br><img src="/images/go7.png" alt="抱光妹"></p>
-<p>但是要注意，<font color="red">要使用本地包函数、结构体、结构体的成员，首字母必须是大写！</font>如果首字母是小写是私有的，是不可见的，只能在同一个包里使用。</p>
+<p>但是要注意，<font color="red">要使用本地包函数、结构体、结构体的成员，首字母必须是大写！</font>如果首字母是小写是私有的，即不可见的，只能在同一个包里使用。</p>
 
       
     </div>
