@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="如果要用go语言去在windows里写文件，那么换行符是\r\n而不是\n">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-10T03:45:41.790Z">
+<meta property="og:updated_time" content="2019-07-10T03:46:12.932Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Nginx使用proxy_pass里的坑">
 <meta name="twitter:description" content="如果要用go语言去在windows里写文件，那么换行符是\r\n而不是\n">
@@ -464,8 +464,8 @@
 <h2><span id="第二坑">第二坑</span></h2><p><code>proxy_pass</code>这个配置对相对路径和绝对路径也有很有讲究，比如：<br>    <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /proxy/ &#123;</span><br><span class="line">        proxy_pass http:<span class="comment">//10.0.0.1:8080/;		#这里以/结尾 </span></span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure></p>
 <p>当访问 <a href="http://127.0.0.1/proxy/a/b/c.txt" target="_blank" rel="noopener">http://127.0.0.1/proxy/a/b/c.txt</a> 时，nginx匹配到<code>/proxy/</code>路径，把请求转发给10.0.0.1:8080服务，实际请求代理服务器的路径为<br><code>http://10.0.0.1:8080/a/b/c.txt</code>（不带location目录）。</p>
 <p>如果是这么写的：<br>    <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">location /proxy/ &#123;</span><br><span class="line">         proxy_pass http:<span class="comment">//10.0.0.1:8080;	#这里没有以/结尾</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
-<p>当访问 <a href="http://127.0.0.1/proxy/a/b/c.txt" target="_blank" rel="noopener">http://127.0.0.1/proxy/a/b/c.txt</a> 时，nginx匹配到<code>/proxy/</code>路径，把请求转发给10.0.0.1:8080服务，实际请求代理服务器的路径为<br><a href="http://10.0.0.1:8080/proxy/a/b/c.txt（带location目录），此时nginx会把匹配的proxy也代理给代理服务器。" target="_blank" rel="noopener">http://10.0.0.1:8080/proxy/a/b/c.txt（带location目录），此时nginx会把匹配的proxy也代理给代理服务器。</a></p>
-<p>proxy_pass后面接多一级路径的情况跟上面一致。</p>
+<p>当访问 <a href="http://127.0.0.1/proxy/a/b/c.txt" target="_blank" rel="noopener">http://127.0.0.1/proxy/a/b/c.txt</a> 时，nginx匹配到<code>/proxy/</code>路径，把请求转发给10.0.0.1:8080服务，实际请求代理服务器的路径为<br><code>http://10.0.0.1:8080/proxy/a/b/c.txt</code>（带location目录），此时nginx会把匹配的proxy也代理给代理服务器。</p>
+<p><code>proxy_pass</code>后面接多一级路径的情况跟上面一致。</p>
 <h2><span id="补充一个host-400错误的故障">补充一个$host 400错误的故障</span></h2><p>400这个状态码是<code>Bad Request</code>，基本上就是请求header或者是<code>cookie</code>有问题，而请求header的问题要么是头过大要么是头没有。在<code>HTTP/1.0</code>里不支持Host请求头的，而在<code>HTTP/1.1</code>中，Host请求头部必须存在,否则会返回<code>400 Bad Request</code>。如果请求的URI不包含所请求服务的主机名，则必须为Host头字段指定一个空值。</p>
 <p>nginx如果配置了<code>$http_host</code>变量做反向代理时，后端真实的服务器是需要知道请求的host头，而<code>$http_host</code>的值是’’，所以会触发400这个错误。这个情况就需要用<code>$hosts</code>来替代<code>$http_host</code>。</p>
 <p>也就是说：<code>proxy_set_header Host $host</code>这一行的作用是把原http请求的Header中的Host字段也放到转发的请求里。如果不加这一行的话，nginx转发的请求header里就不会有Host字段，而服务器是靠这个Host值来区分你请求的是哪个域名的资源的。</p>
@@ -591,6 +591,10 @@
 
           <div class="post-nav-prev post-nav-item">
             
+              <a href="/2019/07/11/使用pycurl来模拟curl效果/" rel="prev" title="使用pycurl来模拟curl效果">
+                使用pycurl来模拟curl效果 <i class="fa fa-chevron-right"></i>
+              </a>
+            
           </div>
         </div>
       
@@ -703,7 +707,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">250</span>
+                  <span class="site-state-item-count">251</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -725,7 +729,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">214</span>
+                  <span class="site-state-item-count">216</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -919,7 +923,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共255.6k字</span>
+  <span class="post-count">博客全站共256.2k字</span>
 </div>
         
 
