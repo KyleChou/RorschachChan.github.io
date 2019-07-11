@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title><![CDATA[Root用户删除文件爆Permission denied]]></title>
+    <url>%2F2019%2F07%2F11%2FRoot%E7%94%A8%E6%88%B7%E5%88%A0%E9%99%A4%E6%96%87%E4%BB%B6%E7%88%86Permission-denied%2F</url>
+    <content type="text"><![CDATA[今天在一台服务器上使用useradd创建用户，竟然爆Permission denied，我靠，我明明是root，竟然没有权限增加新用户，如图： 此时注意到下面还有一句话：useradd: cannot lock /etc/passwd; try again later。于是怀疑到可能在/etc/下有一个文件把passwd锁住了。搜索一番，发现了.pwd.lock这个文件，但是发现这个文件不能删除和改名，如图： 此时的我觉得root身份受到了很大的冒犯，怎么还有这种鬼现象？突然想到，可能这个锁文件被人给chattr修改了，于是使用lsattr查看这个文件，发现就剩下一个e属性了： 12[root@ip-172-31-7-167 etc]# lsattr .pwd.lock -------------e- .pwd.lock e属性是不能用chattr -e删除的，而且也是一个很普通的属性，那么问题出在哪呢？ 在/etc/下执行lsattr -R -a递归的查看所有文件（包含隐藏文件），发现原来当初是把整个/etc/文件夹加了i，如图： 于是就在/etc/路径下使用chattr -i .破掉了i属性，此时再次尝试删除lock锁文件，终于删除掉，并且成功创建了用户，如图：]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+        <tag>lsattr</tag>
+      </tags>
+  </entry>
+  <entry>
     <title><![CDATA[使用pycurl来模拟curl效果]]></title>
     <url>%2F2019%2F07%2F11%2F%E4%BD%BF%E7%94%A8pycurl%E6%9D%A5%E6%A8%A1%E6%8B%9Fcurl%E6%95%88%E6%9E%9C%2F</url>
     <content type="text"><![CDATA[安装centos下安装pycurl，如果直接使用pip install pycurl的话，可能会有ERROR: Command &quot;python setup.py egg_info&quot; failed with error code 1 in /tmp/pip-install-hb0k0rkr/pycurl/的错误，那么需要先安装一下yum install python-devel curl-devel就解决问题了。 如果是windows下安装pycurl就比较麻烦一点，需要先pip install wheel安装wheel，然后去http://www.lfd.uci.edu/~gohlke/pythonlibs/ 下载对应python版本的编译包到本地，然后在cmd命令行里pip install 对应的.whl就好了。但是注意http://www.lfd.uci.edu/~gohlke/pythonlibs/ 是需要翻墙登录的。 python3脚本pycurl的常用的常量列表可以看一下https://izsk.me/2017/12/27/%E4%BD%BF%E7%94%A8python%E5%BA%93pycurl%E6%9D%A5%E6%A3%80%E6%B5%8Bweb%E6%9C%8D%E5%8A%A1%E8%B4%A8%E9%87%8F/ 这个文章，我这里就直接写一下我的脚本： 123456789101112131415161718192021import pycurlimport sysc = pycurl.Curl()url = 'http://X.X.X.X:对应端口号'c.setopt(c.URL, url)c.setopt(c.HEADER, True)c.setopt(pycurl.CONNECTTIMEOUT, 5) # 连接的等待时间，设置为0则不等待c.setopt(pycurl.TIMEOUT, 5) # 请求超时时间c.getinfo(pycurl.HTTP_CODE) # 返回的HTTP状态码#c.setopt(c.POST,1) #是否是post，默认是gettry: c.perform() #提交请求except Exception as e: print("连接异常！" + str(e)) c.close() sys.exit()HTTP_CODE = c.getinfo(c.HTTP_CODE) #获取 HTTP 状态码print('HTTP状态码: %s' %(HTTP_CODE))c.close() 不过pycurl有两个缺点，第一,整个请求头都会输出；第二,无法摘取到http协议版本号。 GO脚本如果是想用go语言来实现curl效果，脚本如下： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354package mainimport ( "fmt" "github.com/mikemintang/go-curl")func main() &#123; url := "http://目标路径:目标端口" headers := map[string]string&#123; "User-Agent": "Sublime", "Authorization": "Bearer access_token", "Content-Type": "application/json", &#125; cookies := map[string]string&#123; "userId": "12", "loginTime": "15045682199", &#125; queries := map[string]string&#123; "page": "2", "act": "update", &#125; postData := map[string]interface&#123;&#125;&#123; "name": "mike", "age": 24, "interests": []string&#123;"basketball", "reading", "coding"&#125;, "isAdmin": true, &#125; // 链式操作 req := curl.NewRequest() resp, err := req. SetUrl(url). SetHeaders(headers). SetCookies(cookies). SetQueries(queries). SetPostData(postData). Post() if err != nil &#123; fmt.Println(err) &#125; else &#123; if resp.IsOk() &#123; fmt.Println(resp.Body) &#125; else &#123; fmt.Println(resp.Raw) &#125; &#125;&#125; 脚本执行效果： 参考资料http://pycurl.io/docs/latest/index.html （官方文档)https://www.twilio.com/blog/2016/12/http-requests-in-python-3.htmlhttps://stackoverflow.com/questions/472179/how-to-read-the-header-with-pycurl]]></content>
@@ -141,8 +153,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>面试</tag>
         <tag>大牛之路</tag>
+        <tag>面试</tag>
       </tags>
   </entry>
   <entry>
@@ -510,8 +522,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>mysql</tag>
         <tag>zabbix</tag>
+        <tag>mysql</tag>
       </tags>
   </entry>
   <entry>
@@ -902,8 +914,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>git</tag>
         <tag>Python 2.7</tag>
+        <tag>git</tag>
       </tags>
   </entry>
   <entry>
@@ -1105,8 +1117,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>钉钉</tag>
         <tag>Jenkins</tag>
+        <tag>钉钉</tag>
         <tag>Docker</tag>
       </tags>
   </entry>
@@ -1268,8 +1280,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1293,8 +1305,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1306,8 +1318,8 @@
       </categories>
       <tags>
         <tag>读写分离</tag>
-        <tag>数据库中间件</tag>
         <tag>mycat</tag>
+        <tag>数据库中间件</tag>
       </tags>
   </entry>
   <entry>
@@ -1682,18 +1694,6 @@
       </tags>
   </entry>
   <entry>
-    <title><![CDATA[用非root启动进程以及启动docker]]></title>
-    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
-    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
-      <categories>
-        <category>工作与技术</category>
-      </categories>
-      <tags>
-        <tag>docker</tag>
-        <tag>安全</tag>
-      </tags>
-  </entry>
-  <entry>
     <title><![CDATA[用非root用户启动tomcat进程]]></title>
     <url>%2F2018%2F04%2F18%2F%E4%BD%BF%E7%94%A8%E6%99%AE%E9%80%9A%E7%94%A8%E6%88%B7%E5%90%AF%E5%8A%A8tomcat%2F</url>
     <content type="text"><![CDATA[使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有很多的软件没有这么贴心的服务，这就需要我们手动的更改了。 使用非root用户启动tomcat以tomcat为例，打算用chris账号(属于chen这个group)启动。那么首先先创建账号和组，如下： 12345[root@chen-docker ~]groupadd chen #创建chen这个组[root@chen-docker ~]useradd -s /bin/bash -g chen chris #在这个组里面添加chris这个用户[root@chen-docker ~]passwd chris #给这个用户设定密码[root@chen-docker ~]# id chrisuid=1000(chris) gid=1002(chen) groups=1002(chen) #可见添加成功 su chris切换到chris用户，在/home/chris里使用wget http://apache.fayea.com/tomcat/tomcat-9/v9.0.7/bin/apache-tomcat-9.0.7.tar.gz下载tomcat。然后解压缩在/home/chris里，因为chris用户在这里是有权限的。然后进行如下的操作： 12345cd ~/ 代表用户所在目录mkdir -p ~/shell-scriptcd ~/shell-script/touch start.shtoush stop.sh 这个start.sh的内容很简单，如下： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./start.shfi shutdown.sh的内容同理： 12345678#/bin/bashif [ "root" == "$USER" ] #不让root启动then echo "can't start with user 'root',retry after change user!" exit 1else cd /home/chris/apache-tomcat-9.0.7/bin/ &amp;&amp; ./shutdown.shfi chmod +x *.sh给上面两个脚本可执行权限，但是现在执行startup.sh或者shutdown.sh会出现一个问题： 12Neither the JAVA_HOME nor the JRE_HOME environment variable is definedAt least one of these environment variable is needed to run this program 这是因为chris用户没有权限去启动java这个可执行程序，如果使用java -version回答是bash: java: command not found，这个时候怎么办？ 编辑~/.bash_profile，在末尾处加上如下的内容： 然后source .bash_profile，再使用java -version确认一下应该是OK了。这个时候也是可以使用chris用户去启动刚刚的那个start.sh和shutdown.sh的。 由于我们的tomcat是源码解压缩，所以要使用root用户去创建一下/etc/init.d/tomcat。里面内容如下： 123456789#!/bin/bashcase $1 instart)su - chris -lc "sh /home/chris/shell-script/start.sh";; #如果要root启动，那就是su - root -lc "sh /home/utomcat/shell-script/start.sh";;stop)su - chris -lc "sh /home/chris/shell-script/shutdown.sh";;*)echo "parameter error, usage:(start|stop)";;esac 保存之后，执行一下service tomcat start看看效果。 如果要设置开机自启动，别忘了chkconfig --add tomcat和chkconfig tomcat on，在浏览器打开ip:8080看见汤姆猫~ 当普通用户要使用1024以下的端口众所周知，linux默认是不准许普通用户调用1024以下的端口的，那么遇到这样的需求怎么办呢？最好的方法是使用iptables。 首先让程序运行在非root帐户下，并绑定高于1024的端口，在确保能正常工作的时候，将低端口通过端口转发，将低端口转到高端口，从而实现非root运行的程序绑定低端口。要使用此方法可以使用下面的方式： 1234sysctl -w net.ipv4.ip_forward=1 #要长久保存，需要在/etc/sysctl.conf文件内修改，然后sysctl -p /etc/sysctl.confiptables -F -t natiptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to:8088 #将80端口转发到8088iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 8080 #这句话也可以 这么操作在速度上没有任何影响。]]></content>
@@ -1703,6 +1703,18 @@
       <tags>
         <tag>centos</tag>
         <tag>运维安全</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title><![CDATA[用非root启动进程以及启动docker]]></title>
+    <url>%2F2018%2F04%2F18%2F%E7%94%A8%E9%9D%9Eroot%E5%90%AF%E5%8A%A8%E8%BF%9B%E7%A8%8B%E4%BB%A5%E5%8F%8A%E5%90%AF%E5%8A%A8docker%2F</url>
+    <content type="text"><![CDATA[使用非root用户启动普通进程使用非root用户启动进程是运维安全的一个主要环节，拿tomcat进程来说，如果是使用root用户去启动了tomcat，那么有一个严重的问题，那就是tomcat具有root权限。这意味着你的任何一个jsp脚本都具有root权限，所以那些不怀好意的人可以轻易地用jsp脚本去搞破坏，甚至删除你整个硬盘里的东西！所以为了活着，我们要极力避免这种现象。 很多的软件都自带的用户/用户组，比如nginx、zabbix、elasticsearch，但是也有更多的软件没有这么贴心的服务，这就需要我们手动的更改了。 docker不应该使用root启动1.8版本之前的docker是不支持user namespace的，所以那样的话，如果在docker容器内部使用root运行app，那么不可否认，这个root和宿主机的root是同一个UID。但是，需要特别注意的是，容器内的root与宿主机上的root权限并不一定是相等的。 但是为了绝对的安全，还是推荐把docker升级到1.8以上，然后彻底避免用root去启动容器，在http://www.projectatomic.io/docs/docker-image-author-guidance/里最下面一段也明文说了---生产环境里不要用root用户去启动docker!!! 使用非root用户启动docker的办法如下：创建docker组：sudo groupadd docker将当前用户加入docker组：sudo gpasswd -a ${USER} docker重新启动docker服务：sudo service docker restart或sudo systemctl restart docker当前用户退出系统再重新登陆。 参考资料https://www.zhihu.com/question/25580965]]></content>
+      <categories>
+        <category>工作与技术</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+        <tag>安全</tag>
       </tags>
   </entry>
   <entry>
@@ -2173,8 +2185,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>运维技术</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -2233,8 +2245,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>linux</tag>
         <tag>crontab</tag>
+        <tag>linux</tag>
       </tags>
   </entry>
   <entry>
@@ -2839,8 +2851,8 @@
         <category>工作与技术</category>
       </categories>
       <tags>
-        <tag>redis</tag>
         <tag>zabbix</tag>
+        <tag>redis</tag>
       </tags>
   </entry>
   <entry>
