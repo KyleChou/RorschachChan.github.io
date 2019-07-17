@@ -317,6 +317,404 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/17/python3监控https证书过期时间/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Chris Chan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Chris Chan's BLOG">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/17/python3监控https证书过期时间/" itemprop="url">python3监控https证书过期时间</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-17T19:43:40+08:00">
+                2019-07-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
+                    <span itemprop="name">工作与技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/07/17/python3监控https证书过期时间/" class="leancloud_visitors" data-flag-title="python3监控https证书过期时间">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+				 <span>℃</spam>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  533
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  2
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <script src="\assets\js\APlayer.min.js"> </script><p>上周日，我们的证书到期了，结果运维没有事前检查到，导致服务中断，于是赶紧亡羊补牢一个python3的脚本：</p>
+<h2><span id="shell脚本">shell脚本</span></h2><p><a href="http://noops.me/?p=945" target="_blank" rel="noopener">http://noops.me/?p=945</a> 这个小米的运维网站分享一个非常不错的shell脚本来监控证书，脚本如下：<br>    <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span>! /bin/sh</span><br><span class="line"> </span><br><span class="line">host=$1</span><br><span class="line">port=$2</span><br><span class="line">end_date=`openssl s_client -host $host -port $port -showcerts &lt;/dev/null 2&gt;/dev/null |</span><br><span class="line">          sed -n '/BEGIN CERTIFICATE/,/END CERT/p' |</span><br><span class="line">      openssl x509 -text 2&gt;/dev/null |</span><br><span class="line">      sed -n 's/ *Not After : *//p'`</span><br><span class="line"><span class="meta">#</span> openssl 检验和验证SSL证书。</span><br><span class="line"><span class="meta">#</span> &lt;/dev/null 定向标准输入，防止交互式程序Hang。从/dev/null 读时，直接读出0 。</span><br><span class="line"><span class="meta">#</span> sed -n 和p 一起使用，仅显示匹配到的部分。 //,// 区间匹配。</span><br><span class="line"><span class="meta">#</span> openssl x509 -text 解码证书信息，包含证书的有效期。</span><br><span class="line"> </span><br><span class="line">if [ -n "$end_date" ]</span><br><span class="line">then</span><br><span class="line">    end_date_seconds=`date '+%s' --date "$end_date"`</span><br><span class="line"><span class="meta">#</span> date指令format字符串时间。</span><br><span class="line">    now_seconds=`date '+%s'`</span><br><span class="line">    echo "($end_date_seconds-$now_seconds)/24/3600" | bc</span><br><span class="line">fi</span><br></pre></td></tr></table></figure></p>
+<p>上面那个有两个小地方可以改进下：<code>echo “HOST: test.com /r/n GET / HTTP/1.1″|openssl s_client -connect test.com:443</code> 这样可以增加速度，因为<code>openssl s_client</code>只负责链接，后面是请求内容如果不输入的话就是等待超时，时间会很长。而且增加一个参数<code>-servername</code>可一直开启<code>TLS SNI support</code>，可以检测一个ip多个证书的情况。</p>
+<h2><span id="其他监控证书的网站">其他监控证书的网站</span></h2><p>如果不想用脚本监控可以用第三方网站监控，下面这三个网站方法都一样：就是填入自己的邮箱注册账户，然后在页面输入自己要监控的域名，然后会给你一个剩余时间，如果快到期了就会给你发邮件通知，这三个网站分别是：</p>
+<ol>
+<li>letsmonitor.org          每小时检测一次，但是发送告警邮件只有一次</li>
+<li>certificatemonitor.org   非常简单，只能443端口，一共会发9次邮件通知</li>
+<li><a href="https://keychest.net/" target="_blank" rel="noopener">https://keychest.net/</a>    它支持api，邮件每周一次发送，比较好</li>
+</ol>
+<p>详情可见<a href="https://www.sooele.com/2784.html" target="_blank" rel="noopener">https://www.sooele.com/2784.html</a> 。</p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://flyhigher.top/develop/755.html" target="_blank" rel="noopener">https://flyhigher.top/develop/755.html</a><br><a href="https://blog.skk.moe/post/checkssl-status/" target="_blank" rel="noopener">https://blog.skk.moe/post/checkssl-status/</a></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+	
+	
+	
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+		   
+		<div>    
+			
+		</div>
+	
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/15/使用Debian9部署Harbor私有仓库/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Chris Chan">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Chris Chan's BLOG">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/07/15/使用Debian9部署Harbor私有仓库/" itemprop="url">使用Debian9部署Harbor私有仓库</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-07-15T15:48:36+08:00">
+                2019-07-15
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
+                    <span itemprop="name">工作与技术</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+             <span id="/2019/07/15/使用Debian9部署Harbor私有仓库/" class="leancloud_visitors" data-flag-title="使用Debian9部署Harbor私有仓库">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">热度&#58;</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+				 <span>℃</spam>
+             </span>
+          
+
+          
+
+          
+            <div class="post-wordcount">
+              
+                
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">字数统计&#58;</span>
+                
+                <span title="字数统计">
+                  10
+                </span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">
+                  1
+                </span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          使用notepad++去重的方法：设定替换里的目标是^(.*?)$\s+?^(?=.*^\1$)，然后勾选“正则表达式”和“匹配新行”，再全部替换即可。
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/07/15/使用Debian9部署Harbor私有仓库/">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+    
+    
+    
+	
+	
+	
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+		   
+		<div>    
+			
+		</div>
+	
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/07/11/這些年被Ainge拆毀的塞爾提克/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1872,398 +2270,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/28/Proxysql添加后端SSL加密/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Chris Chan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Chris Chan's BLOG">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/28/Proxysql添加后端SSL加密/" itemprop="url">Proxysql添加后端SSL加密</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-28T10:45:53+08:00">
-                2019-06-28
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
-                    <span itemprop="name">工作与技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2019/06/28/Proxysql添加后端SSL加密/" class="leancloud_visitors" data-flag-title="Proxysql添加后端SSL加密">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-				 <span>℃</spam>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  540
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  2
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          以通配符（%）开始的like字符串，走索引。比如like %aaa%会使用索引，而like aaa%不会
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/06/28/Proxysql添加后端SSL加密/">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-	
-	
-	
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-		   
-		<div>    
-			
-		</div>
-	
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/06/27/Ansible-Playbook判断进程是否存在/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="Chris Chan">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Chris Chan's BLOG">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/06/27/Ansible-Playbook判断进程是否存在/" itemprop="url">Ansible-Playbook判断进程是否存在</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-06-27T21:57:14+08:00">
-                2019-06-27
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-            <span class="post-category" >
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/工作与技术/" itemprop="url" rel="index">
-                    <span itemprop="name">工作与技术</span>
-                  </a>
-                </span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-          
-
-          
-          
-             <span id="/2019/06/27/Ansible-Playbook判断进程是否存在/" class="leancloud_visitors" data-flag-title="Ansible-Playbook判断进程是否存在">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">热度&#58;</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-				 <span>℃</spam>
-             </span>
-          
-
-          
-
-          
-            <div class="post-wordcount">
-              
-                
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">字数统计&#58;</span>
-                
-                <span title="字数统计">
-                  686
-                </span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">
-                  3
-                </span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          如果遇到文件模式是dos的话，执行set ff=unix即可。
-          <!--noindex-->
-          <div class="post-button text-center">
-            <a class="btn" href="/2019/06/27/Ansible-Playbook判断进程是否存在/">
-              阅读全文 &raquo;
-            </a>
-          </div>
-          <!--/noindex-->
-        
-      
-    </div>
-    
-    
-    
-	
-	
-	
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-		   
-		<div>    
-			
-		</div>
-	
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2320,7 +2326,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">253</span>
+                  <span class="site-state-item-count">255</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -2342,7 +2348,7 @@
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">218</span>
+                  <span class="site-state-item-count">219</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -2520,7 +2526,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共267.0k字</span>
+  <span class="post-count">博客全站共267.5k字</span>
 </div>
         
 
