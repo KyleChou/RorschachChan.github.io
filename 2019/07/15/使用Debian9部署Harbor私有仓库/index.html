@@ -91,15 +91,20 @@
 <meta name="description" content="使用notepad++去重的方法：设定替换里的目标是^(.*?)$\s+?^(?=.*^\1$)，然后勾选“正则表达式”和“匹配新行”，再全部替换即可。">
 <meta name="keywords" content="docker,私有仓库">
 <meta property="og:type" content="article">
-<meta property="og:title" content="使用Debian9部署Harbor私有仓库">
+<meta property="og:title" content="使用centos7部署Harbor私有仓库">
 <meta property="og:url" content="http://yoursite.com/2019/07/15/使用Debian9部署Harbor私有仓库/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="使用notepad++去重的方法：设定替换里的目标是^(.*?)$\s+?^(?=.*^\1$)，然后勾选“正则表达式”和“匹配新行”，再全部替换即可。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-07-15T09:18:19.114Z">
+<meta property="og:image" content="http://yoursite.com/images/harbor1.png">
+<meta property="og:image" content="http://yoursite.com/images/harbor2.png">
+<meta property="og:image" content="http://yoursite.com/images/harbor3.png">
+<meta property="og:image" content="http://yoursite.com/images/harbor4.png">
+<meta property="og:updated_time" content="2019-07-23T14:24:45.488Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="使用Debian9部署Harbor私有仓库">
+<meta name="twitter:title" content="使用centos7部署Harbor私有仓库">
 <meta name="twitter:description" content="使用notepad++去重的方法：设定替换里的目标是^(.*?)$\s+?^(?=.*^\1$)，然后勾选“正则表达式”和“匹配新行”，再全部替换即可。">
+<meta name="twitter:image" content="http://yoursite.com/images/harbor1.png">
 
 
 
@@ -135,7 +140,7 @@
 
 
 
-  <title>使用Debian9部署Harbor私有仓库 | Chris Chan's BLOG</title>
+  <title>使用centos7部署Harbor私有仓库 | Chris Chan's BLOG</title>
   
 
 
@@ -335,7 +340,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">使用Debian9部署Harbor私有仓库</h1>
+          <h1 class="post-title" itemprop="name headline">使用centos7部署Harbor私有仓库</h1>
         
 
         <div class="post-meta">
@@ -387,7 +392,7 @@
 
           
           
-             <span id="/2019/07/15/使用Debian9部署Harbor私有仓库/" class="leancloud_visitors" data-flag-title="使用Debian9部署Harbor私有仓库">
+             <span id="/2019/07/15/使用Debian9部署Harbor私有仓库/" class="leancloud_visitors" data-flag-title="使用centos7部署Harbor私有仓库">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -413,7 +418,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  10
+                  347
                 </span>
               
 
@@ -454,8 +459,15 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><p>apt-get install redis-tools<br>apt-get install mysql-client</p>
-
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="安装过程">安装过程</span></h2><p>首先，我当你在centos7上已经装好了docker，如图：<br><img src="/images/harbor1.png" alt="抱光妹"></p>
+<p>harbor官方更推荐使用docker-compose(1.18.0+)来配合安装，于是乎我们要安装一下docker-compose，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -L https://github.com/docker/compose/releases/download/<span class="number">1.24</span><span class="number">.1</span>/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose</span><br><span class="line"><span class="comment">#这一步国内的服务器可能会比较费时间</span></span><br><span class="line">chmod +x /usr/local/bin/docker-compose</span><br><span class="line">[root@func-lcshop-Harbor ~]<span class="comment"># docker-compose -v</span></span><br><span class="line">docker-compose version <span class="number">1.24</span><span class="number">.1</span>, build <span class="number">4667896</span>b</span><br></pre></td></tr></table></figure></p>
+<p>然后下载离线的harbor安装包：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wget https://storage.googleapis.com/harbor-releases/release<span class="number">-1.8</span><span class="number">.0</span>/harbor-offline-installer-v1<span class="number">.8</span><span class="number">.2</span>-rc1.tgz</span><br><span class="line">tar -zxvf harbor-offline-installer-v1<span class="number">.8</span><span class="number">.2</span>-rc1.tgz</span><br></pre></td></tr></table></figure></p>
+<p>进入harbor的文件夹去修改一下<code>harbor.yml</code>，将hostname改成服务器的外网地址，不过不想要默认的80端口，同时可以加上端口号，如下：<br><img src="/images/harbor2.png" alt="抱光妹"></p>
+<p>文件下面还有一个<code>harbor_admin_password</code>，这个是登录页面的初始密码。<font color="red">注意！密码不可以有@，不然命令行会报错！</font>然后执行<code>./install.sh</code>，如下：<br><img src="/images/harbor3.png" alt="抱光妹"></p>
+<p>安装完毕了之后，就在浏览器打开<code>ip:端口</code>就能看到harbor的页面，是不是超简单？<br><img src="/images/harbor4.png" alt="抱光妹"></p>
+<p>在用命令行的方式试试：</p>
+<p>如果想要更换端口或者修改密码，在修改完<code>harbor.yml</code>之后，执行如下才会生效：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker-compose down -v</span><br><span class="line">./prepare</span><br><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure></p>
+<h2><span id="配置https">配置https</span></h2><h2><span id="配置外界mysql">配置外界mysql</span></h2><h2><span id="参考资料">参考资料</span></h2>
       
     </div>
     
@@ -519,7 +531,7 @@
 
 				<li class="post-copyright-link">
 					<strong>本文标题：</strong>
-					<a href="http://yoursite.com/2019/07/15/使用Debian9部署Harbor私有仓库/" title="使用Debian9部署Harbor私有仓库">使用Debian9部署Harbor私有仓库</a>
+					<a href="http://yoursite.com/2019/07/15/使用Debian9部署Harbor私有仓库/" title="使用centos7部署Harbor私有仓库">使用centos7部署Harbor私有仓库</a>
 				</li>
 
 				<li class="post-copyright-date">
@@ -660,8 +672,17 @@ var jiathis_config={
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -835,6 +856,22 @@ show_date_time();
       </section>
 
       
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;&#x8FC7;&#x7A0B;">&#x5B89;&#x88C5;&#x8FC7;&#x7A0B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x914D;&#x7F6E;https">&#x914D;&#x7F6E;https</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x914D;&#x7F6E;&#x5916;&#x754C;mysql">&#x914D;&#x7F6E;&#x5916;&#x754C;mysql</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
 
       
 
@@ -882,7 +919,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共268.9k字</span>
+  <span class="post-count">博客全站共269.2k字</span>
 </div>
         
 
