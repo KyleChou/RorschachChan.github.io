@@ -98,7 +98,10 @@
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/rancher5.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher6.png">
-<meta property="og:updated_time" content="2019-07-25T06:42:55.083Z">
+<meta property="og:image" content="http://yoursite.com/images/rancher1.png">
+<meta property="og:image" content="http://yoursite.com/images/rancher7.png">
+<meta property="og:image" content="http://yoursite.com/images/rancher8.png">
+<meta property="og:updated_time" content="2019-07-25T06:55:54.253Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Rancher2.1部署k8s">
 <meta name="twitter:description" content="批量删除exited状态的容器是 docker rm $(sudo docker ps -qf status=exited)">
@@ -416,7 +419,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  337
+                  488
                 </span>
               
 
@@ -432,7 +435,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -458,11 +461,14 @@
 
       
         <script src="\assets\js\APlayer.min.js"> </script><h2><span id="rancher是个啥">rancher是个啥？</span></h2><h2><span id="安装rancher以及创建k8s集群">安装rancher以及创建k8s集群</span></h2><p>安装rancher的方法非常简单：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --restart=unless-stopped --name rancher-managment -p <span class="number">8080</span>:<span class="number">80</span> -p <span class="number">8443</span>:<span class="number">443</span> -v /rancher/data:/var/lib/rancher rancher/rancher:v2<span class="number">.1</span><span class="number">.6</span></span><br></pre></td></tr></table></figure></p>
-<p>参数–restart=unless-stopped的意思是<code>在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器</code>。</p>
+<p>参数<code>--restart=unless-stopped</code>的意思是<code>在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器</code>。</p>
 <p>然后确认一下防火墙是否对外开放了8443和8080端口，打开浏览器输入<code>IP:8443</code>就会看到rancher的样子，自带中文版，就问你感动不感动？<br><img src="/images/rancher5.png" alt="抱光妹"></p>
 <p>然后准备三台服务器，资料如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">名称：k8s<span class="number">-001</span>	IP：<span class="string">"172.20.52.12"</span>	角色：etcd+control+worker</span><br><span class="line">名称：k8s<span class="number">-002</span>	IP：<span class="string">"172.20.52.11"</span>	角色：worker</span><br><span class="line">名称：k8s<span class="number">-003</span>	IP：<span class="string">"172.20.52.10"</span>	角色：worker</span><br></pre></td></tr></table></figure></p>
 <p>以上服务器系统均为centos7，而且与rancher网络的8443和8080端口互通。</p>
-<p>回到rancher页面，点击<code>添加集群</code>，选择CUSTOM，然后给集群起个名儿，如果有其他的rancher成员可以管理或者访问这个集群就编辑一下成员角色，默认情况下是安装k8s-1.11版本。然后点击下一步：<br><img src="/images/rancher6.png" alt="抱光妹"></p>
+<p>回到rancher页面，点击<code>添加集群</code>，选择CUSTOM，然后给集群起个名儿，如果有其他的rancher成员可以管理或者访问这个集群就编辑一下成员角色，默认情况下是安装<code>k8s-1.11</code>版本。然后点击<code>下一步</code>：<br><img src="/images/rancher6.png" alt="抱光妹"></p>
+<p>下一步很重要了，先在第一台172.20.52.12上勾选所有的角色以及输入对应IP，然后会web页面下面生成一个命令，将这个命令在172.20.52.12上执行一下，瞬间它就会尝试去注册到rancher：<br><img src="/images/rancher1.png" alt="抱光妹"></p>
+<p>如果注册不成功，web提示<code>[etcd]Pulling image [rancher/coreos-etcd:v3.12.18] on host XXX</code>的话，那么还要去该服务器上手动docker pull rancher/coreos-etcd:v3.12.18一下，不久之后就会看到主机被成功注册到rancher上：<br><img src="/images/rancher7.png" alt="抱光妹"></p>
+<p>点击<code>主机</code>，能看到一点CPU和内存的细节：<br><img src="/images/rancher8.png" alt="抱光妹"></p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.cnblogs.com/horizonli/p/10572834.html" target="_blank" rel="noopener">https://www.cnblogs.com/horizonli/p/10572834.html</a><br><a href="https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/" target="_blank" rel="noopener">https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/</a></p>
 
       
@@ -914,7 +920,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共270.6k字</span>
+  <span class="post-count">博客全站共270.7k字</span>
 </div>
         
 
