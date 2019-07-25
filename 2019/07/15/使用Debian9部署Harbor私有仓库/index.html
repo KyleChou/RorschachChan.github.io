@@ -103,7 +103,7 @@
 <meta property="og:image" content="http://yoursite.com/images/harbor4.png">
 <meta property="og:image" content="http://yoursite.com/images/harbor6.png">
 <meta property="og:image" content="http://yoursite.com/images/harbor7.png">
-<meta property="og:updated_time" content="2019-07-24T08:13:09.770Z">
+<meta property="og:updated_time" content="2019-07-24T08:21:44.972Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用centos7部署Harbor私有仓库">
 <meta name="twitter:description" content="使用notepad++去重的方法：设定替换里的目标是^(.*?)$\s+?^(?=.*^\1$)，然后勾选“正则表达式”和“匹配新行”，再全部替换即可。">
@@ -421,7 +421,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  1,354
+                  1,365
                 </span>
               
 
@@ -484,7 +484,7 @@
 <h2><span id="配置https和高可用方案">配置https和高可用方案</span></h2><p>其实在<code>harbor.yml</code>下面就已经有配置https的地方，但是官方的建议是不要在Harbor上启用https，而是在将Harbor放置到一个SLB的后边，配置SLB的端口转发进行访问。或者是再装一个nginx，进行nginx的端口转发。具体配置这里就不写了。</p>
 <p>如果想做一个HA方案的话，可以按照如下的方式构建一个（主从模式真的很不靠谱）：<br><img src="/images/harbor7.png" alt="抱光妹"></p>
 <p>负载均衡同时还要承担健康检查的任务，而Redis用于数据的缓存和消息队列的实现，MySQL存储用户信息和仓库信息，云存储用来存储Docker镜像。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://youendless.com/post/docker_login_pass/" target="_blank" rel="noopener">https://youendless.com/post/docker_login_pass/</a><br><a href="https://blog.51cto.com/lzlutao/2388635" target="_blank" rel="noopener">https://blog.51cto.com/lzlutao/2388635</a><br><a href="https://blog.frognew.com/2017/06/install-harbor.html" target="_blank" rel="noopener">https://blog.frognew.com/2017/06/install-harbor.html</a> （这个版本已经比较老了，只能参考）</p>
+<h2><span id="配置阿里云oss做后端存储">配置阿里云OSS做后端存储</span></h2><h2><span id="参考资料">参考资料</span></h2><p><a href="https://youendless.com/post/docker_login_pass/" target="_blank" rel="noopener">https://youendless.com/post/docker_login_pass/</a><br><a href="https://blog.51cto.com/lzlutao/2388635" target="_blank" rel="noopener">https://blog.51cto.com/lzlutao/2388635</a><br><a href="https://blog.frognew.com/2017/06/install-harbor.html" target="_blank" rel="noopener">https://blog.frognew.com/2017/06/install-harbor.html</a> （这个版本已经比较老了，只能参考）</p>
 
       
     </div>
@@ -721,7 +721,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">256</span>
+                  <span class="site-state-item-count">257</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -743,7 +743,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">220</span>
+                  <span class="site-state-item-count">221</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -883,7 +883,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;&#x8FC7;&#x7A0B;">&#x5B89;&#x88C5;&#x8FC7;&#x7A0B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x4FEE;&#x6539;&#x5BC6;&#x7801;">&#x4FEE;&#x6539;&#x5BC6;&#x7801;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x4E0A;&#x4F20;&#x955C;&#x50CF;">&#x4E0A;&#x4F20;&#x955C;&#x50CF;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x914D;&#x7F6E;https&#x548C;&#x9AD8;&#x53EF;&#x7528;&#x65B9;&#x6848;">&#x914D;&#x7F6E;https&#x548C;&#x9AD8;&#x53EF;&#x7528;&#x65B9;&#x6848;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;&#x8FC7;&#x7A0B;">&#x5B89;&#x88C5;&#x8FC7;&#x7A0B;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x4FEE;&#x6539;&#x5BC6;&#x7801;">&#x4FEE;&#x6539;&#x5BC6;&#x7801;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x4E0A;&#x4F20;&#x955C;&#x50CF;">&#x4E0A;&#x4F20;&#x955C;&#x50CF;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x914D;&#x7F6E;https&#x548C;&#x9AD8;&#x53EF;&#x7528;&#x65B9;&#x6848;">&#x914D;&#x7F6E;https&#x548C;&#x9AD8;&#x53EF;&#x7528;&#x65B9;&#x6848;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">5.</span> <span class="nav-text"><span id="&#x914D;&#x7F6E;&#x963F;&#x91CC;&#x4E91;oss&#x505A;&#x540E;&#x7AEF;&#x5B58;&#x50A8;">&#x914D;&#x7F6E;&#x963F;&#x91CC;&#x4E91;OSS&#x505A;&#x540E;&#x7AEF;&#x5B58;&#x50A8;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">6.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -937,7 +937,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共270.2k字</span>
+  <span class="post-count">博客全站共270.6k字</span>
 </div>
         
 
