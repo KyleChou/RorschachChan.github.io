@@ -101,7 +101,9 @@
 <meta property="og:image" content="http://yoursite.com/images/rancher1.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher7.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher8.png">
-<meta property="og:updated_time" content="2019-07-25T07:11:40.552Z">
+<meta property="og:image" content="http://yoursite.com/images/rancher9.png">
+<meta property="og:image" content="http://yoursite.com/images/rancher10.png">
+<meta property="og:updated_time" content="2019-07-25T07:43:21.835Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Rancher2.1部署k8s集群">
 <meta name="twitter:description" content="批量删除exited状态的容器是：docker rm $(sudo docker ps -qf status=exited)">
@@ -419,7 +421,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  736
+                  918
                 </span>
               
 
@@ -435,7 +437,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -460,9 +462,9 @@
       
 
       
-        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="rancher是个啥">rancher是个啥？</span></h2><p>Rancher是一个开源的企业级全栈化容器部署及管理平台。简单的说，就是一个可以让你通过 web 界面管理 docker 容器的平台。定位上和 K8s 比较接近，都是通过 web 界面赋予完全的 docker 服务编排功能。而且它自带账户权限。相比 K8s 没有账号管理，rancher 自带账号权限体系。账号可以独立创建，也可以很方便地接入 ldap 等账号体系，对于公司使用是一大利器。</p>
+        <script src="\assets\js\APlayer.min.js"> </script><h2><span id="rancher是个啥">rancher是个啥？</span></h2><p>Rancher是一个开源的企业级全栈化容器部署及管理平台。简单的说，就是一个可以让你通过web界面管理docker容器的平台。定位上和K8s比较接近，都是通过web界面赋予完全的docker服务编排功能。而且它自带账户权限。相比K8s没有账号管理rancher自带账号权限体系。账号可以独立创建，也可以很方便地接入ldap等账号体系，对于公司使用是一大利器。</p>
 <p>还有一个最牛逼的就是它有一个应用商店，并且可以做到配置自用的应用商店，部署服务，很快就能搞定！</p>
-<p>所以说在k8s势不可挡的今天，学习一下rancher还是很有必要的。哪怕你担心它搞不定线上业务，拿来给测试环境部署也好啊！具体的优点和不足可以去看 <a href="https://blog.csdn.net/CSDN_duomaomao/article/details/78029800" target="_blank" rel="noopener">https://blog.csdn.net/CSDN_duomaomao/article/details/78029800</a> 。</p>
+<p>所以说在k8s势不可挡的今天，学习一下rancher还是很有必要的。哪怕你领导担心它搞不定线上业务，拿来给测试环境部署也好啊！具体rancher的优点和不足可以去看 <a href="https://blog.csdn.net/CSDN_duomaomao/article/details/78029800" target="_blank" rel="noopener">https://blog.csdn.net/CSDN_duomaomao/article/details/78029800</a> 。</p>
 <h2><span id="安装rancher以及创建k8s集群">安装rancher以及创建k8s集群</span></h2><p>安装rancher的方法非常简单：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --restart=unless-stopped --name rancher-managment -p <span class="number">8080</span>:<span class="number">80</span> -p <span class="number">8443</span>:<span class="number">443</span> -v /rancher/data:/var/lib/rancher rancher/rancher:v2<span class="number">.1</span><span class="number">.6</span></span><br></pre></td></tr></table></figure></p>
 <p>参数<code>--restart=unless-stopped</code>的意思是<code>在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器</code>。</p>
 <p>然后确认一下防火墙是否对外开放了8443和8080端口，打开浏览器输入<code>IP:8443</code>就会看到rancher的样子，自带中文版，就问你感动不感动？<br><img src="/images/rancher5.png" alt="抱光妹"></p>
@@ -470,8 +472,11 @@
 <p>以上服务器系统均为centos7，而且与rancher网络的8443和8080端口互通。</p>
 <p>回到rancher页面，点击<code>添加集群</code>，选择CUSTOM，然后给集群起个名儿，如果有其他的rancher成员可以管理或者访问这个集群就编辑一下成员角色，默认情况下是安装<code>k8s-1.11</code>版本。然后点击<code>下一步</code>：<br><img src="/images/rancher6.png" alt="抱光妹"></p>
 <p>下一步很重要了，先在第一台172.20.52.12上勾选所有的角色以及输入对应IP，然后会web页面下面生成一个命令，将这个命令在172.20.52.12上执行一下，瞬间它就会尝试去注册到rancher：<br><img src="/images/rancher1.png" alt="抱光妹"></p>
-<p>如果注册不成功，web提示<code>[etcd]Pulling image [rancher/coreos-etcd:v3.12.18] on host XXX</code>的话，那么还要去该服务器上手动docker pull rancher/coreos-etcd:v3.12.18一下，不久之后就会看到主机被成功注册到rancher上：<br><img src="/images/rancher7.png" alt="抱光妹"></p>
+<p>如果注册不成功，web提示<code>[etcd]Pulling image [rancher/coreos-etcd:v3.12.18] on host XXX</code>的话，那么还要去该服务器上手动<code>docker pull rancher/coreos-etcd:v3.12.18</code>一下，不久之后就会看到主机被成功注册到rancher上：<br><img src="/images/rancher7.png" alt="抱光妹"></p>
 <p>点击<code>主机</code>，能看到一点CPU和内存的细节：<br><img src="/images/rancher8.png" alt="抱光妹"></p>
+<h2><span id="安装kuberctl">安装kuberctl</span></h2><p>使用rancher部署的k8s集群是没有自带kuberctl命令的，只能通过rancher页面的执行<code>kubectl命令行</code>来操作，若需要worker里使用kubectl，那就得手动安装，过程如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl		<span class="comment">#国内可以正常打开，表怕</span></span><br><span class="line">chmod +x kubectl</span><br><span class="line">sudo mv ./kubectl /usr/local/bin/kubectl</span><br><span class="line">echo <span class="string">"source &lt;(kubectl completion bash)"</span> &gt;&gt; ~/.bash_profile  <span class="comment"># 增加自动补全功能  </span></span><br><span class="line">kubectl version</span><br></pre></td></tr></table></figure></p>
+<p>此时得到的结果应该是：<br><img src="/images/rancher9.png" alt="抱光妹"></p>
+<p>返回到rancher的集群页面，点击<code>kubeconfig文件</code>，将里面的内容复制到~/.kube/config里（没有就创建一个），保存退出之后，重开一个终端就能正常使用了，如图：<br><img src="/images/rancher10.png" alt="抱光妹"></p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.cnblogs.com/horizonli/p/10572834.html" target="_blank" rel="noopener">https://www.cnblogs.com/horizonli/p/10572834.html</a><br><a href="https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/" target="_blank" rel="noopener">https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/</a></p>
 
       
@@ -869,7 +874,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="rancher&#x662F;&#x4E2A;&#x5565;">rancher&#x662F;&#x4E2A;&#x5565;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;rancher&#x4EE5;&#x53CA;&#x521B;&#x5EFA;k8s&#x96C6;&#x7FA4;">&#x5B89;&#x88C5;rancher&#x4EE5;&#x53CA;&#x521B;&#x5EFA;k8s&#x96C6;&#x7FA4;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="rancher&#x662F;&#x4E2A;&#x5565;">rancher&#x662F;&#x4E2A;&#x5565;&#xFF1F;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;rancher&#x4EE5;&#x53CA;&#x521B;&#x5EFA;k8s&#x96C6;&#x7FA4;">&#x5B89;&#x88C5;rancher&#x4EE5;&#x53CA;&#x521B;&#x5EFA;k8s&#x96C6;&#x7FA4;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x5B89;&#x88C5;kuberctl">&#x5B89;&#x88C5;kuberctl</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
@@ -923,7 +928,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共271.0k字</span>
+  <span class="post-count">博客全站共271.2k字</span>
 </div>
         
 
