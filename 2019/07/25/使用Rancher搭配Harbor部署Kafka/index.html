@@ -88,13 +88,13 @@
 
 
 
-<meta name="description" content="准备工作kafka是没有一个官方的镜像的，但是有一个star比较高的个人镜像，是wurstmeister/kafka，更新的比较频繁，所以我们选择这个镜像：docker pull wurstmeister/kafka。而kafka启动依赖zookeeper，于是我们还需要docker pull zookeeper，然后把他俩都上传到自建的harbor仓库里。 在部署的时候，rancher会去ha">
+<meta name="description" content="若出现了nginx失败重传，去检查一下proxy_next_upstream的配置方法">
 <meta name="keywords" content="k8s,rancher,harbor,kafka">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Rancher搭配Harbor部署Kafka">
 <meta property="og:url" content="http://yoursite.com/2019/07/25/使用Rancher搭配Harbor部署Kafka/index.html">
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
-<meta property="og:description" content="准备工作kafka是没有一个官方的镜像的，但是有一个star比较高的个人镜像，是wurstmeister/kafka，更新的比较频繁，所以我们选择这个镜像：docker pull wurstmeister/kafka。而kafka启动依赖zookeeper，于是我们还需要docker pull zookeeper，然后把他俩都上传到自建的harbor仓库里。 在部署的时候，rancher会去ha">
+<meta property="og:description" content="若出现了nginx失败重传，去检查一下proxy_next_upstream的配置方法">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://yoursite.com/images/rancher14.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher15.png">
@@ -104,11 +104,10 @@
 <meta property="og:image" content="http://yoursite.com/images/rancher19.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher20.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher21.png">
-<meta property="og:image" content="http://yoursite.com/images/rancher11.png">
-<meta property="og:updated_time" content="2019-07-26T03:56:00.739Z">
+<meta property="og:updated_time" content="2019-07-26T05:02:26.618Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Rancher搭配Harbor部署Kafka">
-<meta name="twitter:description" content="准备工作kafka是没有一个官方的镜像的，但是有一个star比较高的个人镜像，是wurstmeister/kafka，更新的比较频繁，所以我们选择这个镜像：docker pull wurstmeister/kafka。而kafka启动依赖zookeeper，于是我们还需要docker pull zookeeper，然后把他俩都上传到自建的harbor仓库里。 在部署的时候，rancher会去ha">
+<meta name="twitter:description" content="若出现了nginx失败重传，去检查一下proxy_next_upstream的配置方法">
 <meta name="twitter:image" content="http://yoursite.com/images/rancher14.png">
 
 
@@ -423,7 +422,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  565
+                  527
                 </span>
               
 
@@ -445,6 +444,10 @@
             </div>
           
 
+          
+              <div class="post-description">
+                  若出现了nginx失败重传，去检查一下proxy_next_upstream的配置方法
+              </div>
           
 
         </div>
@@ -469,11 +472,9 @@
 <p>点击<code>部署服务</code>，填写一些基本资料：<br><img src="/images/rancher17.png" alt="抱光妹"></p>
 <p>然后点击启动，就完事了！但是不要高兴太久，发现pod有错误，是处于<code>Unavailable</code>的状态：<br><img src="/images/rancher18.png" alt="抱光妹"></p>
 <p>来到worker里，<code>kubectl get pods --namespace=shop</code>查看一下这几个pod的状态：<br><img src="/images/rancher19.png" alt="抱光妹"></p>
-<p>竟然是<code>ImagePullBackOff</code>？那么除了网络问题外，就是：镜像 tag 不正确、镜像不存在（或者是在另一个仓库）、Kubernetes 没有权限去拉那个镜像。使用<code>kubectl describe pod 对应pod名 --namespace=shop</code>查看细节，果然被拒绝了：<br><img src="/images/rancher20.png" alt="抱光妹"></p>
-<p>后来发现犯了两个错误，第一我把secret的namespace写到了default这个namespace里，结果部署是在shop这个namespace里；第二使用<code>kubectl get secret  secret-name -o yaml</code>以及<code>echo &quot;秘钥&quot; | base64 --decode</code>发现，我的harborIP写错了，在secret里写的是内网IP，结果在部署的时候，镜像填写的是外网IP，更改过来之后，就OK了！<br><img src="/images/rancher21.png" alt="抱光妹"></p>
-<h2><span id="探索rancher应用商店">探索rancher应用商店</span></h2><p>rancher的web页面有一个<code>应用商店</code>是它的一大卖点，点击<code>启动</code>，就看到各种各样的商标…<br><img src="/images/rancher11.png" alt="抱光妹"></p>
-<p>当然也有之前的kafka不过它的kafka版本略老，才0.7.3。</p>
-<h2><span id="参考资料">参考资料</span></h2><p><a href="https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/" target="_blank" rel="noopener">https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/</a></p>
+<p>竟然是<code>ImagePullBackOff</code>？那么除了网络问题外，就是：镜像tag不正确、镜像不存在（或者是在另一个仓库）、Kubernetes没有权限去拉那个镜像。使用<code>kubectl describe pod 对应pod名 --namespace=shop</code>查看细节，果然被拒绝了：<br><img src="/images/rancher20.png" alt="抱光妹"></p>
+<p>后来发现犯了两个错误，第一我把secret的namespace写到了<code>default</code>这个namespace里，结果部署是在<code>shop</code>这个namespace里；第二使用<code>kubectl get secret  secret-name -o yaml</code>以及<code>echo &quot;秘钥&quot; | base64 --decode</code>发现，我的harborIP写错了，在<code>secret</code>里写的是内网IP，结果在部署的时候，镜像填写的是外网IP，更改过来之后，就OK了！<br><img src="/images/rancher21.png" alt="抱光妹"></p>
+<h2><span id="参考资料">参考资料</span></h2><p><a href="https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/" target="_blank" rel="noopener">https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/</a><br><a href="http://blog.yuandingit.com/2019/03/26/Practice-of-Business-Containerization-Transformation-(3)/" target="_blank" rel="noopener">http://blog.yuandingit.com/2019/03/26/Practice-of-Business-Containerization-Transformation-(3)/</a><br><a href="https://kubernetes.io/zh/docs/concepts/configuration/secret/" target="_blank" rel="noopener">https://kubernetes.io/zh/docs/concepts/configuration/secret/</a></p>
 
       
     </div>
@@ -872,7 +873,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x51C6;&#x5907;&#x5DE5;&#x4F5C;">&#x51C6;&#x5907;&#x5DE5;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5F00;&#x59CB;&#x90E8;&#x7F72;">&#x5F00;&#x59CB;&#x90E8;&#x7F72;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x63A2;&#x7D22;rancher&#x5E94;&#x7528;&#x5546;&#x5E97;">&#x63A2;&#x7D22;rancher&#x5E94;&#x7528;&#x5546;&#x5E97;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x51C6;&#x5907;&#x5DE5;&#x4F5C;">&#x51C6;&#x5907;&#x5DE5;&#x4F5C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x5F00;&#x59CB;&#x90E8;&#x7F72;">&#x5F00;&#x59CB;&#x90E8;&#x7F72;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x53C2;&#x8003;&#x8D44;&#x6599;">&#x53C2;&#x8003;&#x8D44;&#x6599;</span></span></a></li></ol></div>
             
 
           </div>
