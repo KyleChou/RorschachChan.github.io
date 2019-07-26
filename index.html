@@ -414,7 +414,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  357
+                  407
                 </span>
               
 
@@ -430,7 +430,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  1
+                  2
                 </span>
               
             </div>
@@ -457,9 +457,11 @@
 <p>在部署的时候，rancher会去harbor里拉取镜像，但是harbor的私有仓是需要账号密码鉴权的，于是我们就要在rancher的界面点击<code>集群</code>—&gt;<code>执行kubectl命令行</code>，然后输入对应的内容：<br><img src="/images/rancher14.png" alt="抱光妹" title="如果显示连接中，那么请换一个浏览器"></p>
 <p>其中secret-name： secret的名称，namespace： 命名空间，docker-server： Harbor仓库地址，docker-username： Harbor仓库登录账号，docker-password： Harbor仓库登录密码，docker-email： 邮件地址。</p>
 <p>执行之后，三个worker就应该可以登录到harbor仓库里了。</p>
-<h2><span id="开始部署">开始部署</span></h2><p>现在我们开始部署zookeeper，首先来到<code>项目/命名空间</code>，在Default这个项目里新建一个命名空间，比如叫shop。<br><img src="/images/rancher15.png" alt="抱光妹"></p>
+<h2><span id="开始部署">开始部署</span></h2><p>现在我们开始部署zookeeper，首先来到<code>项目/命名空间</code>，在<code>Default</code>这个项目里新建一个命名空间，比如叫shop。<br><img src="/images/rancher15.png" alt="抱光妹"></p>
 <p>然后点击集群的下拉菜单，选择<code>default</code>:<br><img src="/images/rancher16.png" alt="抱光妹"></p>
-<p>点击<code>部署服务</code>，填写一些基本资料：</p>
+<p>点击<code>部署服务</code>，填写一些基本资料：<br><img src="/images/rancher17.png" alt="抱光妹"></p>
+<p>然后点击启动，就完事了！但是不要高兴太久，发现pod有错误，是处于<code>Unavailable</code>的状态：<br><img src="/images/rancher18.png" alt="抱光妹"></p>
+<p>来到worker里，<code>kubectl get pods --namespace=shop</code>查看一下这几个pod的状态：<br><img src="/images/rancher19.png" alt="抱光妹"></p>
 <h2><span id="探索rancher应用商店">探索rancher应用商店</span></h2><p>rancher的web页面有一个<code>应用商店</code>是它的一大卖点，点击<code>启动</code>，就看到各种各样的商标…<br><img src="/images/rancher11.png" alt="抱光妹"></p>
 <p>当然也有之前的kafka不过它的kafka版本略老，才0.7.3。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/" target="_blank" rel="noopener">https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/</a></p>
