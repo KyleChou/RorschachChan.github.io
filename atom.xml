@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-07-25T07:43:21.835Z</updated>
+  <updated>2019-07-26T03:14:32.426Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -17,13 +17,44 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>使用Rancher搭配Harbor部署Kafka</title>
+    <link href="http://yoursite.com/2019/07/25/%E4%BD%BF%E7%94%A8Rancher%E6%90%AD%E9%85%8DHarbor%E9%83%A8%E7%BD%B2Kafka/"/>
+    <id>http://yoursite.com/2019/07/25/使用Rancher搭配Harbor部署Kafka/</id>
+    <published>2019-07-25T08:20:19.000Z</published>
+    <updated>2019-07-26T03:14:32.426Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="准备工作">准备工作</span></h2><p>kafka是没有一个官方的镜像的，但是有一个star比较高的个人镜像，是<code>wurstmeister/kafka</code>，更新的比较频繁，所以我们选择这个镜像：<code>docker pull wurstmeister/kafka</code>。而kafka启动依赖zookeeper，于是我们还需要<code>docker pull zookeeper</code>，然后把他俩都上传到自建的harbor仓库里。</p><p>在部署的时候，rancher会去harbor里拉取镜像，但是harbor的私有仓是需要账号密码鉴权的，于是我们就要在rancher的界面点击<code>集群</code>—&gt;<code>执行kubectl命令行</code>，然后输入对应的内容：<br><img src="/images/rancher14.png" alt="抱光妹" title="如果显示连接中，那么请换一个浏览器"></p><p>其中secret-name： secret的名称，namespace： 命名空间，docker-server： Harbor仓库地址，docker-username： Harbor仓库登录账号，docker-password： Harbor仓库登录密码，docker-email： 邮件地址。</p><p>执行之后，三个worker就应该可以登录到harbor仓库里了。</p><h2><span id="开始部署">开始部署</span></h2><p>现在我们开始部署zookeeper，首先来到<code>项目/命名空间</code>，在Default这个项目里新建一个命名空间，比如叫shop。<br><img src="/images/rancher15.png" alt="抱光妹"></p><p>然后点击集群的下拉菜单，选择<code>default</code>:<br><img src="/images/rancher16.png" alt="抱光妹"></p><p>点击<code>部署服务</code>，填写一些基本资料：</p><h2><span id="探索rancher应用商店">探索rancher应用商店</span></h2><p>rancher的web页面有一个<code>应用商店</code>是它的一大卖点，点击<code>启动</code>，就看到各种各样的商标…<br><img src="/images/rancher11.png" alt="抱光妹"></p><p>当然也有之前的kafka不过它的kafka版本略老，才0.7.3。</p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/" target="_blank" rel="noopener">https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/</a></p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;script src=&quot;\assets\js\APlayer.min.js&quot;&gt; &lt;/script&gt;&lt;h2&gt;&lt;span id=&quot;准备工作&quot;&gt;准备工作&lt;/span&gt;&lt;/h2&gt;&lt;p&gt;kafka是没有一个官方的镜像的，但是有一个star比较高的个人镜像，是&lt;code&gt;wurstmeis
+      
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="k8s" scheme="http://yoursite.com/tags/k8s/"/>
+    
+      <category term="rancher" scheme="http://yoursite.com/tags/rancher/"/>
+    
+      <category term="harbor" scheme="http://yoursite.com/tags/harbor/"/>
+    
+      <category term="kafka" scheme="http://yoursite.com/tags/kafka/"/>
+    
+  </entry>
+  
+  <entry>
     <title>使用Rancher2.1部署k8s集群</title>
     <link href="http://yoursite.com/2019/07/25/%E4%BD%BF%E7%94%A8Rancher2-1%E9%83%A8%E7%BD%B2k8s/"/>
     <id>http://yoursite.com/2019/07/25/使用Rancher2-1部署k8s/</id>
     <published>2019-07-25T03:03:04.000Z</published>
-    <updated>2019-07-25T07:43:21.835Z</updated>
+    <updated>2019-07-25T08:04:31.929Z</updated>
     
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="rancher是个啥">rancher是个啥？</span></h2><p>Rancher是一个开源的企业级全栈化容器部署及管理平台。简单的说，就是一个可以让你通过web界面管理docker容器的平台。定位上和K8s比较接近，都是通过web界面赋予完全的docker服务编排功能。而且它自带账户权限。相比K8s没有账号管理rancher自带账号权限体系。账号可以独立创建，也可以很方便地接入ldap等账号体系，对于公司使用是一大利器。</p><p>还有一个最牛逼的就是它有一个应用商店，并且可以做到配置自用的应用商店，部署服务，很快就能搞定！</p><p>所以说在k8s势不可挡的今天，学习一下rancher还是很有必要的。哪怕你领导担心它搞不定线上业务，拿来给测试环境部署也好啊！具体rancher的优点和不足可以去看 <a href="https://blog.csdn.net/CSDN_duomaomao/article/details/78029800" target="_blank" rel="noopener">https://blog.csdn.net/CSDN_duomaomao/article/details/78029800</a> 。</p><h2><span id="安装rancher以及创建k8s集群">安装rancher以及创建k8s集群</span></h2><p>安装rancher的方法非常简单：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --restart=unless-stopped --name rancher-managment -p <span class="number">8080</span>:<span class="number">80</span> -p <span class="number">8443</span>:<span class="number">443</span> -v /rancher/data:/var/lib/rancher rancher/rancher:v2<span class="number">.1</span><span class="number">.6</span></span><br></pre></td></tr></table></figure></p><p>参数<code>--restart=unless-stopped</code>的意思是<code>在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器</code>。</p><p>然后确认一下防火墙是否对外开放了8443和8080端口，打开浏览器输入<code>IP:8443</code>就会看到rancher的样子，自带中文版，就问你感动不感动？<br><img src="/images/rancher5.png" alt="抱光妹"></p><p>然后准备三台服务器，资料如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">名称：k8s<span class="number">-001</span>IP：<span class="string">"172.20.52.12"</span>角色：etcd+control+worker</span><br><span class="line">名称：k8s<span class="number">-002</span>IP：<span class="string">"172.20.52.11"</span>角色：worker</span><br><span class="line">名称：k8s<span class="number">-003</span>IP：<span class="string">"172.20.52.10"</span>角色：worker</span><br></pre></td></tr></table></figure></p><p>以上服务器系统均为centos7，而且与rancher网络的8443和8080端口互通。</p><p>回到rancher页面，点击<code>添加集群</code>，选择CUSTOM，然后给集群起个名儿，如果有其他的rancher成员可以管理或者访问这个集群就编辑一下成员角色，默认情况下是安装<code>k8s-1.11</code>版本。然后点击<code>下一步</code>：<br><img src="/images/rancher6.png" alt="抱光妹"></p><p>下一步很重要了，先在第一台172.20.52.12上勾选所有的角色以及输入对应IP，然后会web页面下面生成一个命令，将这个命令在172.20.52.12上执行一下，瞬间它就会尝试去注册到rancher：<br><img src="/images/rancher1.png" alt="抱光妹"></p><p>如果注册不成功，web提示<code>[etcd]Pulling image [rancher/coreos-etcd:v3.12.18] on host XXX</code>的话，那么还要去该服务器上手动<code>docker pull rancher/coreos-etcd:v3.12.18</code>一下，不久之后就会看到主机被成功注册到rancher上：<br><img src="/images/rancher7.png" alt="抱光妹"></p><p>点击<code>主机</code>，能看到一点CPU和内存的细节：<br><img src="/images/rancher8.png" alt="抱光妹"></p><h2><span id="安装kuberctl">安装kuberctl</span></h2><p>使用rancher部署的k8s集群是没有自带kuberctl命令的，只能通过rancher页面的执行<code>kubectl命令行</code>来操作，若需要worker里使用kubectl，那就得手动安装，过程如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl<span class="comment">#国内可以正常打开，表怕</span></span><br><span class="line">chmod +x kubectl</span><br><span class="line">sudo mv ./kubectl /usr/local/bin/kubectl</span><br><span class="line">echo <span class="string">"source &lt;(kubectl completion bash)"</span> &gt;&gt; ~/.bash_profile  <span class="comment"># 增加自动补全功能  </span></span><br><span class="line">kubectl version</span><br></pre></td></tr></table></figure></p><p>此时得到的结果应该是：<br><img src="/images/rancher9.png" alt="抱光妹"></p><p>返回到rancher的集群页面，点击<code>kubeconfig文件</code>，将里面的内容复制到~/.kube/config里（没有就创建一个），保存退出之后，重开一个终端就能正常使用了，如图：<br><img src="/images/rancher10.png" alt="抱光妹"></p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.cnblogs.com/horizonli/p/10572834.html" target="_blank" rel="noopener">https://www.cnblogs.com/horizonli/p/10572834.html</a><br><a href="https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/" target="_blank" rel="noopener">https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/</a></p>]]></content>
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="rancher是个啥">rancher是个啥？</span></h2><p>Rancher是一个开源的企业级全栈化容器部署及管理平台。简单的说，就是一个可以让你通过web界面管理docker容器的平台。定位上和K8s比较接近，都是通过web界面赋予完全的docker服务编排功能。而且它自带账户权限。相比K8s没有账号管理rancher自带账号权限体系。账号可以独立创建，也可以很方便地接入ldap等账号体系，对于公司使用是一大利器。</p><p>还有一个最牛逼的就是它有一个应用商店，并且可以做到配置自用的应用商店，部署服务，很快就能搞定！</p><p>所以说在k8s势不可挡的今天，学习一下rancher还是很有必要的。哪怕你领导担心它搞不定线上业务，拿来给测试环境部署也好啊！具体rancher的优点和不足可以去看 <a href="https://blog.csdn.net/CSDN_duomaomao/article/details/78029800" target="_blank" rel="noopener">https://blog.csdn.net/CSDN_duomaomao/article/details/78029800</a> 。</p><h2><span id="安装rancher以及创建k8s集群">安装rancher以及创建k8s集群</span></h2><p>安装rancher的方法非常简单：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --restart=unless-stopped --name rancher-managment -p <span class="number">8080</span>:<span class="number">80</span> -p <span class="number">8443</span>:<span class="number">443</span> -v /rancher/data:/var/lib/rancher rancher/rancher:v2<span class="number">.1</span><span class="number">.6</span></span><br></pre></td></tr></table></figure></p><p>参数<code>--restart=unless-stopped</code>的意思是<code>在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器</code>。</p><p>然后确认一下防火墙是否对外开放了8443和8080端口，打开浏览器输入<code>IP:8443</code>就会看到rancher的样子，自带中文版，就问你感动不感动？<br><img src="/images/rancher5.png" alt="抱光妹"></p><p>然后准备三台服务器，资料如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">名称：k8s<span class="number">-001</span>IP：<span class="string">"172.20.52.12"</span>角色：etcd+control+worker</span><br><span class="line">名称：k8s<span class="number">-002</span>IP：<span class="string">"172.20.52.11"</span>角色：worker</span><br><span class="line">名称：k8s<span class="number">-003</span>IP：<span class="string">"172.20.52.10"</span>角色：worker</span><br></pre></td></tr></table></figure></p><p>以上服务器系统均为centos7，而且与rancher网络的8443和8080端口互通。为了路径相同，个人建议在rancher买一个大一点的高效云盘，然后让这三个worker都挂载这个云盘，这样的话启动容器的时候，数据都持久化保存在云盘里。</p><p>回到rancher页面，点击<code>添加集群</code>，选择CUSTOM，然后给集群起个名儿，如果有其他的rancher成员可以管理或者访问这个集群就编辑一下成员角色，默认情况下是安装<code>k8s-1.11</code>版本。然后点击<code>下一步</code>：<br><img src="/images/rancher6.png" alt="抱光妹"></p><p>下一步很重要了，先在第一台172.20.52.12上勾选所有的角色以及输入对应IP，然后会web页面下面生成一个命令，将这个命令在172.20.52.12上执行一下，瞬间它就会尝试去注册到rancher：<br><img src="/images/rancher1.png" alt="抱光妹"></p><p>如果注册不成功，web提示<code>[etcd]Pulling image [rancher/coreos-etcd:v3.12.18] on host XXX</code>的话，那么还要去该服务器上手动<code>docker pull rancher/coreos-etcd:v3.12.18</code>一下，不久之后就会看到主机被成功注册到rancher上：<br><img src="/images/rancher7.png" alt="抱光妹"></p><p>点击<code>主机</code>，能看到一点CPU和内存的细节：<br><img src="/images/rancher8.png" alt="抱光妹"></p><h2><span id="安装kuberctl">安装kuberctl</span></h2><p>使用rancher部署的k8s集群是没有自带kuberctl命令的，只能通过rancher页面的执行<code>kubectl命令行</code>来操作，若需要worker里使用kubectl，那就得手动安装，过程如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl<span class="comment">#国内可以正常打开，表怕</span></span><br><span class="line">chmod +x kubectl</span><br><span class="line">sudo mv ./kubectl /usr/local/bin/kubectl</span><br><span class="line">echo <span class="string">"source &lt;(kubectl completion bash)"</span> &gt;&gt; ~/.bash_profile  <span class="comment"># 增加自动补全功能  </span></span><br><span class="line">kubectl version</span><br></pre></td></tr></table></figure></p><p>此时得到的结果应该是：<br><img src="/images/rancher9.png" alt="抱光妹"></p><p>返回到rancher的集群页面，点击<code>kubeconfig文件</code>，将里面的内容复制到<code>~/.kube/config</code>里（没有就创建一个），保存退出之后，重开一个终端就能正常使用了，如图：<br><img src="/images/rancher10.png" alt="抱光妹"></p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.cnblogs.com/horizonli/p/10572834.html" target="_blank" rel="noopener">https://www.cnblogs.com/horizonli/p/10572834.html</a><br><a href="https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/" target="_blank" rel="noopener">https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/</a></p>]]></content>
     
     <summary type="html">
     
@@ -34,11 +65,11 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="云原生" scheme="http://yoursite.com/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
-    
       <category term="k8s" scheme="http://yoursite.com/tags/k8s/"/>
     
       <category term="rancher" scheme="http://yoursite.com/tags/rancher/"/>
+    
+      <category term="云原生" scheme="http://yoursite.com/tags/%E4%BA%91%E5%8E%9F%E7%94%9F/"/>
     
   </entry>
   
@@ -471,32 +502,6 @@
       <category term="mysql" scheme="http://yoursite.com/tags/mysql/"/>
     
       <category term="数据备份" scheme="http://yoursite.com/tags/%E6%95%B0%E6%8D%AE%E5%A4%87%E4%BB%BD/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>记录一次优化前端docker的过程</title>
-    <link href="http://yoursite.com/2019/06/12/%E8%AE%B0%E5%BD%95%E4%B8%80%E6%AC%A1%E4%BC%98%E5%8C%96%E5%89%8D%E7%AB%AFdocker%E7%9A%84%E8%BF%87%E7%A8%8B/"/>
-    <id>http://yoursite.com/2019/06/12/记录一次优化前端docker的过程/</id>
-    <published>2019-06-12T07:48:42.000Z</published>
-    <updated>2019-06-12T13:35:10.232Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="最初优化">最初优化</span></h2><p>前端node项目一直以来虽然是容器部署，但是是很粗糙的形式—每次更新的过程给各位感受一下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">先在宿主机里去项目文件夹里执行`git pull`，然后 docker <span class="keyword">exec</span> -it 容器名 /bin/bash 进入到对应容器里，然后执行`pm2 flush`、`npm run build`和`pm2 reload <span class="number">0</span>`。</span><br></pre></td></tr></table></figure></p><p>这种拿docker做虚拟机的行为实在是让人“叔可忍婶不可忍”。于是就要改变一下这个思路，重写一个dockerfile，内容如下：<br>    <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">FROM keymetrics/pm2:latest-alpine</span><br><span class="line">MAINTAINER ChrisChan &lt;chen_shuo@dahuatech.com&gt;</span><br><span class="line"></span><br><span class="line">WORKDIR /<span class="keyword">var</span>/www/node/shopFront</span><br><span class="line">COPY shopFront/ .#由于上面已经指定了WORKDIR的地址，所以COPY/ADD/RUN等命令的相对路径都是WORKDIR的路径，所以这里是.</span><br><span class="line">RUN git pull &amp;&amp; npm run build</span><br><span class="line">EXPOSE <span class="number">3000</span>#暴露<span class="number">3000</span>端口</span><br><span class="line">CMD [ <span class="string">"pm2"</span>, <span class="string">"start"</span>, <span class="string">"npm"</span>]</span><br></pre></td></tr></table></figure></p><p>然后<code>docker build -t=&quot;ecnode：0.1&quot; .</code>生成镜像，<code>docker run --name ECNODE -it -p 33664:3000 ecnode:0.1</code>启动叫ECNODE的容器，发现服务站不住，启动完了后就死了。其实这里不能用<code>pm2 start npm</code>这种启动方法，应该用<code>pm2-docker start XXX.js</code>作为CMD，这样才能在后台站住。效果如图：<br><img src="/images/v2ray4.png" alt="akb48" title="因为有部分静态文件是存储在阿里云OSS上的，没有开放白名单就不会正常显示"></p><h2><span id="继续折腾">继续折腾</span></h2><p>上面这个dockerfile打成镜像的时间总共是165秒，如图：<br><img src="/images/v2ray2.png" alt="akb48"></p><p>分析一下发现时间大量的消耗在<code>npm run build</code>和<code>COPY</code>这两个步骤上了，因为dockerfile所在的文件夹shopFront/(项目文件夹）里包括<code>node_modules</code>，这个文件夹大小是220M左右，复制肯定比较消耗时间。于是我尝试换了一个Dockerfile写法：<br>    <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">FROM keymetrics/pm2:latest-alpine</span><br><span class="line">MAINTAINER ChrisChan &lt;<span class="number">33664</span>@dahuatech.com&gt;</span><br><span class="line"></span><br><span class="line">RUN mkdir -p /<span class="keyword">var</span>/www/node/shopFront</span><br><span class="line">WORKDIR /<span class="keyword">var</span>/www/node/shopFront#设定工作目录</span><br><span class="line">COPY <span class="keyword">package</span>.json .#<span class="keyword">package</span>.json要跟dockerfile在同一个文件夹下</span><br><span class="line">RUN  npm install</span><br><span class="line">COPY shopFront/ .#再将其他的内容拷贝过去</span><br><span class="line">RUN git pull</span><br><span class="line">EXPOSE <span class="number">3000</span></span><br><span class="line">CMD [ <span class="string">"pm2-docker"</span>, <span class="string">"start"</span>, <span class="string">"server.js"</span>]</span><br></pre></td></tr></table></figure></p><p>执行之后效果如图：<br><img src="/images/v2ray3.png" alt="akb48"></p><p>妈的，时间反而多了20秒。不过这样文件夹里就不用带着<code>node_modules</code>，因为<code>npm install</code>会生成一个<code>node_modules</code>。不过这个0.2镜像比之前的多不到100M。所以看来看去还是0.1更划算。</p><p>补充一下：<code>docker ps -a --no-trunc</code>是查看<code>docker ps</code>完全命令，有的时候COMMAND显示不全就用它。 </p><h2><span id="参考资料">参考资料</span></h2><p><a href="https://pm2.io/doc/zh/runtime/integration/docker/#%E8%AE%BE%E7%BD%AE%E4%B8%80%E4%B8%AAdocker%E6%96%87%E4%BB%B6" target="_blank" rel="noopener">https://pm2.io/doc/zh/runtime/integration/docker/#%E8%AE%BE%E7%BD%AE%E4%B8%80%E4%B8%AAdocker%E6%96%87%E4%BB%B6</a><br><a href="https://mp.weixin.qq.com/s?__biz=MzA5OTAyNzQ2OA==&amp;mid=2649700687&amp;idx=1&amp;sn=a656b7c7fdacc1b3df97c1d2630e50d9&amp;scene=21#wechat_redirect" target="_blank" rel="noopener">https://mp.weixin.qq.com/s?__biz=MzA5OTAyNzQ2OA==&amp;mid=2649700687&amp;idx=1&amp;sn=a656b7c7fdacc1b3df97c1d2630e50d9&amp;scene=21#wechat_redirect</a><br><a href="https://stackoverflow.com/questions/35774714/how-to-cache-the-run-npm-install-instruction-when-docker-build-a-dockerfile" target="_blank" rel="noopener">https://stackoverflow.com/questions/35774714/how-to-cache-the-run-npm-install-instruction-when-docker-build-a-dockerfile</a></p><p><img src="/images/hongkong.jpg" alt="akb48"></p>]]></content>
-    
-    <summary type="html">
-    
-      香港加油！
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="docker" scheme="http://yoursite.com/tags/docker/"/>
-    
-      <category term="前端node" scheme="http://yoursite.com/tags/%E5%89%8D%E7%AB%AFnode/"/>
-    
-      <category term="前端pm2" scheme="http://yoursite.com/tags/%E5%89%8D%E7%AB%AFpm2/"/>
     
   </entry>
   

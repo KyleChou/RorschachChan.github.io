@@ -75,7 +75,7 @@
 
 
 
-  <meta name="keywords" content="云原生,k8s,rancher," />
+  <meta name="keywords" content="k8s,rancher,云原生," />
 
 
 
@@ -89,7 +89,7 @@
 
 
 <meta name="description" content="批量删除exited状态的容器是：docker rm $(sudo docker ps -qf status=exited)">
-<meta name="keywords" content="云原生,k8s,rancher">
+<meta name="keywords" content="k8s,rancher,云原生">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用Rancher2.1部署k8s集群">
 <meta property="og:url" content="http://yoursite.com/2019/07/25/使用Rancher2-1部署k8s/index.html">
@@ -103,7 +103,7 @@
 <meta property="og:image" content="http://yoursite.com/images/rancher8.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher9.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher10.png">
-<meta property="og:updated_time" content="2019-07-25T07:43:21.835Z">
+<meta property="og:updated_time" content="2019-07-25T08:04:31.929Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Rancher2.1部署k8s集群">
 <meta name="twitter:description" content="批量删除exited状态的容器是：docker rm $(sudo docker ps -qf status=exited)">
@@ -421,7 +421,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  918
+                  978
                 </span>
               
 
@@ -469,14 +469,14 @@
 <p>参数<code>--restart=unless-stopped</code>的意思是<code>在容器退出时总是重启容器，但是不考虑在Docker守护进程启动时就已经停止了的容器</code>。</p>
 <p>然后确认一下防火墙是否对外开放了8443和8080端口，打开浏览器输入<code>IP:8443</code>就会看到rancher的样子，自带中文版，就问你感动不感动？<br><img src="/images/rancher5.png" alt="抱光妹"></p>
 <p>然后准备三台服务器，资料如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">名称：k8s<span class="number">-001</span>	IP：<span class="string">"172.20.52.12"</span>	角色：etcd+control+worker</span><br><span class="line">名称：k8s<span class="number">-002</span>	IP：<span class="string">"172.20.52.11"</span>	角色：worker</span><br><span class="line">名称：k8s<span class="number">-003</span>	IP：<span class="string">"172.20.52.10"</span>	角色：worker</span><br></pre></td></tr></table></figure></p>
-<p>以上服务器系统均为centos7，而且与rancher网络的8443和8080端口互通。</p>
+<p>以上服务器系统均为centos7，而且与rancher网络的8443和8080端口互通。为了路径相同，个人建议在rancher买一个大一点的高效云盘，然后让这三个worker都挂载这个云盘，这样的话启动容器的时候，数据都持久化保存在云盘里。</p>
 <p>回到rancher页面，点击<code>添加集群</code>，选择CUSTOM，然后给集群起个名儿，如果有其他的rancher成员可以管理或者访问这个集群就编辑一下成员角色，默认情况下是安装<code>k8s-1.11</code>版本。然后点击<code>下一步</code>：<br><img src="/images/rancher6.png" alt="抱光妹"></p>
 <p>下一步很重要了，先在第一台172.20.52.12上勾选所有的角色以及输入对应IP，然后会web页面下面生成一个命令，将这个命令在172.20.52.12上执行一下，瞬间它就会尝试去注册到rancher：<br><img src="/images/rancher1.png" alt="抱光妹"></p>
 <p>如果注册不成功，web提示<code>[etcd]Pulling image [rancher/coreos-etcd:v3.12.18] on host XXX</code>的话，那么还要去该服务器上手动<code>docker pull rancher/coreos-etcd:v3.12.18</code>一下，不久之后就会看到主机被成功注册到rancher上：<br><img src="/images/rancher7.png" alt="抱光妹"></p>
 <p>点击<code>主机</code>，能看到一点CPU和内存的细节：<br><img src="/images/rancher8.png" alt="抱光妹"></p>
 <h2><span id="安装kuberctl">安装kuberctl</span></h2><p>使用rancher部署的k8s集群是没有自带kuberctl命令的，只能通过rancher页面的执行<code>kubectl命令行</code>来操作，若需要worker里使用kubectl，那就得手动安装，过程如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl		<span class="comment">#国内可以正常打开，表怕</span></span><br><span class="line">chmod +x kubectl</span><br><span class="line">sudo mv ./kubectl /usr/local/bin/kubectl</span><br><span class="line">echo <span class="string">"source &lt;(kubectl completion bash)"</span> &gt;&gt; ~/.bash_profile  <span class="comment"># 增加自动补全功能  </span></span><br><span class="line">kubectl version</span><br></pre></td></tr></table></figure></p>
 <p>此时得到的结果应该是：<br><img src="/images/rancher9.png" alt="抱光妹"></p>
-<p>返回到rancher的集群页面，点击<code>kubeconfig文件</code>，将里面的内容复制到~/.kube/config里（没有就创建一个），保存退出之后，重开一个终端就能正常使用了，如图：<br><img src="/images/rancher10.png" alt="抱光妹"></p>
+<p>返回到rancher的集群页面，点击<code>kubeconfig文件</code>，将里面的内容复制到<code>~/.kube/config</code>里（没有就创建一个），保存退出之后，重开一个终端就能正常使用了，如图：<br><img src="/images/rancher10.png" alt="抱光妹"></p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://www.cnblogs.com/horizonli/p/10572834.html" target="_blank" rel="noopener">https://www.cnblogs.com/horizonli/p/10572834.html</a><br><a href="https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/" target="_blank" rel="noopener">https://systemoutprint.github.io/kubernetes/2018/07/19/kubernetes%E9%9B%86%E7%BE%A4%E7%97%9B%E8%8B%A6%E6%90%AD%E5%BB%BA%E8%BF%87%E7%A8%8B/</a></p>
 
       
@@ -560,11 +560,11 @@
       
         <div class="post-tags">
           
-            <a href="/tags/云原生/" rel="tag"><i class="fa fa-tag"></i> 云原生</a>
-          
             <a href="/tags/k8s/" rel="tag"><i class="fa fa-tag"></i> k8s</a>
           
             <a href="/tags/rancher/" rel="tag"><i class="fa fa-tag"></i> rancher</a>
+          
+            <a href="/tags/云原生/" rel="tag"><i class="fa fa-tag"></i> 云原生</a>
           
         </div>
       
@@ -599,6 +599,10 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/07/25/使用Rancher搭配Harbor部署Kafka/" rel="prev" title="使用Rancher搭配Harbor部署Kafka">
+                使用Rancher搭配Harbor部署Kafka <i class="fa fa-chevron-right"></i>
+              </a>
             
           </div>
         </div>
@@ -712,7 +716,7 @@ var jiathis_config={
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">257</span>
+                  <span class="site-state-item-count">258</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -734,7 +738,7 @@ var jiathis_config={
               
               <div class="site-state-item site-state-tags">
                 
-                  <span class="site-state-item-count">221</span>
+                  <span class="site-state-item-count">222</span>
                   <span class="site-state-item-name">标签</span>
                 
               </div>
@@ -928,7 +932,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共271.2k字</span>
+  <span class="post-count">博客全站共271.6k字</span>
 </div>
         
 
