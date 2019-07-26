@@ -103,8 +103,9 @@
 <meta property="og:image" content="http://yoursite.com/images/rancher18.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher19.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher20.png">
+<meta property="og:image" content="http://yoursite.com/images/rancher21.png">
 <meta property="og:image" content="http://yoursite.com/images/rancher11.png">
-<meta property="og:updated_time" content="2019-07-26T03:41:05.371Z">
+<meta property="og:updated_time" content="2019-07-26T03:56:00.739Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用Rancher搭配Harbor部署Kafka">
 <meta name="twitter:description" content="准备工作kafka是没有一个官方的镜像的，但是有一个star比较高的个人镜像，是wurstmeister/kafka，更新的比较频繁，所以我们选择这个镜像：docker pull wurstmeister/kafka。而kafka启动依赖zookeeper，于是我们还需要docker pull zookeeper，然后把他俩都上传到自建的harbor仓库里。 在部署的时候，rancher会去ha">
@@ -422,7 +423,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  474
+                  565
                 </span>
               
 
@@ -469,6 +470,7 @@
 <p>然后点击启动，就完事了！但是不要高兴太久，发现pod有错误，是处于<code>Unavailable</code>的状态：<br><img src="/images/rancher18.png" alt="抱光妹"></p>
 <p>来到worker里，<code>kubectl get pods --namespace=shop</code>查看一下这几个pod的状态：<br><img src="/images/rancher19.png" alt="抱光妹"></p>
 <p>竟然是<code>ImagePullBackOff</code>？那么除了网络问题外，就是：镜像 tag 不正确、镜像不存在（或者是在另一个仓库）、Kubernetes 没有权限去拉那个镜像。使用<code>kubectl describe pod 对应pod名 --namespace=shop</code>查看细节，果然被拒绝了：<br><img src="/images/rancher20.png" alt="抱光妹"></p>
+<p>后来发现犯了两个错误，第一我把secret的namespace写到了default这个namespace里，结果部署是在shop这个namespace里；第二使用<code>kubectl get secret  secret-name -o yaml</code>以及<code>echo &quot;秘钥&quot; | base64 --decode</code>发现，我的harborIP写错了，在secret里写的是内网IP，结果在部署的时候，镜像填写的是外网IP，更改过来之后，就OK了！<br><img src="/images/rancher21.png" alt="抱光妹"></p>
 <h2><span id="探索rancher应用商店">探索rancher应用商店</span></h2><p>rancher的web页面有一个<code>应用商店</code>是它的一大卖点，点击<code>启动</code>，就看到各种各样的商标…<br><img src="/images/rancher11.png" alt="抱光妹"></p>
 <p>当然也有之前的kafka不过它的kafka版本略老，才0.7.3。</p>
 <h2><span id="参考资料">参考资料</span></h2><p><a href="https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/" target="_blank" rel="noopener">https://o-my-chenjian.com/2017/04/11/Deploy-Kafka-And-ZP-With-K8s/</a></p>
@@ -924,7 +926,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共271.7k字</span>
+  <span class="post-count">博客全站共271.8k字</span>
 </div>
         
 
