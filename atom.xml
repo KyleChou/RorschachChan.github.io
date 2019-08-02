@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2019-07-31T06:53:45.425Z</updated>
+  <updated>2019-08-02T04:24:48.841Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Ansible-playbook批量更改sudoers文件里的NOPASSWD:ALL</title>
+    <link href="http://yoursite.com/2019/08/02/Ansible-playbook%E6%89%B9%E9%87%8F%E6%9B%B4%E6%94%B9sudoers%E6%96%87%E4%BB%B6%E9%87%8C%E7%9A%84NOPASSWD-ALL/"/>
+    <id>http://yoursite.com/2019/08/02/Ansible-playbook批量更改sudoers文件里的NOPASSWD-ALL/</id>
+    <published>2019-08-02T02:29:39.000Z</published>
+    <updated>2019-08-02T04:24:48.841Z</updated>
+    
+    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><p>由于我们有海外业务，于是就要接受GDPR检查，在检查里有一项就是要求不可以在<code>/etc/sudoers</code>文件里配置<code>普通用户  ALL=(root) NOPASSWD:ALL</code>这一项，要缩小范围，于是就要用ansible-playbook去批量解决这个问题。</p><h2><span id="获取aws的外网ip">获取AWS的外网IP</span></h2><p>AWS的EC2控制台跟阿里云不一样，不提供一个类似excel表格来获取当前区域内所有云服务器的资料。于是只能通过API获取，不过好在AWS的python SDK比较简单。</p><p>首先先<code>pip install boto3</code>和<code>pip install awscli</code>。然后再命令行执行<code>aws configure</code>，分别输入自己的AK、SK以及其他资料如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AWS Access Key ID [<span class="keyword">None</span>]: 你的AK</span><br><span class="line">AWS Secret Access Key [<span class="keyword">None</span>]: 你的SK</span><br><span class="line">Default region name [<span class="keyword">None</span>]: 对应区域详情可见：https://docs.aws.amazon.com/general/latest/gr/rande.html</span><br><span class="line">Default output format [<span class="keyword">None</span>]: json<span class="comment">#建议选择json</span></span><br></pre></td></tr></table></figure></p><p>然后就会在<code>/root/.aws</code>（普通用户就会在/homt/用户名/）下看到<code>config</code>和<code>credentials</code>，这里面就是你刚刚输入的内容。</p><p>脚本如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> boto3</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    ec2 = boto3.resource(<span class="string">'ec2'</span>)</span><br><span class="line"></span><br><span class="line">    instances = ec2.instances.filter(</span><br><span class="line">        Filters=[&#123;<span class="string">'Name'</span>: <span class="string">'instance-state-name'</span>, <span class="string">'Values'</span>: [<span class="string">'running'</span>]&#125;]</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">for</span> instance <span class="keyword">in</span> instances:</span><br><span class="line">        print(instance.private_ip_address)</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure></p><p>简单的一匹。</p><h2><span id="编写play-book">编写play-book</span></h2><p>获取到了该区域所有的服务器内网IP之后，先在vim状态下使用<code>:g/^172./d</code>，把老网段的服务器(172开头)的IP过滤掉。<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- hosts: all        <span class="comment">#默认执行hosts里的所有IP</span></span><br><span class="line">  remote_user: root</span><br><span class="line">  any_errors_fatal: no</span><br><span class="line">  gather_facts: no        <span class="comment">#不采集对方机器的数据，提高执行速度</span></span><br><span class="line">  serial:</span><br><span class="line">  - <span class="number">5</span>     <span class="comment">#5台机器一组</span></span><br><span class="line">  tasks:</span><br><span class="line">  - name: judge NOPASSWD:ALL</span><br><span class="line">    shell: grep <span class="string">"zabbix  ALL=(root) NOPASSWD"</span> /etc/sudoers</span><br><span class="line">    ignore_errors: <span class="keyword">True</span> </span><br><span class="line">    register: result</span><br><span class="line">           </span><br><span class="line">  - name: change </span><br><span class="line">    lineinfile: </span><br><span class="line">        dest: /etc/sudoers                                                                     </span><br><span class="line">        state: present        </span><br><span class="line">regexp: <span class="string">'^zabbix '</span></span><br><span class="line">        line: <span class="string">'zabbix  ALL=(root) NOPASSWD: /usr/bin/python'</span></span><br><span class="line">    when: result.stdout.find(<span class="string">"NOPASSWD:ALL"</span>) != <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">  - name: <span class="keyword">del</span>                                                                                                                                                                                     </span><br><span class="line">   lineinfile:              </span><br><span class="line">       dest: /etc/sudoers   </span><br><span class="line">       state: absent        </span><br><span class="line">       regexp: <span class="string">'NOPASSWD:ALL$'</span><span class="comment"># 将所有NOPASSWD:ALL结尾的字段删除</span></span><br></pre></td></tr></table></figure></p><p>这里有一点要注意，如果使用shell去用<code>sed -i</code>写的话，那么面临一个很尬的境地：ansible-playbook对<code>冒号空格</code>的搭配默认会识别成<code>key:value</code>的形式。</p><p>比如说，在shell里使用<code>sed -i &#39;s/NOPASSWD:ALL/NOPASSWD: \/usr\/bin\/python/g&#39; /etc/sudoers</code>是OK的，但是在shell就会爆格式错误，然后执意要走shell的话，就会可能掉入嵌套地狱…</p><h2><span id="补充">补充</span></h2><ol><li>如果发现本机已经安装了<code>awscli</code>，但是爆错<code>aws: command not found</code>，检查一下python的<code>virtualenv</code>环境是否正确；</li><li>如果目标机器不在默认的<code>inventory</code>文件里被设置，可以通过加逗号的方式被ansible识别，比如<code>ansible all -i 172.16.1.7, -m ping</code>；</li><li>如果playbook想指定其他<code>inventory</code>文件，使用-i参数；</li></ol>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;script src=&quot;\assets\js\APlayer.min.js&quot;&gt; &lt;/script&gt;&lt;p&gt;由于我们有海外业务，于是就要接受GDPR检查，在检查里有一项就是要求不可以在&lt;code&gt;/etc/sudoers&lt;/code&gt;文件里配置&lt;code&gt;普通用户  ALL=(ro
+      
+    
+    </summary>
+    
+      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="ansible" scheme="http://yoursite.com/tags/ansible/"/>
+    
+      <category term="AWS" scheme="http://yoursite.com/tags/AWS/"/>
+    
+  </entry>
   
   <entry>
     <title>Python3从jenkins爬取连接并且上传到文件服务器的脚本</title>
@@ -280,9 +307,9 @@
       <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
     
     
-      <category term="golang" scheme="http://yoursite.com/tags/golang/"/>
-    
       <category term="intellij idea" scheme="http://yoursite.com/tags/intellij-idea/"/>
+    
+      <category term="golang" scheme="http://yoursite.com/tags/golang/"/>
     
   </entry>
   
@@ -475,30 +502,6 @@
       <category term="zabbix" scheme="http://yoursite.com/tags/zabbix/"/>
     
       <category term="监控" scheme="http://yoursite.com/tags/%E7%9B%91%E6%8E%A7/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>网易雷火运维面试全纪录</title>
-    <link href="http://yoursite.com/2019/06/20/%E7%BD%91%E6%98%93%E9%9B%B7%E7%81%AB%E8%BF%90%E7%BB%B4%E9%9D%A2%E8%AF%95%E8%AE%B0%E5%BD%95/"/>
-    <id>http://yoursite.com/2019/06/20/网易雷火运维面试记录/</id>
-    <published>2019-06-20T06:12:57.000Z</published>
-    <updated>2019-07-17T12:51:52.376Z</updated>
-    
-    <content type="html"><![CDATA[<script src="\assets\js\APlayer.min.js"> </script><h2><span id="电话一面">电话一面</span></h2><ol><li><p>都搞过什么linux的发行版，区别是啥？</p></li><li><p>为什么云服务器普遍不装swap？</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">小内存主机由于内存不足导致持续swapping后会严重影响存储设备的IO性能。其实如果需要使用swap的话，主机性能也已经是烂的一塌糊涂，根本不能满足使用了，建议增加内存为上。</span><br></pre></td></tr></table></figure></li><li><p>localhost与127.0.0.1的区别</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">localhot（local）是不经网卡传输！这点很重要，它不受网络防火墙和网卡相关的的限制。<span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>是通过网卡传输，依赖网卡，并受到网络防火墙和网卡相关的限制。</span><br></pre></td></tr></table></figure></li><li><p>iptables的四表五链是啥？</p></li><li><p>出现延迟都有原因？</p></li><li><p>如何把数据库恢复到指定时刻？</p></li><li><p>你从业以来参与的比较大的故障是什么？怎么解决的？</p></li><li><p>如果要大量insert数据到数据库，有什么优化的方法？</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>)一条SQL语句插入多条数据:比如一次insert插入多个values，INSERT INTO `insert_table` (`datetime`, `uid`, `content`, `type`) VALUES (<span class="string">'0'</span>, <span class="string">'userid_0'</span>, <span class="string">'content_0'</span>, <span class="number">0</span>), (<span class="string">'1'</span>, <span class="string">'userid_1'</span>, <span class="string">'content_1'</span>, <span class="number">1</span>);</span><br><span class="line">这样的好处是减少binlog和innodb的日质量，降低了日志刷盘的频率提高效率，同时减少了网络传输的IO，这个优化效果特别明显；</span><br><span class="line"><span class="number">2</span>）把多一个insert写成一个事务，进行一个insert操作时，MySQL内部会建立一个事务，在事务内才进行真正插入处理操作。通过使用事务可以减少创建事务的消耗，所有插入都在执行后才进行提交操作；</span><br><span class="line"><span class="number">3</span>）数据按照主键有序插入，因为数据库插入时，需要维护索引数据，无序的记录会增大维护索引的成本，不过这个方法提高的并不明显；</span><br><span class="line"><span class="number">4</span>）以上方法综合使用；</span><br></pre></td></tr></table></figure></li></ol><h2><span id="电话二面">电话二面</span></h2><ol><li><p>介绍一下你自己</p></li><li><p>使用docker遇到了什么坑？</p></li><li><p>docker的网络模式有哪些？为什么不能选hosts？</p></li><li><p>服务器调整进程优先级的命令是啥？</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">一般来说微服务（即一个云服务器只跑一个进程）的场景来说，这个问题很少遇到，但是实际很多公司是一个服务器（比如<span class="number">80</span>核<span class="number">160</span>G）跑多个进程，那么对后台的程序有优先级限制就要使用`nice`命令。</span><br><span class="line">Linux系统中，进程有<span class="number">-19</span>到<span class="number">19</span>这<span class="number">39</span>个优先级。<span class="number">-19</span>最优先，<span class="number">19</span>最不优先。进程的默认优先级为<span class="number">0</span>。如果希望将进程调整为最优先，则将进程的nice值设置为<span class="number">-19</span>；如果希望进程最不优先，占用最少的系统CPU时间，则将其设置为<span class="number">19</span>。</span><br><span class="line"></span><br><span class="line">修改已经存在的进程的优先级</span><br><span class="line">将PID为<span class="number">1799</span>的进程优先级设置为最低（<span class="number">19</span>）：renice <span class="number">19</span> <span class="number">1799</span></span><br><span class="line">将PID为<span class="number">1799</span>的进程优先级设置为最高（<span class="number">-19</span>）：renice <span class="number">-19</span> <span class="number">1799</span></span><br><span class="line"></span><br><span class="line">新建进程并设置优先级</span><br><span class="line">nice <span class="number">-19</span> tar zcf pack.tar.gz documents<span class="comment">#这里-19并不是最高优先级，而是最低优先级，要设定最高优先级是--19</span></span><br></pre></td></tr></table></figure></li><li><p>python的==和is有什么不同？</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">is</span>比较的是id是不是一样，==比较的是值是不是一样。</span><br></pre></td></tr></table></figure></li><li><p>如何删除某文件下所有名称带有空格的文件？</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">可以通过转义符，或者获取文件的inode，根据inode删除对应的文件:find -inum 编号 -delete</span><br><span class="line">比如想rm文件名为“my file”的文件可以用rm my\ file</span><br></pre></td></tr></table></figure></li><li><p>ansibleplaybook的回滚方法？</p></li><li><p>如果nginx的server设置了add header，同时子location也设置了add header，那么会有什么现象？</p></li><li><p>如何判断查询是否用到了索引？</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">使用explain，如果type类型是all就是没有用到索引，如果是其他具体类型就是用到了索引。</span><br><span class="line">索引依次从好到差：system，const，eq_ref，ref，fulltext，ref_or_null，unique_subquery，index_subquery，range，index_merge，index，ALL，除了all之外，其他的type都可以使用到索引，除了index_merge之外，其他的type只可以用到一个索引。</span><br></pre></td></tr></table></figure></li></ol><h2><span id="现场技术一面">现场技术一面</span></h2><ol><li><p>写一下Python序列循环移位的方法，原来是[1,2,3,4,5,6]，变成[3,4,5,6,1,2]，任意语言都可以。</p> <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">使用切片，简单易理解，速度最快，可同时实现循环左移（k&gt;<span class="number">0</span>）和右移（k&lt;<span class="number">0</span>）。</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">demo</span><span class="params">(lst, k)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> lst[k:] + lst[:k]</span><br></pre></td></tr></table></figure></li><li><p>你们平时备份mysql使用什么方法？为什么用这个开源软件？</p></li><li><p>服务器你们是如何初始化的？</p></li><li><p>简单的介绍一下python的生成器？</p></li><li><p>如果发现慢sql你怎么排查？</p></li><li><p>发现java服务出现了CPU飙升的现象，怎么排查？</p></li><li><p>除了代码问题之外，都有哪些情况会导致CPU 100%？</p></li><li><p>都做过什么优化？（主动运维方向）</p></li></ol><p>剩下的就是一些流程性的问题了。</p>]]></content>
-    
-    <summary type="html">
-    
-      这个世界总会有一些莫名其妙的拒绝
-    
-    </summary>
-    
-      <category term="工作与技术" scheme="http://yoursite.com/categories/%E5%B7%A5%E4%BD%9C%E4%B8%8E%E6%8A%80%E6%9C%AF/"/>
-    
-    
-      <category term="大牛之路" scheme="http://yoursite.com/tags/%E5%A4%A7%E7%89%9B%E4%B9%8B%E8%B7%AF/"/>
-    
-      <category term="面试" scheme="http://yoursite.com/tags/%E9%9D%A2%E8%AF%95/"/>
     
   </entry>
   
