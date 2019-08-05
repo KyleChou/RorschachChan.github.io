@@ -96,7 +96,7 @@
 <meta property="og:site_name" content="Chris Chan&#39;s BLOG">
 <meta property="og:description" content="K8S看的断断续续的...">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-08-02T06:33:51.518Z">
+<meta property="og:updated_time" content="2019-08-05T14:08:36.289Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Ansible-playbook批量更改sudoers文件里的NOPASSWD:ALL">
 <meta name="twitter:description" content="K8S看的断断续续的...">
@@ -413,7 +413,7 @@
                   <span class="post-meta-item-text">字数统计&#58;</span>
                 
                 <span title="字数统计">
-                  734
+                  920
                 </span>
               
 
@@ -429,7 +429,7 @@
                   <span class="post-meta-item-text">阅读时长 &asymp;</span>
                 
                 <span title="阅读时长">
-                  3
+                  4
                 </span>
               
             </div>
@@ -463,6 +463,8 @@
 <h2><span id="编写play-book">编写play-book</span></h2><p>获取到了该区域所有的服务器内网IP之后，先在vim状态下使用<code>:g/^172./d</code>，把老网段的服务器(172开头)的IP过滤掉。然后编写playbook，如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">- hosts: all        <span class="comment">#默认执行hosts里的所有IP</span></span><br><span class="line">  remote_user: root</span><br><span class="line">  any_errors_fatal: no</span><br><span class="line">  gather_facts: no        <span class="comment">#不采集对方机器的数据，提高执行速度</span></span><br><span class="line">  serial:</span><br><span class="line">  - <span class="number">5</span>     <span class="comment">#5台机器一组</span></span><br><span class="line">  tasks:</span><br><span class="line">  - name: judge NOPASSWD:ALL</span><br><span class="line">    shell: grep <span class="string">"zabbix  ALL=(root) NOPASSWD"</span> /etc/sudoers</span><br><span class="line">    ignore_errors: <span class="keyword">True</span> </span><br><span class="line">    register: result</span><br><span class="line">           </span><br><span class="line">  - name: change </span><br><span class="line">    lineinfile: </span><br><span class="line">        dest: /etc/sudoers                                                                     </span><br><span class="line">        state: present        </span><br><span class="line">		regexp: <span class="string">'^zabbix '</span></span><br><span class="line">        line: <span class="string">'zabbix  ALL=(root) NOPASSWD: /usr/bin/python'</span></span><br><span class="line">    when: result.stdout.find(<span class="string">"NOPASSWD:ALL"</span>) != <span class="number">-1</span></span><br><span class="line"></span><br><span class="line">  - name: <span class="keyword">del</span>                                                                                                                                                                                     </span><br><span class="line">   	lineinfile:              </span><br><span class="line">       	dest: /etc/sudoers   </span><br><span class="line">       	state: absent        </span><br><span class="line">       	regexp: <span class="string">'NOPASSWD:ALL$'</span>				<span class="comment"># 将所有NOPASSWD:ALL结尾的字段删除</span></span><br></pre></td></tr></table></figure></p>
 <p>这里有一点要注意，如果使用shell去用<code>sed -i</code>写的话，那么面临一个很尬的境地：ansible-playbook对<code>冒号空格</code>的搭配默认会识别成<code>key:value</code>的形式。</p>
 <p>比如说，在shell里使用<code>sed -i &#39;s/NOPASSWD:ALL/NOPASSWD: \/usr\/bin\/python/g&#39; /etc/sudoers</code>是OK的，但是在shell就会爆格式错误，然后执意要走shell的话，就会可能掉入嵌套地狱…</p>
+<h2><span id="如果想要在文件后天追加多行">如果想要在文件后天追加多行</span></h2><p>ansible里的<code>lineinfile</code>模块是常见的修改文件内容的模块，但是如果要在文件末尾追加多行内容，一般人可能会想到使用<code>with_items</code>搭配<code>lineinfile</code>做循环。其实在ansible 2+的版本有一个更加优雅的方法：<code>blockinfile</code>，写法如下：<br>    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">tasks:         </span><br><span class="line">- name: addApollo</span><br><span class="line">  blockinfile: |</span><br><span class="line">    dest=/tmp/chenprofile 	<span class="comment">#目标文件</span></span><br><span class="line">    backup=yes</span><br><span class="line">    content=<span class="string">"export public_cloud_config_host=apollo.imou.com                                 </span></span><br><span class="line"><span class="string">        export public_cloud_config_port=28080</span></span><br><span class="line"><span class="string">        export public_cloud_config_group=default         </span></span><br><span class="line"><span class="string">  export public_cloud_config_namespace=imou.commonsource.mysql,imou.commonsource.cs,imou.commonsource.redis,imou.commonsource.mq,imou.commonsource.lb,imou.saascommonconfig,imou.originalcommonconfig,application"</span></span><br></pre></td></tr></table></figure></p>
+<p>然后去对应的文件就能看到结果，但是要注意，这里使用等号，而不是冒号，用冒号会报错，可能是ansible的一个小bug。</p>
 <h2><span id="补充">补充</span></h2><ol>
 <li>如果发现本机已经安装了<code>awscli</code>，但是爆错<code>aws: command not found</code>，检查一下python的<code>virtualenv</code>环境是否正确；</li>
 <li>如果目标机器不在默认的<code>inventory</code>文件里被设置，可以通过加逗号的方式被ansible识别，比如<code>ansible all -i 172.16.1.7, -m ping</code>；</li>
@@ -862,7 +864,7 @@ show_date_time();
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x83B7;&#x53D6;aws&#x7684;&#x5916;&#x7F51;ip">&#x83B7;&#x53D6;AWS&#x7684;&#x5916;&#x7F51;IP</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x7F16;&#x5199;play-book">&#x7F16;&#x5199;play-book</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x8865;&#x5145;">&#x8865;&#x5145;</span></span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">1.</span> <span class="nav-text"><span id="&#x83B7;&#x53D6;aws&#x7684;&#x5916;&#x7F51;ip">&#x83B7;&#x53D6;AWS&#x7684;&#x5916;&#x7F51;IP</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">2.</span> <span class="nav-text"><span id="&#x7F16;&#x5199;play-book">&#x7F16;&#x5199;play-book</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">3.</span> <span class="nav-text"><span id="&#x5982;&#x679C;&#x60F3;&#x8981;&#x5728;&#x6587;&#x4EF6;&#x540E;&#x5929;&#x8FFD;&#x52A0;&#x591A;&#x884C;">&#x5982;&#x679C;&#x60F3;&#x8981;&#x5728;&#x6587;&#x4EF6;&#x540E;&#x5929;&#x8FFD;&#x52A0;&#x591A;&#x884C;</span></span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#undefined"><span class="nav-number">4.</span> <span class="nav-text"><span id="&#x8865;&#x5145;">&#x8865;&#x5145;</span></span></a></li></ol></div>
             
 
           </div>
@@ -916,7 +918,7 @@ show_date_time();
 
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共275.0k字</span>
+  <span class="post-count">博客全站共275.2k字</span>
 </div>
         
 
